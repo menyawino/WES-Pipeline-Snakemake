@@ -45,8 +45,6 @@ rule all:
 ####### Include rules ######
 ############################
 
-# Snakefile to include all the rules
-
 include: "rules/001_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_posttrim_qc.smk"
