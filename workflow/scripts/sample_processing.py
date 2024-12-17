@@ -8,7 +8,7 @@ import os
 import re
 import sys
 
-def get_sample_data(csv_file, input_dir, run_name):
+def get_sample_data(csv_file, input_dir):
     """
     A function to get the sample data needed for the pipeline.
     """
@@ -26,8 +26,8 @@ def get_sample_data(csv_file, input_dir, run_name):
         sample_fastq_files[sample] = []
         for lane in range(1, 5):  # Loop through lanes 1 to 4 (1, 5), for deployment change to (1, 2)
             # Update the pattern to include the run and sample directories
-            r1_pattern = os.path.join(input_dir, run_name, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
-            r2_pattern = os.path.join(input_dir, run_name, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
+            r1_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
+            r2_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
             
             print(r1_pattern)
             print(r2_pattern)
