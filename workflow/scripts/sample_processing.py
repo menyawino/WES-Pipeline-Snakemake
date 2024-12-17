@@ -25,7 +25,7 @@ def get_sample_data(csv_file, input_dir):
     for sample in sample_names:
         sample_fastq_files[sample] = []
         for lane in range(1, 5):  # Loop through lanes 1 to 4 (1, 5), for deployment change to (1, 2)
-            # Update the pattern to include the run and sample directories
+            # Update the pattern to include sample directories
             r1_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
             r2_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
             
