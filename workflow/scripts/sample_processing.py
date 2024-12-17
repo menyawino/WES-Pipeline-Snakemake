@@ -8,21 +8,14 @@ import os
 import re
 import sys
 
-def get_sample_data(csv_file, input_dir):
+def get_sample_data(csv_file, input_dir, run_name):
     """
     A function to get the sample data needed for the pipeline.
     """
     df = pd.read_csv(csv_file)
 
-    # Extract the run name and the first row's first cell before the sample table
-    run_name = df.columns[0]
-    first_cell = df.iloc[0, 0]
-
     # Assuming the sample names are in a column named 'sample'
     sample_names = df['sample'].astype(str).tolist()
-
-    # Directory where your fastq files are located
-    fastq_dir = os.path.join(os.getcwd(), input_dir)
 
     # Dictionary to hold the fastq file paths for each sample
     sample_fastq_files = {}
@@ -33,9 +26,12 @@ def get_sample_data(csv_file, input_dir):
         sample_fastq_files[sample] = []
         for lane in range(1, 5):  # Loop through lanes 1 to 4 (1, 5), for deployment change to (1, 2)
             # Update the pattern to include the run and sample directories
-            r1_pattern = os.path.join(fastq_dir, run_name, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
-            r2_pattern = os.path.join(fastq_dir, run_name, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
-
+            r1_pattern = os.path.join(input_dir, run_name, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
+            r2_pattern = os.path.join(input_dir, run_name, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
+            
+            print(r1_pattern)
+            print(r2_pattern)
+            
             r1_files = glob.glob(r1_pattern)
             r2_files = glob.glob(r2_pattern)
 

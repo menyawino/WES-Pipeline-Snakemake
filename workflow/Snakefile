@@ -8,11 +8,12 @@ from scripts.sample_processing import get_sample_data
 # add sample file here
 samplesfile = "/mnt/omar/pipelines/icc/pipeline/samples.csv"
 
-# get input directory from config
+# get input directory and run name from config
 inputdir = config["inputdir"]
+run_name = config["run_name"]
 
 # get sample data
-samples_data = get_sample_data(samplesfile, inputdir)
+samples_data = get_sample_data(samplesfile, inputdir, run_name)
 
 # make lists for needed data
 sample_mrn = samples_data['sample'].unique().tolist()

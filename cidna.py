@@ -90,6 +90,9 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
     thisdir = os.path.dirname(__file__)
     snakefile = os.path.join(thisdir, 'workflow/Snakefile')
 
+    # Extract the run name from the input directory
+    run_name = os.path.basename(os.path.normpath(inputdir))
+
     # Basic Snakemake command
     cmd = ["snakemake", "-s", snakefile, "--use-conda", "-k", "--benchmark-extended"]
 
@@ -102,7 +105,7 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
 
     # Add input and output directories to the command
     cmd += ["--directory", outdir]
-    cmd += ["--config", f"inputdir={inputdir} outdir={outdir}"]
+    cmd += ["--config", f"inputdir={inputdir} outdir={outdir} run_name={run_name}"]
 
     # Print the final command if verbose with cmd list as a string
     if verbose:
@@ -167,8 +170,8 @@ def cli():
 
 @click.command(context_settings={"ignore_unknown_options": True})
 @click.argument('configfile')
-@click.argument('inputdir')
-@click.argument('outdir')
+@click.option('-i', '--inputdir', required=True, help="Input directory.")
+@click.option('-o', '--outdir', required=True, help="Output directory.")
 @click.option('--verbose', is_flag=True, help="Enable verbose output.")
 @click.argument('snakemake_args', nargs=-1)
 def run(configfile, inputdir, outdir, snakemake_args, verbose):
