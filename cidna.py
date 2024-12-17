@@ -102,7 +102,7 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
 
     # Add input and output directories to the command
     cmd += ["--directory", outdir]
-    cmd += ["--config", f"inputdir={inputdir} outdir={outdir}"]
+    cmd += ["--config", f"inputdir={inputdir}"]
 
     # Print the final command if verbose with cmd list as a string
     if verbose:

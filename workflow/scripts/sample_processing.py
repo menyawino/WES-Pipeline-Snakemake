@@ -28,9 +28,7 @@ def get_sample_data(csv_file, input_dir):
             # Update the pattern to include sample directories
             r1_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
             r2_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
-            
-            print(r1_pattern)
-            print(r2_pattern)
+
             
             r1_files = glob.glob(r1_pattern)
             r2_files = glob.glob(r2_pattern)

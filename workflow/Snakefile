@@ -12,7 +12,7 @@ samplesfile = "/mnt/omar/pipelines/icc/pipeline/samples.csv"
 inputdir = config["inputdir"]
 
 # get sample data
-samples_data = get_sample_data(samplesfile, inputdir, run_name)
+samples_data = get_sample_data(samplesfile, inputdir)
 
 # make lists for needed data
 sample_mrn = samples_data['sample'].unique().tolist()

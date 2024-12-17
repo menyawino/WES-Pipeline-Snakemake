@@ -6,9 +6,9 @@ memory: "25g"
 dcovg: 1000
 Skip_size_Check: 1
 
+
 # Directories
-TopDir: "{outdir}/results/NextSeq"
-StoreDir: "{outdir}/Store/Scripts/Research"
+outdir: "../output"
 
 # References and Target files
 TargetFile: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
