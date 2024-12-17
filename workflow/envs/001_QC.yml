@@ -1,0 +1,10 @@
+name: qc_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - fastqc=0.11.9
+  - python=3.8
+  - pip
+  - pip:
+    - snakemake

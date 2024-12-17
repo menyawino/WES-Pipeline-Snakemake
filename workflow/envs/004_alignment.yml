@@ -1,0 +1,12 @@
+name: alignment_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - hisat2=2.2.1
+  - bwa=0.7.17
+  - samtools=1.10
+  - python=3.8
+  - pip
+  - pip:
+    - snakemake

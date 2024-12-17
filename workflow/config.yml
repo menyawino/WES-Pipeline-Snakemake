@@ -1,0 +1,23 @@
+# Global variables
+threads: 4
+np_threads: 2
+benchmark: 1
+memory: "25g"
+dcovg: 1000
+Skip_size_Check: 1
+
+# Directories
+TopDir: "{outdir}/results/NextSeq"
+StoreDir: "{outdir}/Store/Scripts/Research"
+
+# References and Target files
+TargetFile: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+CDSFile: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+CanonTranFile: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+Ref: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/UCSChg19/allchrom.Chr1ToChrM.validated.fa"
+dbSNP: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/dbSNP138/hg19_dbSNP138.vcf"
+
+# Tools
+bwa: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/bwa-0.7.10/bwa"
+fastqc: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/FastQC/fastqc"
+prinseq: "/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/prinseq-lite-0.20.4/prinseq-lite.pl"

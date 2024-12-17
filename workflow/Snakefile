@@ -1,0 +1,60 @@
+############################
+####### Loading data #######
+############################
+
+# import necessary modules to process sample data
+from scripts.sample_processing import get_sample_data
+
+# add sample file here
+samplesfile = "samples.csv"
+
+# get input directory from config
+inputdir = config["inputdir"]
+
+# get sample data
+samples_data = get_sample_data(samplesfile, inputdir)
+
+# make lists for needed data
+sample_mrn = samples_data['sample'].unique().tolist()
+lane = samples_data['lane'].unique().tolist()
+read = samples_data['read'].unique().tolist()
+
+wildcard_constraints:
+    sample_mrn= '|'.join([re.escape(x) for x in sample_mrn]),
+    lane= '|'.join([re.escape(x) for x in lane]),
+    read= '|'.join([re.escape(x) for x in read]),
+
+############################
+####### Configuration ######
+############################
+
+# change this parameter to the path of the config file using
+# set automatically by the python wrapper script
+
+configfile: "workflow/config.yml"
+
+############################
+######### Workflow #########
+############################
+
+rule all:
+    input:
+        # expand("analysis/007_multiqc/multiqc_report.html", tool=tool)
+
+############################
+####### Include rules ######
+############################
+
+# Snakefile to include all the rules
+
+include: "rules/001_qc.smk"
+include: "rules/002_trimming.smk"
+include: "rules/003_posttrim_qc.smk"
+include: "rules/004_alignment.smk"
+include: "rules/005_variant_calling.smk"
+include: "rules/006_variant_filtering.smk"
+include: "rules/007_annotation.smk"
+include: "rules/008_summary.smk"
+
+# delete samples_data.csv with python
+os.remove("sample_data.csv")

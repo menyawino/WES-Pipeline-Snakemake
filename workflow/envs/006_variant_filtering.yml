@@ -1,0 +1,10 @@
+name: variant_filtering_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - gatk4=4.1.9.0
+  - python=3.8
+  - pip
+  - pip:
+    - snakemake
