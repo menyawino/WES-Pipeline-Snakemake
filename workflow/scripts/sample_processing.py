@@ -6,6 +6,7 @@ import pandas as pd
 import glob
 import os
 import re
+import sys
 
 def get_sample_data(csv_file, input_dir):
     """
@@ -66,7 +67,8 @@ def get_sample_data(csv_file, input_dir):
         print("Do you want to continue without the missing files? (y/n)")
         response = input()
         if response.lower() == 'n':
-            raise FileNotFoundError("Some files are missing. Please check the above messages.")
+            print("Pipeline terminated.")
+            sys.exit(1)
         elif response.lower() == 'y':
             print("Continuing without the missing files.")
         else:

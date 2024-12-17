@@ -178,11 +178,13 @@ def run(configfile, inputdir, outdir, snakemake_args, verbose):
     start_time = time.time()
     net_start = psutil.net_io_counters()
     
-    run_snakemake(configfile, inputdir, outdir, verbose=verbose,
-                  extra_args=snakemake_args)
+    return_code = run_snakemake(configfile, inputdir, outdir, verbose=verbose,
+                                extra_args=snakemake_args)
     
-    track_resources(start_time, net_start, outdir, verbose=verbose)
-    
+    if return_code == 0:
+        track_resources(start_time, net_start, outdir, verbose=verbose)
+    else:
+        print("Pipeline terminated early due to errors.")
 
 
 cli.add_command(run)

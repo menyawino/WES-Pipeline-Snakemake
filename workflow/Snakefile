@@ -6,7 +6,7 @@
 from scripts.sample_processing import get_sample_data
 
 # add sample file here
-samplesfile = "samples.csv"
+samplesfile = "/mnt/omar/pipelines/icc/pipeline/samples.csv"
 
 # get input directory from config
 inputdir = config["inputdir"]
