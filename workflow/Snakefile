@@ -39,7 +39,7 @@ configfile: "workflow/config.yml"
 
 rule all:
     input:
-        # expand("analysis/007_multiqc/multiqc_report.html", tool=tool)
+        expand("analysis/007_multiqc/multiqc_report.html", tool=tool)
 
 ############################
 ####### Include rules ######
