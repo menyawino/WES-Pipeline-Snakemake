@@ -4,16 +4,16 @@ rule base_recalibrator:
     message:
         "Base recalibration for sample {wildcards.sample}_{lane}"
     input:
-        realigned_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        realigned_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam"
     output:
-        recal_table=lambda wildcards: config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal_data.table".format(sample=wildcards.sample, lane=wildcards.lane)
+        recal_table=config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal_data.table"
     conda:
         "gatk"
     params:
         known_sites=config["known_sites"],
         target=config["target_file"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_base_recalibrator.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_base_recalibrator.log"
     shell:
         """
         gatk BaseRecalibrator \
@@ -28,14 +28,14 @@ rule print_reads:
     message:
         "Printing reads for sample {wildcards.sample}_{lane}"
     input:
-        realigned_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam".format(sample=wildcards.sample, lane=wildcards.lane),
-        recal_table=lambda wildcards: config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal_data.table".format(sample=wildcards.sample, lane=wildcards.lane)
+        realigned_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam",
+        recal_table=config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal_data.table"
     output:
-        recal_bam=lambda wildcards: config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        recal_bam=config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal.bam"
     conda:
         "gatk"
     log:
-        lambda wildcards: config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_print_reads.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_print_reads.log"
     shell:
         """
         gatk PrintReads \
@@ -50,9 +50,9 @@ rule filter_variants:
     message:
         "Filtering variants for sample {wildcards.sample}_{lane}"
     input:
-        vcf=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.haplotypecaller.vcf".format(sample=wildcards.sample, lane=wildcards.lane)
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.haplotypecaller.vcf"
     output:
-        filtered_vcf=lambda wildcards: config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.filtered.vcf".format(sample=wildcards.sample, lane=wildcards.lane)
+        filtered_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.filtered.vcf"
     conda:
         "gatk"
     threads:
@@ -60,9 +60,9 @@ rule filter_variants:
     params:
         ref=config["reference"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_filtering.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_filtering.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_{lane}_filtering.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_{lane}_filtering.txt"
     shell:
         """
         gatk VariantFiltration \

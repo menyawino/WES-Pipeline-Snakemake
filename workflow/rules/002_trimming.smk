@@ -6,17 +6,17 @@ rule trimming:
     conda: 
         "icc_02_trimming"
     input:
-        fw=lambda wildcards: config["inputdir"] + "/samples/{sample}_{lane}_R1_001.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane),
-        rv=lambda wildcards: config["inputdir"] + "/samples/{sample}_{lane}_R2_001.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane)
+        fw=config["inputdir"] + "/samples/{sample}_{lane}_R1_001.fastq.gz",
+        rv=config["inputdir"] + "/samples/{sample}_{lane}_R2_001.fastq.gz"
     output:
-        fw=lambda wildcards: config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R1_trimmed.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane),
-        rv=lambda wildcards: config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R2_trimmed.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane)
+        fw=config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R1_trimmed.fastq.gz",
+        rv=config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R2_trimmed.fastq.gz"
     threads: 
         config["threads"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/002_trimming/{sample}/{sample}_{lane}.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/002_trimming/{sample}/{sample}_{lane}.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/002_trimming/{sample}/{sample}_{lane}.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/benchmarks/002_trimming/{sample}/{sample}_{lane}.txt"
     shell:
         """
         prinseq-lite.pl \

@@ -7,5 +7,3 @@ dependencies:
   - perl
   - python=3.8
   - pip
-  - pip:
-    - snakemake

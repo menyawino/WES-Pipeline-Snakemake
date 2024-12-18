@@ -6,5 +6,3 @@ dependencies:
   - vep=104.3
   - python=3.8
   - pip
-  - pip:
-    - snakemake

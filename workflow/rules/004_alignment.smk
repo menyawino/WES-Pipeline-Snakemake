@@ -4,21 +4,20 @@ rule bwa_alignment:
     message:
         "Aligning sample {wildcards.sample}_{lane} to the reference genome"
     input:
-        fq1=lambda wildcards: config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R1_trimmed.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane),
-        fq2=lambda wildcards: config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R2_trimmed.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane)
+        fq1=config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R1_trimmed.fastq.gz",
+        fq2=config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R2_trimmed.fastq.gz"
     output:
-        bam=lambda wildcards: config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        bam=config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}.bam"
     conda:
         "icc_04_alignment"
     threads:
         config["threads"]
     params: 
-        path=lambda wildcards: config["outdir"] + "/results/{}".format(wildcards.sample),
-        idx=config["aligner"]["index_bwa"]
+        idx=config["ref_index"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/004_alignment/alignment/{sample}_{lane}_alignment.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/004_alignment/alignment/{sample}_{lane}_alignment.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/004_alignment/alignment/{sample}_{lane}_alignment.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/benchmarks/004_alignment/alignment/{sample}_{lane}_alignment.txt"
     shell:
         """
         bwa mem \
@@ -35,19 +34,17 @@ rule sort_bam:
     message: 
         "Sorting aligned sample {wildcards.sample}_{lane}"
     input:
-        bam=lambda wildcards: config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        bam=config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}.bam"
     output:
-        sorted_bam=lambda wildcards: config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        sorted_bam=config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam"
     conda: 
         "icc_04_alignment"
     threads: 
         config["threads"]
-    params: 
-        path=lambda wildcards: config["outdir"] + "/results/{}".format(wildcards.sample)
     log:
-        lambda wildcards: config["outdir"] + "/logs/004_alignment/sort/{sample}_{lane}_sort.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/004_alignment/sort/{sample}_{lane}_sort.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/004_alignment/sort/{sample}_{lane}_sort.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/benchmarks/004_alignment/sort/{sample}_{lane}_sort.txt"
     shell:
         """
         samtools sort \
@@ -61,13 +58,13 @@ rule index_bam:
     message:
         "Indexing sorted BAM for sample {wildcards.sample}_{lane}"
     input:
-        sorted_bam=lambda wildcards: config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        sorted_bam=config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam"
     output:
-        indexed_bam=lambda wildcards: config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam.bai".format(sample=wildcards.sample, lane=wildcards.lane)
+        indexed_bam=config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam.bai"
     conda:
         "icc_04_alignment"
     log:
-        lambda wildcards: config["outdir"] + "/logs/004_alignment/index/{sample}_{lane}_index.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/004_alignment/index/{sample}_{lane}_index.log"
     shell:
         """
         samtools index {input.sorted_bam} > {log} 2>&1

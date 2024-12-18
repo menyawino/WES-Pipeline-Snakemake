@@ -6,18 +6,18 @@ rule raw_fastqc:
     conda: 
         "fastqc_env"
     input:
-        lambda wildcards: config["inputdir"] + "/samples/{sample}_{lane}_{R}_001.fastq.gz".format(sample=wildcards.sample, lane=wildcards.lane, R=wildcards.R)
+        config["inputdir"] + "/samples/{sample}_{lane}_{R}_001.fastq.gz"
     output:
-        html=lambda wildcards: config["outdir"] + "/analysis/001_QC/{sample}/{sample}_{lane}_{R}_fastqc.html".format(sample=wildcards.sample, lane=wildcards.lane, R=wildcards.R),
-        zip=lambda wildcards: config["outdir"] + "/analysis/001_QC/{sample}/{sample}_{lane}_{R}_fastqc.zip".format(sample=wildcards.sample, lane=wildcards.lane, R=wildcards.R)
+        html=config["outdir"] + "/analysis/001_QC/{sample}/{sample}_{lane}_{R}_fastqc.html",
+        zip=config["outdir"] + "/analysis/001_QC/{sample}/{sample}_{lane}_{R}_fastqc.zip"
     threads: 
         config["np_threads"]
     params: 
-        path=lambda wildcards: config["outdir"] + "/analysis/001_QC/{}".format(wildcards.sample)
+        path=config["outdir"] + "/analysis/001_QC/{}"
     log:
-        lambda wildcards: config["outdir"] + "/logs/001_QC/{sample}/{sample}_{lane}_{R}.log".format(sample=wildcards.sample, lane=wildcards.lane, R=wildcards.R)
+        config["outdir"] + "/logs/001_QC/{sample}/{sample}_{lane}_{R}.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/001_QC/{sample}/{sample}_{lane}_{R}.txt".format(sample=wildcards.sample, lane=wildcards.lane, R=wildcards.R)
+        config["outdir"] + "/benchmarks/001_QC/{sample}/{sample}_{lane}_{R}.txt"
     shell:
         """
         mkdir -p {params.path}

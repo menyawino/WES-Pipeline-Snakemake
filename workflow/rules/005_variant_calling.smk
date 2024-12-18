@@ -4,20 +4,23 @@ rule add_read_groups:
     message:
         "Adding read groups to BAM for sample {wildcards.sample}_{lane}"
     input:
-        sorted_bam=lambda wildcards: config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        sorted_bam=config["outdir"] + "/analysis/004_alignment/bwa/{sample}_{lane}/{sample}_{lane}_Aligned.sortedByCoord.out.bam"
     output:
-        rg_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.rg.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        rg_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.rg.bam"
     conda:
         "gatk"
+
     params:
-        rgid=config["rgid"],
-        rglb=config["rglb"],
-        rgpl=config["rgpl"],
-        rgpu=config["rgpu"],
-        rgsm=config["rgsm"],
-        rgcn=config["rgcn"]
+        rgid=config["gatk"]["AddOrReplaceReadGroups"]["RGID"],
+        rglb=config["gatk"]["AddOrReplaceReadGroups"]["RGLB"],
+        rgpl=config["gatk"]["AddOrReplaceReadGroups"]["RGPL"],
+        rgpu=config["gatk"]["AddOrReplaceReadGroups"]["RGPU"],
+        rgsm=config["gatk"]["AddOrReplaceReadGroups"]["RGSM"],
+        rgcn=config["gatk"]["AddOrReplaceReadGroups"]["RGCN"],
+        rgds=config["gatk"]["AddOrReplaceReadGroups"]["RGDS"],
+        validation_stringency=config["gatk"]["AddOrReplaceReadGroups"]["validation_stringency"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_add_rg.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_add_rg.log"
     shell:
         """
         gatk AddOrReplaceReadGroups \
@@ -29,21 +32,24 @@ rule add_read_groups:
         RGPU={params.rgpu} \
         RGSM={params.rgsm} \
         RGCN={params.rgcn} \
+        RGDS={params.rgds} \
+        VALIDATION_STRINGENCY={params.validation_stringency} \
         > {log} 2>&1
         """
+
 
 rule mark_duplicates:
     message:
         "Marking duplicates in BAM for sample {wildcards.sample}_{lane}"
     input:
-        rg_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.rg.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        rg_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.rg.bam"
     output:
-        markdup_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam".format(sample=wildcards.sample, lane=wildcards.lane),
-        metrics=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.metrics.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        markdup_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam",
+        metrics=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.metrics.txt"
     conda:
         "gatk"
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_markdup.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_markdup.log"
     shell:
         """
         gatk MarkDuplicates \
@@ -57,13 +63,13 @@ rule index_markdup_bam:
     message:
         "Indexing markdup BAM for sample {wildcards.sample}_{lane}"
     input:
-        markdup_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        markdup_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam"
     output:
-        indexed_markdup_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam.bai".format(sample=wildcards.sample, lane=wildcards.lane)
+        indexed_markdup_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam.bai"
     conda:
         "gatk"
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_index_markdup.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_index_markdup.log"
     shell:
         """
         samtools index {input.markdup_bam} > {log} 2>&1
@@ -73,16 +79,16 @@ rule realigner_target_creator:
     message:
         "Creating realignment targets for sample {wildcards.sample}_{lane}"
     input:
-        markdup_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        markdup_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam"
     output:
-        intervals=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.intervals".format(sample=wildcards.sample, lane=wildcards.lane)
+        intervals=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.intervals"
     conda:
         "gatk"
     params:
         known=config["known_sites"],
         target=config["target_file"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_realigner_target_creator.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_realigner_target_creator.log"
     shell:
         """
         gatk RealignerTargetCreator \
@@ -97,14 +103,14 @@ rule indel_realigner:
     message:
         "Realigning indels for sample {wildcards.sample}_{lane}"
     input:
-        markdup_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam".format(sample=wildcards.sample, lane=wildcards.lane),
-        intervals=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.intervals".format(sample=wildcards.sample, lane=wildcards.lane)
+        markdup_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.bam",
+        intervals=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.markdup.intervals"
     output:
-        realigned_bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        realigned_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam"
     conda:
         "gatk"
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_indel_realigner.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_indel_realigner.log"
     shell:
         """
         gatk IndelRealigner \
@@ -119,9 +125,9 @@ rule haplotypecaller:
     message:
         "Calling variants with HaplotypeCaller for sample {wildcards.sample}_{lane}"
     input:
-        bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam"
     output:
-        vcf=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.haplotypecaller.vcf".format(sample=wildcards.sample, lane=wildcards.lane)
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.haplotypecaller.vcf"
     conda:
         "gatk"
     threads:
@@ -129,9 +135,9 @@ rule haplotypecaller:
     params:
         ref=config["reference"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_haplotypecaller.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_haplotypecaller.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/005_variant_calling/{sample}_{lane}_haplotypecaller.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_{lane}_haplotypecaller.txt"
     shell:
         """
         gatk HaplotypeCaller \
@@ -146,9 +152,9 @@ rule unifiedgenotyper:
     message:
         "Calling variants with UnifiedGenotyper for sample {wildcards.sample}_{lane}"
     input:
-        bam=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam".format(sample=wildcards.sample, lane=wildcards.lane)
+        bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam"
     output:
-        vcf=lambda wildcards: config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.unifiedgenotyper.vcf".format(sample=wildcards.sample, lane=wildcards.lane)
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.unifiedgenotyper.vcf"
     conda:
         "gatk"
     threads:
@@ -156,9 +162,9 @@ rule unifiedgenotyper:
     params:
         ref=config["reference"]
     log:
-        lambda wildcards: config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_unifiedgenotyper.log".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_unifiedgenotyper.log"
     benchmark:
-        lambda wildcards: config["outdir"] + "/benchmarks/005_variant_calling/{sample}_{lane}_unifiedgenotyper.txt".format(sample=wildcards.sample, lane=wildcards.lane)
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_{lane}_unifiedgenotyper.txt"
     shell:
         """
         gatk UnifiedGenotyper \
