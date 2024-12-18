@@ -85,8 +85,8 @@ rule realigner_target_creator:
     conda:
         "gatk"
     params:
-        known=config["known_sites"],
-        target=config["target_file"]
+        known=config["gatk"]["BaseRecalibrator"]["known_sites"],
+        target=config["gatk"]["BaseRecalibrator"]["target"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_realigner_target_creator.log"
     shell:
@@ -109,6 +109,9 @@ rule indel_realigner:
         realigned_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}_{lane}/{sample}_{lane}.realigned.bam"
     conda:
         "gatk"
+    params:
+        known=config["gatk"]["BaseRecalibrator"]["known_sites"],
+        target=config["gatk"]["BaseRecalibrator"]["target"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_{lane}_indel_realigner.log"
     shell:

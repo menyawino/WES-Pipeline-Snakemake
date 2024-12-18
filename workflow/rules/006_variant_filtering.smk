@@ -10,7 +10,7 @@ rule base_recalibrator:
     conda:
         "gatk"
     params:
-        known_sites=config["known_sites"],
+        known_sites=config["gatk"]["BaseRecalibrator"]["known_sites"],
         target=config["target_file"]
     log:
         config["outdir"] + "/logs/006_variant_filtering/{sample}_{lane}_base_recalibrator.log"
