@@ -9,20 +9,30 @@ from scripts.sample_processing import get_sample_data
 samplesfile = "/mnt/omar/pipelines/icc/pipeline/samples.csv"
 
 # get input directory
+configfile: "workflow/config.yml"
 inputdir = config["inputdir"]
 
 # get sample data
 samples_data = get_sample_data(samplesfile, inputdir)
 
 # make lists for needed data
+# get sample mrn without the _S17 in for example 20AD07372_S17_L001_R1_001.fastq.gz
 sample_mrn = samples_data['sample'].unique().tolist()
+sample_mrn = [x.split('_')[0] for x in sample_mrn]
 lane = samples_data['lane'].unique().tolist()
 read = samples_data['read'].unique().tolist()
+
+
+sample_filename = samples_data['sample'].unique().tolist()
+
+# concatenate the sample and sample_filename lists such that each element is a string of {sample}/{sample_filename}
+sample_filename = [f"{x}/{y}" for x, y in zip(sample_mrn, sample_filename)]
 
 wildcard_constraints:
     sample_mrn= '|'.join([re.escape(x) for x in sample_mrn]),
     lane= '|'.join([re.escape(x) for x in lane]),
     read= '|'.join([re.escape(x) for x in read]),
+    sample_filename= '|'.join([re.escape(x) for x in sample_filename])
 
 ############################
 ####### Configuration ######
@@ -33,43 +43,6 @@ wildcard_constraints:
 
 configfile: "workflow/config.yml"
 
-############################
-######### Workflow #########
-############################
-
-rule all:
-    input:
-        expand(rules.raw_fastqc.outputs.html)
-
-
-rule raw_fastqc:
-    message: 
-        "Running FastQC on sample {wildcards.sample}_{lane}_{wildcards.R}"
-    conda: 
-        "fastqc_env"
-    input:
-        config["inputdir"] + "/samples/{sample}_{lane}_{R}_001.fastq.gz"
-    output:
-        html=config["outdir"] + "/analysis/001_QC/{sample}/{sample}_{lane}_{R}_fastqc.html",
-        zip=config["outdir"] + "/analysis/001_QC/{sample}/{sample}_{lane}_{R}_fastqc.zip"
-    threads: 
-        config["np_threads"]
-    params: 
-        path=config["outdir"] + "/analysis/001_QC/{}"
-    log:
-        config["outdir"] + "/logs/001_QC/{sample}/{sample}_{lane}_{R}.log"
-    benchmark:
-        config["outdir"] + "/benchmarks/001_QC/{sample}/{sample}_{lane}_{R}.txt"
-    shell:
-        """
-        mkdir -p {params.path}
-        fastqc {input} \
-        -t {threads} \
-        -o {params.path} \
-        > {log} 2>&1
-        mv {params.path}/{wildcards.sample}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
-        mv {params.path}/{wildcards.sample}_{wildcards.lane}_{wildcards.R}_001_fastqc.zip {output.zip}
-        """
 ############################
 ####### Include rules ######
 ############################
@@ -83,5 +56,13 @@ include: "rules/006_variant_filtering.smk"
 include: "rules/007_annotation.smk"
 include: "rules/008_summary.smk"
 
+############################
+######### Workflow #########
+############################
+rule all:
+    input:
+        expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, sample=sample_mrn, lane=lane, R=read),
+
+
 # delete samples_data.csv with python
-os.remove("sample_data.csv")
+# os.remove("sample_data.csv")

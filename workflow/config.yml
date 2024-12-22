@@ -8,6 +8,7 @@ Skip_size_Check: 1
 
 
 # Directories
+inputdir: "../input/180705_NB551088_0005_AHTLH3AFXX"
 outdir: "../output"
 
 # References and Target files
