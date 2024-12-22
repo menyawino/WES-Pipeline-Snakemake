@@ -13,18 +13,35 @@ rule raw_fastqc:
     threads: 
         config["np_threads"]
     params: 
-        path=config["outdir"] + "/analysis/001_QC/{sample_filename}"
+        path=config["outdir"] + "/analysis/001_QC/{sample_filename}",
     log:
         config["outdir"] + "/logs/001_QC/{sample_filename}_{lane}_{R}.log"
     benchmark:
         config["outdir"] + "/benchmarks/001_QC/{sample_filename}_{lane}_{R}.txt"
     shell:
+        # """
+        # mkdir -p {params.path}
+        # fastqc {input} \
+        # -t {threads} \
+        # -o {params.path} \
+        # > {log} 2>&1
+        # mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
+        # mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.zip {output.zip}
+        # """
         """
-        mkdir -p {params.path}
+        # Generate parent directory path
+        parent_path=$(dirname {params.path})
+
+        # Create the output directory
+        mkdir -p "$parent_path"
+
+        # Run FastQC
         fastqc {input} \
         -t {threads} \
-        -o {params.path} \
+        -o "$parent_path" \
         > {log} 2>&1
-        mv {params.path}/{wildcards.sample_filename}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
-        mv {params.path}/{wildcards.sample_filename}_{wildcards.lane}_{wildcards.R}_001_fastqc.zip {output.zip}
+
+        # Move the FastQC outputs to the desired location
+        mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
+        mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.zip {output.zip}
         """

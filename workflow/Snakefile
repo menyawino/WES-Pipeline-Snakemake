@@ -4,6 +4,7 @@
 
 # import necessary modules to process sample data
 from scripts.sample_processing import get_sample_data
+import os
 
 # add sample file here
 samplesfile = "/mnt/omar/pipelines/icc/pipeline/samples.csv"
