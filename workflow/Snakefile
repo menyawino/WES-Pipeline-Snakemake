@@ -62,7 +62,8 @@ include: "rules/008_summary.smk"
 ############################
 rule all:
     input:
-        expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, sample=sample_mrn, lane=lane, R=read),
+        expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, lane=lane, R=read),
+        expand(rules.trimming.output.fw, sample=sample_filename, lane=lane),
 
 
 # delete samples_data.csv with python

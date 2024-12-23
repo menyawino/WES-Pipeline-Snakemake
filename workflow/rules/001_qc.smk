@@ -19,15 +19,6 @@ rule raw_fastqc:
     benchmark:
         config["outdir"] + "/benchmarks/001_QC/{sample_filename}_{lane}_{R}.txt"
     shell:
-        # """
-        # mkdir -p {params.path}
-        # fastqc {input} \
-        # -t {threads} \
-        # -o {params.path} \
-        # > {log} 2>&1
-        # mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
-        # mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.zip {output.zip}
-        # """
         """
         # Generate parent directory path
         parent_path=$(dirname {params.path})
