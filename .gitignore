@@ -1,6 +1,2 @@
 .snakemake/*
-ref/allchrom.Chr1ToChrM.validated.dict
-ref/allchrom.Chr1ToChrM.validated.fa
-ref/hg19_dbSNP138.vcf
-ref/allchrom.Chr1ToChrM.validated.fa.fai
-ref/hg19_dbSNP138.vcf.idx
+ref/*

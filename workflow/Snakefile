@@ -49,9 +49,10 @@ configfile: "workflow/config.yml"
 ############################
 
 include: "rules/001_qc.smk"
+include: "rules/001_posttrim_qc.smk"
 include: "rules/002_trimming.smk"
-include: "rules/003_posttrim_qc.smk"
-# include: "rules/004_alignment.smk"
+include: "rules/003_alignment.smk"
+
 # include: "rules/005_variant_calling.smk"
 # include: "rules/006_variant_filtering.smk"
 # include: "rules/007_annotation.smk"
@@ -63,8 +64,8 @@ include: "rules/003_posttrim_qc.smk"
 rule all:
     input:
         expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, lane=lane, R=read),
-        expand(rules.trimming.output.fw, sample=sample_filename, lane=lane),
         expand(rules.posttrim_fastqc.output.zip, sample=sample_filename, lane=lane, R=read),
+        expand(rules.bwa_alignment.output.bam, sample=sample_filename, lane=lane),
 
 print(rules.trimming.output)
 print(type(rules.trimming.output))

@@ -15,10 +15,12 @@ outdir: "../output"
 TargetFile: "/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
 CDSFile: "/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
 CanonTranFile: "/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
-reference: "/Ref_files_to_Aswan/UCSChg19/allchrom.Chr1ToChrM.validated.fa"
-ref_index: "/Ref_files_to_Aswan/UCSChg19/allchrom.Chr1ToChrM.validated.fa.fai"
 dbSNP: "/Ref_files_to_Aswan/dbSNP138/hg19_dbSNP138.vcf"
 target_file: "/path/to/target_file"
+
+
+reference_genome: "ref/allchrom.Chr1ToChrM.validated.fa"
+
 
 # Tools parameters
 gatk: 
