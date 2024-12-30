@@ -3,19 +3,34 @@
 rule posttrim_fastqc:
     message:
         "Running post-trimming FastQC for sample {wildcards.sample}_{lane}"
-    input:
-        fq1=config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R1_trimmed.fastq.gz",
-        fq2=config["outdir"] + "/analysis/002_trimming/{sample}/{sample}_{lane}_R2_trimmed.fastq.gz"
-    output:
-        html1=config["outdir"] + "/qc/{sample}_{lane}_R1_trimmed_fastqc.html",
-        html2=config["outdir"] + "/qc/{sample}_{lane}_R2_trimmed_fastqc.html"
     conda:
         "fastqc_env"
+    input:
+        fq=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_{R}.fastq"
+    output:
+        zip=config["outdir"] + "/analysis/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.zip",
+        html=config["outdir"] + "/analysis/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.html"
     threads:
         config["threads"]
+    params:
+        path=config["outdir"] + "/analysis/001_QC/posttrim/{sample}"
     log:
-        config["outdir"] + "/logs/003_posttrim_qc/{sample}_{lane}_posttrim_fastqc.log"
+        config["outdir"] + "/logs/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.txt"
     shell:
         """
-        fastqc -t {threads} {input.fq1} {input.fq2} -o {config[outdir]}/qc > {log} 2>&1
+        # Generate parent directory path
+        parent_path=$(dirname {params.path})
+        
+        # Create the output directory
+        mkdir -p "$parent_path"
+        
+        fastqc {input.fq} \
+        -t {threads} \
+        -o "$parent_path" \
+        &> {log}
+
+        mv {params.path}_{wildcards.lane}_{wildcards.R}_fastqc.zip {output.zip}
+        mv {params.path}_{wildcards.lane}_{wildcards.R}_fastqc.html {output.html}
         """

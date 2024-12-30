@@ -51,11 +51,11 @@ configfile: "workflow/config.yml"
 include: "rules/001_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_posttrim_qc.smk"
-include: "rules/004_alignment.smk"
-include: "rules/005_variant_calling.smk"
-include: "rules/006_variant_filtering.smk"
-include: "rules/007_annotation.smk"
-include: "rules/008_summary.smk"
+# include: "rules/004_alignment.smk"
+# include: "rules/005_variant_calling.smk"
+# include: "rules/006_variant_filtering.smk"
+# include: "rules/007_annotation.smk"
+# include: "rules/008_summary.smk"
 
 ############################
 ######### Workflow #########
@@ -64,7 +64,11 @@ rule all:
     input:
         expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, lane=lane, R=read),
         expand(rules.trimming.output.fw, sample=sample_filename, lane=lane),
+        expand(rules.posttrim_fastqc.output.zip, sample=sample_filename, lane=lane, R=read),
 
-
+print(rules.trimming.output)
+print(type(rules.trimming.output))
 # delete samples_data.csv with python
 # os.remove("sample_data.csv")
+
+# ./cidna.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88 --printshellcmds --rerun-incomplete

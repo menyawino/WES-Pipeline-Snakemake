@@ -7,10 +7,12 @@ rule trimming:
         "icc_02_trimming"
     input:
         fw=config["inputdir"] + "/{sample}_{lane}_R1_001.fastq.gz",
-        rv=config["inputdir"] + "/{sample}_{lane}_R2_001.fastq.gz"
+        rv=config["inputdir"] + "/{sample}_{lane}_R2_001.fastq.gz",
     output:
-        fw=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_1.fastq",
-        rv=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_2.fastq"
+        fw=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq",
+        fws=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1_singletons.fastq",
+        rv=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq",
+        rvs=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2_singletons.fastq"
     threads:
         config["threads"]
     params:
@@ -34,5 +36,11 @@ rule trimming:
         -trim_qual_left 20 \
         -trim_qual_window 5 \
         -min_len 35 \
-        > {log} 2>&1
+        &> {log}
+
+        # rename output files to suit the rest of the pipeline
+        mv {params.path}_1.fastq {output.fw}
+        mv {params.path}_1_singletons.fastq {output.fws}
+        mv {params.path}_2.fastq {output.rv}
+        mv {params.path}_2_singletons.fastq {output.rvs}
         """

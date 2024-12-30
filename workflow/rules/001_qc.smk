@@ -8,16 +8,16 @@ rule raw_fastqc:
     input:
         config["inputdir"] + "/{sample_filename}_{lane}_{R}_001.fastq.gz"
     output:
-        html=config["outdir"] + "/analysis/001_QC/{sample_filename}_{lane}_{R}_fastqc.html",
-        zip=config["outdir"] + "/analysis/001_QC/{sample_filename}_{lane}_{R}_fastqc.zip"
+        html=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}_{lane}_{R}_pretrim_fastqc.html",
+        zip=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}_{lane}_{R}_pretrim_fastqc.zip"
     threads: 
         config["np_threads"]
     params: 
-        path=config["outdir"] + "/analysis/001_QC/{sample_filename}",
+        path=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}",
     log:
-        config["outdir"] + "/logs/001_QC/{sample_filename}_{lane}_{R}.log"
+        config["outdir"] + "/logs/001_QC/pretrim/{sample_filename}_{lane}_{R}.log"
     benchmark:
-        config["outdir"] + "/benchmarks/001_QC/{sample_filename}_{lane}_{R}.txt"
+        config["outdir"] + "/benchmarks/001_QC/pretrim/{sample_filename}_{lane}_{R}.txt"
     shell:
         """
         # Generate parent directory path
@@ -30,7 +30,7 @@ rule raw_fastqc:
         fastqc {input} \
         -t {threads} \
         -o "$parent_path" \
-        > {log} 2>&1
+        &> {log}
 
         # Move the FastQC outputs to the desired location
         mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
