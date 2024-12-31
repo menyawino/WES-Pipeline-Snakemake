@@ -52,8 +52,8 @@ include: "rules/001_qc.smk"
 include: "rules/001_posttrim_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_alignment.smk"
+include: "rules/004_variant_calling.smk"
 
-# include: "rules/005_variant_calling.smk"
 # include: "rules/006_variant_filtering.smk"
 # include: "rules/007_annotation.smk"
 # include: "rules/008_summary.smk"
@@ -63,12 +63,8 @@ include: "rules/003_alignment.smk"
 ############################
 rule all:
     input:
-        expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, lane=lane, R=read),
-        expand(rules.posttrim_fastqc.output.zip, sample=sample_filename, lane=lane, R=read),
-        expand(rules.bwa_alignment.output.bam, sample=sample_filename, lane=lane),
+        expand(rules.add_read_groups.output.rg_bam, sample=sample_filename, lane=lane),
 
-print(rules.trimming.output)
-print(type(rules.trimming.output))
 # delete samples_data.csv with python
 # os.remove("sample_data.csv")
 
