@@ -7,7 +7,7 @@ rule bwa_alignment:
         fq1=rules.trimming.output.fq1,
         fq2=rules.trimming.output.fq2
     output:
-        sam=config["outdir"] + "/analysis/003_alignment/bwa/{sample}_{lane}.sam"
+        sam=config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.sam"
     conda:
         "icc_04_alignment"
     threads:
@@ -15,9 +15,9 @@ rule bwa_alignment:
     params: 
         idx=config["reference_genome"]
     log:
-        config["outdir"] + "/logs/003_alignment/bwa/{sample}_{lane}_alignment.log"
+        config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_alignment.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/bwa/{sample}_{lane}_alignment.txt"
+        config["outdir"] + "/benchmarks/003_alignment/01_bwa/{sample}_{lane}_alignment.txt"
     shell:
         """
         bwa mem \
@@ -34,15 +34,15 @@ rule sam_to_bam:
     input:
         sam=rules.bwa_alignment.output.sam
     output:
-        bam=config["outdir"] + "/analysis/003_alignment/bwa/{sample}_{lane}.bam"
+        bam=config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam"
     conda:
         "icc_04_alignment"
     threads:
         config["threads"]
     log:
-        config["outdir"] + "/logs/003_alignment/bwa/{sample}_{lane}_sam_to_bam.log"
+        config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sam_to_bam.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/bwa/{sample}_{lane}_sam_to_bam.txt"
+        config["outdir"] + "/benchmarks/003_alignment/01_bwa/{sample}_{lane}_sam_to_bam.txt"
     shell:
         """
         samtools view \
@@ -56,15 +56,15 @@ rule sort_bam:
     input:
         bam=rules.sam_to_bam.output.bam
     output:
-        sorted_bam=config["outdir"] + "/analysis/003_alignment/sorted/{sample}_{lane}_Aligned.sortedByCoord.bam"
+        sorted_bam=config["outdir"] + "/analysis/003_alignment/02_sorted/{sample}_{lane}_Aligned.sortedByCoord.bam"
     conda: 
         "icc_04_alignment"
     threads: 
         config["threads"]
     log:
-        config["outdir"] + "/logs/003_alignment/sorted/{sample}_{lane}_sort.log"
+        config["outdir"] + "/logs/003_alignment/02_sorted/{sample}_{lane}_sort.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/sorted/{sample}_{lane}_sort.txt"
+        config["outdir"] + "/benchmarks/003_alignment/02_sorted/{sample}_{lane}_sort.txt"
     shell:
         """
         samtools sort \
@@ -80,13 +80,13 @@ rule index_bam:
     input:
         sorted_bam=rules.sort_bam.output.sorted_bam
     output:
-        indexed_bam=config["outdir"] + "/analysis/003_alignment/sorted/{sample}_{lane}_Aligned.sortedByCoord.bam.bai"
+        indexed_bam=config["outdir"] + "/analysis/003_alignment/02_sorted/{sample}_{lane}_Aligned.sortedByCoord.bam.bai"
     conda:
         "icc_04_alignment"
     log:
-        config["outdir"] + "/logs/003_alignment/sorted/{sample}_{lane}_index.log"
+        config["outdir"] + "/logs/003_alignment/02_sorted/{sample}_{lane}_index.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/sorted/{sample}_{lane}_index.txt"
+        config["outdir"] + "/benchmarks/003_alignment/02_sorted/{sample}_{lane}_index.txt"
     shell:
         """
         samtools index \

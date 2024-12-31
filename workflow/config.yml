@@ -31,7 +31,7 @@ gatk:
     RGDS: "ICC"
     validation_stringency: "SILENT"
   BaseRecalibrator:
-    known_sites: "/path/to/known_sites.vcf"
+    known_sites: "/mnt/omar/pipelines/icc/pipeline/ref/hg19_dbSNP138.vcf"
     target: "/path/to/target_file"
   PrintReads:
     target: "/path/to/target_file"

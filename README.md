@@ -100,3 +100,9 @@ The pipeline consists of several steps, each managed by Snakemake rules. The mai
 ## Resource Tracking
 
 The pipeline tracks resource usage, including CPU, memory, and network usage. A detailed report is generated at the end of the pipeline run.
+
+
+## Inhouse vs new pipeline comparison
+
+- Removed RealignerTargetCreator because gatk4 HaplotypeCaller realigns the reads on the fly.
+
