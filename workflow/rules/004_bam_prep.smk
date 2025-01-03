@@ -1,10 +1,10 @@
 rule add_read_groups:
     message:
-        "Adding read groups to BAM for sample {wildcards.sample}_{lane}"
+        "Adding read groups to BAM for sample {wildcards.sample}"
     input:
-        sorted_bam=rules.sort_bam.output.sorted_bam
+        sorted_bam=rules.merge_bams.output.merged_bam
     output:
-        rg_bam=config["outdir"] + "/analysis/003_alignment/03_read_grouped/{sample}_{lane}.rg.bam"
+        rg_bam=config["outdir"] + "/analysis/003_alignment/03_read_grouped/{sample}.rg.bam"
     conda:
         "icc_gatk"
     params:
@@ -17,9 +17,9 @@ rule add_read_groups:
         rgds=config["gatk"]["AddOrReplaceReadGroups"]["RGDS"],
         validation_stringency=config["gatk"]["AddOrReplaceReadGroups"]["validation_stringency"]
     log:
-        config["outdir"] + "/logs/003_alignment/03_read_grouped/{sample}_{lane}_add_rg.log"
+        config["outdir"] + "/logs/003_alignment/03_read_grouped/{sample}_add_rg.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/03_read_grouped/{sample}_{lane}_add_rg.txt"
+        config["outdir"] + "/benchmarks/003_alignment/03_read_grouped/{sample}_add_rg.txt"
     shell:
         """
         gatk AddOrReplaceReadGroups \
@@ -39,20 +39,20 @@ rule add_read_groups:
 
 rule mark_duplicates:
     message:
-        "Marking duplicates in BAM for sample {wildcards.sample}_{lane}"
+        "Marking duplicates in BAM for sample {wildcards.sample}"
     input:
         rg_bam=rules.add_read_groups.output.rg_bam
     output:
-        markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}_{lane}.markdup.bam",
-        metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}_{lane}.markdup.metrics.txt"
+        markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam",
+        metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
         "icc_gatk"
     threads:
         config["threads"]
     log:
-        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_{lane}_markdup.log"
+        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_markdup.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_{lane}_markdup.txt"
+        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_markdup.txt"
     shell:
         """
         gatk MarkDuplicatesSpark \
@@ -65,31 +65,31 @@ rule mark_duplicates:
 
 rule index_markdup_bam:
     message:
-        "Indexing markdup BAM for sample {wildcards.sample}_{lane}"
+        "Indexing markdup BAM for sample {wildcards.sample}"
     input:
         markdup_bam=rules.mark_duplicates.output.markdup_bam
     output:
-        indexed_markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}_{lane}.markdup.bam.bai"
+        indexed_markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai"
     conda:
         "icc_gatk"
     log:
-        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_{lane}_index_markdup.log"
+        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_index_markdup.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_{lane}_index_markdup.txt"
+        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_index_markdup.txt"
     shell:
         """
         samtools index \
         {input.markdup_bam} \
-        > {output.indexed_markdup_bam}
+        > {log} 2>&1
         """
 
 rule base_recalibrator:
     message:
-        "Running BaseRecalibrator for sample {wildcards.sample}_{lane}"
+        "Running BaseRecalibrator for sample {wildcards.sample}"
     input:
         bam=rules.mark_duplicates.output.markdup_bam,
     output:
-        recal_table=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}_{lane}.recal_data.table"
+        recal_table=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.recal_data.table"
     conda:
         "icc_gatk"
     threads:
@@ -98,9 +98,9 @@ rule base_recalibrator:
         ref=config["reference_genome"],
         known_sites=config["gatk"]["BaseRecalibrator"]["known_sites"]
     log:
-        config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_{lane}_base_recalibrator.log"
+        config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_base_recalibrator.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_{lane}_base_recalibrator.txt"
+        config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_base_recalibrator.txt"
     shell:
         """
         gatk BaseRecalibratorSpark \
@@ -114,12 +114,12 @@ rule base_recalibrator:
 
 rule apply_bqsr:
     message:
-        "Applying BQSR for sample {wildcards.sample}_{lane}"
+        "Applying BQSR for sample {wildcards.sample}"
     input:
         bam=rules.mark_duplicates.output.markdup_bam,
         recal_table=rules.base_recalibrator.output.recal_table
     output:
-        bqsr_bam=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}_{lane}.bqsr.bam"
+        bqsr_bam=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bam"
     conda:
         "icc_gatk"
     threads:
@@ -127,9 +127,9 @@ rule apply_bqsr:
     params:
         ref=config["reference_genome"]
     log:
-        config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_{lane}_apply_bqsr.log"
+        config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_apply_bqsr.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_{lane}_apply_bqsr.txt"
+        config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_apply_bqsr.txt"
     shell:
         """
         gatk ApplyBQSRSpark  \

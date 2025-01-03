@@ -2,11 +2,11 @@
 
 rule annotate_variants:
     message:
-        "Annotating variants for sample {wildcards.sample}_{lane}"
+        "Annotating variants for sample {wildcards.sample}"
     input:
-        vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.filtered.vcf"
+        vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.vcf"
     output:
-        annotated_vcf=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.annotated.vcf"
+        annotated_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.annotated.vcf"
     conda:
         "icc_07_annotation"
     threads:
@@ -15,9 +15,9 @@ rule annotate_variants:
         cache_dir=config["vep"]["cache_dir"],
         fasta=config["vep"]["fasta"]
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_{lane}_annotation.log"
+        config["outdir"] + "/logs/007_annotation/{sample}_annotation.log"
     benchmark:
-        config["outdir"] + "/benchmarks/007_annotation/{sample}_{lane}_annotation.txt"
+        config["outdir"] + "/benchmarks/007_annotation/{sample}_annotation.txt"
     shell:
         """
         vep \
@@ -33,17 +33,17 @@ rule annotate_variants:
 
 rule extract_on_target_reads:
     message:
-        "Extracting on-target reads for sample {wildcards.sample}_{lane}"
+        "Extracting on-target reads for sample {wildcards.sample}"
     input:
-        recal_bam=config["outdir"] + "/analysis/006_variant_filtering/{sample}_{lane}/{sample}_{lane}.recal.bam"
+        recal_bam=config["outdir"] + "/analysis/006_variant_filtering/{sample}.recal.bam"
     output:
-        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.on_target.bam"
+        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}.on_target.bam"
     conda:
         "icc_07_annotation"
     params:
         target=config["target_file"]
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_{lane}_extract_on_target_reads.log"
+        config["outdir"] + "/logs/007_annotation/{sample}_extract_on_target_reads.log"
     shell:
         """
         bedtools intersect -abam {input.recal_bam} -b {params.target} > {output.on_target_bam} 2> {log}
@@ -51,15 +51,15 @@ rule extract_on_target_reads:
 
 rule flagstat_report:
     message:
-        "Generating flagstat report for sample {wildcards.sample}_{lane}"
+        "Generating flagstat report for sample {wildcards.sample}"
     input:
-        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.on_target.bam"
+        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}.on_target.bam"
     output:
-        flagstat=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.flagstat.txt"
+        flagstat=config["outdir"] + "/analysis/007_annotation/{sample}.flagstat.txt"
     conda:
         "icc_07_annotation"
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_{lane}_flagstat.log"
+        config["outdir"] + "/logs/007_annotation/{sample}_flagstat.log"
     shell:
         """
         samtools flagstat {input.on_target_bam} > {output.flagstat} 2> {log}
@@ -67,19 +67,19 @@ rule flagstat_report:
 
 rule coverage_analysis:
     message:
-        "Performing coverage analysis for sample {wildcards.sample}_{lane}"
+        "Performing coverage analysis for sample {wildcards.sample}"
     input:
-        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.on_target.bam"
+        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}.on_target.bam"
     output:
-        coverage_stats=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.coverage_stats.txt",
-        coverage_per_base=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.coverage_per_base.txt",
-        coverage_histogram=config["outdir"] + "/analysis/007_annotation/{sample}_{lane}/{sample}_{lane}.coverage_histogram.txt"
+        coverage_stats=config["outdir"] + "/analysis/007_annotation/{sample}.coverage_stats.txt",
+        coverage_per_base=config["outdir"] + "/analysis/007_annotation/{sample}.coverage_per_base.txt",
+        coverage_histogram=config["outdir"] + "/analysis/007_annotation/{sample}.coverage_histogram.txt"
     conda:
         "icc_07_annotation"
     params:
         target=config["target_file"]
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_{lane}_coverage_analysis.log"
+        config["outdir"] + "/logs/007_annotation/{sample}_coverage_analysis.log"
     shell:
         """
         bedtools coverage -abam {input.on_target_bam} -b {params.target} > {output.coverage_stats} 2> {log}

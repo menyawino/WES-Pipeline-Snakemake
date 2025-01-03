@@ -64,7 +64,7 @@ include: "rules/005_variant_calling.smk"
 ############################
 rule all:
     input:
-        expand(rules.apply_bqsr.output.bqsr_bam, sample=sample_filename, lane=lane),
+        expand(rules.haplotypecaller.output.vcf, sample=sample_filename, lane=lane),
 
 # delete samples_data.csv with python
 # os.remove("sample_data.csv")
