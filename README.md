@@ -102,7 +102,9 @@ The pipeline consists of several steps, each managed by Snakemake rules. The mai
 The pipeline tracks resource usage, including CPU, memory, and network usage. A detailed report is generated at the end of the pipeline run.
 
 
-## Inhouse vs new pipeline comparison
+## Inhouse vs new pipeline changelog
 
-- Removed RealignerTargetCreator because gatk4 HaplotypeCaller realigns the reads on the fly.
+- Removed IndelRealigner and RealignerTargetCreator because gatk4 HaplotypeCaller realigns the reads on the fly.
+- Removed samtools flagstat and used stat right away with the same filters as the original command
+- 
 

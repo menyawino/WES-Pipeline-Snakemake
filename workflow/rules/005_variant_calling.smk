@@ -1,4 +1,4 @@
-# A rule to call variants using GATK HaplotypeCaller and UnifiedGenotyper
+# A rule to call variants using GATK HaplotypeCaller and GenotypeGVCFs
 
 rule haplotypecaller:
     message:
@@ -6,13 +6,17 @@ rule haplotypecaller:
     input:
         bam=rules.apply_bqsr.output.bqsr_bam
     output:
-        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.vcf"
+        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf",
+        bam=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.bam"
     conda:
         "icc_gatk"
     threads:
         config["threads"]
     params:
-        ref=config["reference_genome"]
+        ref=config["reference_genome"],
+        dbsnp=config["dbsnp"],
+        dcovg=config["gatk"]["HaplotypeCaller"]["dcovg"],
+        target=config["icc_panel"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_haplotypecaller.log"
     benchmark:
@@ -22,34 +26,85 @@ rule haplotypecaller:
         gatk HaplotypeCallerSpark \
         -R {params.ref} \
         -I {input.bam} \
-        -O {output.vcf} \
+        -O {output.gvcf} \
+        -A Coverage \
+	    -A AlleleBalance \
+	    -G Standard \
         -ERC GVCF \
+        --downsample_to_coverage {params.dcovg} \
+        --intervals {params.target} \
+        --dbsnp {params.dbsnp} \
         --spark-master local[{threads}] \
+        --bamOutput {output.bam} \
         > {log} 2>&1
         """
 
-rule unifiedgenotyper:
+rule annotate_variants:
     message:
-        "Calling variants with UnifiedGenotyper for sample {wildcards.sample}"
+        "Annotating variants for sample {wildcards.sample}"
     input:
-        bam=rules.apply_bqsr.output.bqsr_bam
+        vcf=rules.haplotypecaller.output.gvcf
     output:
-        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.unifiedgenotyper.vcf"
+        annotated_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.annotated.vcf"
+    conda:
+        "gatk"
+    threads:
+        config["threads"]
+    params:
+        ref=config["reference_genome"],
+        dbsnp=config["dbsnp"],
+        target=config["icc_panel"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_annotate_variants.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_annotate_variants.txt"
+    shell:
+        """
+        gatk VariantAnnotator \
+        -R {params.ref} \
+        -V {input.vcf} \
+        -O {output.annotated_vcf} \
+        -A Coverage \
+        -A AlleleBalance \
+        -A HaplotypeScore \
+        -A InbreedingCoeff \
+        -A HomopolymerRun \
+        -A HardyWeinberg \
+        -A GCContent \
+        --dbsnp {params.dbsnp} \
+        --intervals {params.target} \
+        > {log} 2>&1
+        """
+
+rule genotype_gvcfs:
+    message:
+        "Genotyping GVCFs for sample {wildcards.sample}"
+    input:
+        gvcf=rules.annotate_variants.output.annotated_vcf
+    output:
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
     conda:
         "icc_gatk"
     threads:
         config["threads"]
     params:
-        ref=config["reference_genome"]
+        ref=config["reference_genome"],
+        target=config["icc_panel"],
+        dbsnp=config["dbsnp"]
     log:
-        config["outdir"] + "/logs/005_variant_calling/{sample}_unifiedgenotyper.log"
+        config["outdir"] + "/logs/005_variant_calling/{sample}_genotype_gvcfs.log"
     benchmark:
-        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_unifiedgenotyper.txt"
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_genotype_gvcfs.txt"
     shell:
         """
-        gatk UnifiedGenotyper \
+        gatk GenotypeGVCFs \
         -R {params.ref} \
-        -I {input.bam} \
+        -V {input.gvcf} \
         -O {output.vcf} \
+        -A AlleleBalance \
+        -A DepthPerAlleleBySample \
+        -A Coverage \
+        --intervals {params.target} \
+        --dbsnp {params.dbsnp} \
         > {log} 2>&1
         """

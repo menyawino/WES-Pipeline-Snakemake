@@ -1,29 +1,5 @@
 # A rule to filter variants using GATK VariantFiltration
 
-rule base_recalibrator:
-    message:
-        "Base recalibration for sample {wildcards.sample}"
-    input:
-        realigned_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}.realigned.bam"
-    output:
-        recal_table=config["outdir"] + "/analysis/006_variant_filtering/{sample}.recal_data.table"
-    conda:
-        "gatk"
-    params:
-        known_sites=config["gatk"]["BaseRecalibrator"]["known_sites"],
-        target=config["target_file"]
-    log:
-        config["outdir"] + "/logs/006_variant_filtering/{sample}_base_recalibrator.log"
-    shell:
-        """
-        gatk BaseRecalibrator \
-        -R {params.target} \
-        -I {input.realigned_bam} \
-        --known-sites {params.known_sites} \
-        -O {output.recal_table} \
-        > {log} 2>&1
-        """
-
 rule print_reads:
     message:
         "Printing reads for sample {wildcards.sample}"
@@ -58,7 +34,14 @@ rule filter_variants:
     threads:
         config["threads"]
     params:
-        ref=config["reference"]
+        ref=config["reference_genome"],
+        dbsnp=config["dbsnp"],
+        omni=config["omni"],
+        tenk=config["tenk"],
+        hapmap=config["hapmap"],
+        mills=config["mills"],
+        tenk_indel=config["tenk_indel"],
+        target=config["icc_panel"]
     log:
         config["outdir"] + "/logs/006_variant_filtering/{sample}_filtering.log"
     benchmark:
@@ -79,5 +62,11 @@ rule filter_variants:
         --filter-name "MQFilter" \
         --filter-name "MQRankSumFilter" \
         --filter-name "ReadPosFilter" \
+        --intervals {params.target} \
+        --known-sites {params.omni} \
+        --known-sites {params.tenk} \
+        --known-sites {params.hapmap} \
+        --known-sites {params.mills} \
+        --known-sites {params.tenk_indel} \
         > {log} 2>&1
         """

@@ -1,26 +1,31 @@
 # Global variables
-threads: 11
-np_threads: 2
+threads_high: 11
+threads_mid: 4
+threads_low: 1
 benchmark: 1
-memory: "25g"
-dcovg: 1000
-Skip_size_Check: 1
 
 # Directories
 inputdir: "../input/180705_NB551088_0005_AHTLH3AFXX"
 outdir: "../output"
 
-# References and Target files
-TargetFile: "/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-CDSFile: "/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
-CanonTranFile: "/data/Store/Scripts/Research/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
-dbSNP: "/Ref_files_to_Aswan/dbSNP138/hg19_dbSNP138.vcf"
-target_file: "/path/to/target_file"
-
+# Reference file
 reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/allchrom.Chr1ToChrM.validated.fa"
 
-# Tools parameters
-gatk: 
+# Target files
+icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+
+# Known variants
+dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/hg19_dbSNP138.vcf"
+omni: "/mnt/omar/pipelines/icc/pipeline/ref/1000G_omni2.5.hg19.vcf"
+tenk: "/mnt/omar/pipelines/icc/pipeline/ref/1000G_phase1.snps.high_confidence.hg19.vcf"
+tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/1000G_phase1.indels.hg19.vcf"
+hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/hapmap_3.3.hg19.vcf"
+mills: "/mnt/omar/pipelines/icc/pipeline/ref/Mills_and_1000G_gold_standard.indels.hg19.vcf"
+
+# Tool-specific parameters
+gatk:
   AddOrReplaceReadGroups:
     RGID: "1"
     RGLB: "lib1"
@@ -30,17 +35,10 @@ gatk:
     RGCN: "Broad"
     RGDS: "ICC"
     validation_stringency: "SILENT"
-  BaseRecalibrator:
-    known_sites: "/mnt/omar/pipelines/icc/pipeline/ref/hg19_dbSNP138.vcf"
-    target: "/path/to/target_file"
-  PrintReads:
-    target: "/path/to/target_file"
-  VariantFiltration:
-    reference: "/path/to/reference.fa"
+  MarkDuplicates:
+    validation_stringency: "LENIENT"
   HaplotypeCaller:
-    reference: "/path/to/reference.fa"
-  UnifiedGenotyper:
-    reference: "/path/to/reference.fa"
+    dcovg: 1000
 
 # VEP parameters
 vep:

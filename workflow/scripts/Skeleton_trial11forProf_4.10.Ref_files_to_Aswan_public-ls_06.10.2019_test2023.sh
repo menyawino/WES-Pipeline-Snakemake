@@ -5,9 +5,129 @@
 ###1.Run CoverageSummaryScript (QC script) from /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/NextSeq_Cvg(Platform)/Reads
 ###2.Add Sample Sheet for CoverageSummaryScript (QC script) in  /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/NextSeq_Cvg(Platform)/Reads/181015_NB551088_0013_AHY7LFAFXX_Cvg(RunName)/Run_51-Sample_Sheet_151018.csv(SampleSheet)
 
+#Ref_files_to_Aswan
 
+
+##4.10.2017
+# mv /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_46877_S2/46877_S2_L001_R1_001.fastq.gz /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_46877_S2
+# mv /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_46877_S2/46877_S2_L001_R2_001.fastq.gz /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_46877_S2
+
+# mv 20JX05532_S7* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_20JX05532_S7
+# mv 20NV05661* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_20NV05661
+# mv 20CZ05528* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.9.2017/Lib_Prof_20CZ05528
+
+##8.10.2017
+#mv 20BH06185* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/08.10.2017/Lib_Prof_20BH06185
+
+##11.10.2017
+#mv 46366* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/11.10.2017/Lib_Prof_46366
+
+##12.10.2017
+# 46877
+# 20JX05532
+# 20NV05661
+# 20CZ05528
+
+##13.10.2017
+#mv 20BH06185* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/13.10.2017/Lib_Prof_20BH06185
+
+##18.10.2017
+#mv 31020* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/18.10.2017/Lib_Prof_31020
+
+##25.10.2017
+#mv 20PH06182* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/25.10.2017/Lib_Prof_20PH06182
+
+##26.10.2017
+#mv 20YT05529* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.10.2017/Lib_Prof_20YT05529
+
+##27.10.2017 NW_batch1_HCM_results_Debugging_Help
+#MYBPC3
+#mv 20YO06470* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/Lib_Prof_20YO06470
+#mv 20KL06474* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/Lib_Prof_20KL06474
+#MYH7
+#mv 20FE05656* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/Lib_Prof_20FE05656
+#mv 20MI06464* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/Lib_Prof_20MI06464
+#mv 20KJ06477* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/Lib_Prof_20KJ06477
+#mv 20PD06197* /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/Lib_Prof_20PD06197
+
+#mv 20PD06197 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20SX05888 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20VJ05894 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20JX05532 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20KG05662 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20TM05664 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20ZF06194 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20LA06188 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20PB05666 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20DT06451_2305 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+#mv 20DT06451_2707 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017
+
+##29.10.2017 NW_batch1_DCM_results_Debugging_Help
+#mv 20BE05534 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20CQ05671 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20DO06153 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20EW05683 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20FC05766 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20GT06066 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20HH05685 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20LY05540 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20NK05539 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20NL05686 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20QD05533 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20RD05674 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20SL05541 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20VQ06152 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20WA06459 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20YR06154 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+#mv 20ZK06463 /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017
+###############################################################################
+clear
+###############################################################################
 ##These parameters will modify by Master script
+#RunDate=04.10.2017
+#RunDate=08.10.2017
+#RunDate=11.10.2017
+#RunDate=12.10.2017
+#RunDate=13.10.2017
+#RunDate=18.10.2017
+#RunDate=25.10.2017
+#RunDate=26.10.2017
+#RunDate=27.10.2017
+#RunDate=29.10.2017
+#RunDate=18.11.2017_EHVOL_HCM_NoRachel
+#RunDate=20.11.2017_Prof201117
+#RunDate=22.11.2017_EHVOL_DCM_NoRachel
+#RunDate=3.12.2017_20BH06185_Skeleton11_VCF
+#RunDate=3.12.2017_20BH06185_Skeleton11_VCF_REDO
+#RunDate=10.1.2018_AyaSaifRosa_Skeleton11_VCF
+#RunDate=17.2.2018_Aya_Pending_HOCM
+#RunDate=18.4.2018_Mona_PhD_Samples
+#RunDate=12.9.2018-MA-Aswan-Requests
+#RunDate=EVOL_1
+#RunDate=180911_M02614_0041_000000000-BNMP6
+#RunDate=180913_M02614_0042_000000000-BNMBB
+#RunDate=Run41-24062018
+#RunDate=170228_Run21_MA
+#RunDate=Risha_test_2023
+#RunDate=190403_NB551088_0022_AHCMTCAFXY
+#RunDate=170725_M02614_0020_000000000-AY8GA
+#RunDate=190214_NB551088_0018_AHY7CYAFXX
+#RunDate=180620_NB551088_0003_AHVTCJBGX3
+#RunDate=180628_NB551088_0004_AHTTMJAFXX
+#RunDate=180624_M02614_0039_000000000-BNCK5
+#RunDate=180816_NB551088_0008_AHTN3JAFXX
+#RunDate=181015_NB551088_0013_AHY7LFAFXX
+#RunDate=161005_M02614_0008_000000000-AU373
+#RunDate=180620_NB551088_0003_AHVTCJBGX3
+#RunDate=181015_NB551088_0013_AHY7LFAFXX
+#RunDate=190317_NB551088_0020_AHCLWWAFXY
+#RunDate=190403_NB551088_0022_AHCMTCAFXY
+#RunDate='170819_M02614 0025 000000000-AVE73' not working replace spaces with unerscores
+#RunDate=170819_M02614_0025_000000000-AVE73
+#RunDate=180620_NB551088_0003_AHVTCJBGX3
 RunDate=181015_NB551088_0013_AHY7LFAFXX_PandaQC_20AE07731_3
+#RunDate=181015_NB551088_0013_AHY7LFAFXX_PandaQC_20JZ07480
+#RunDate=181015_NB551088_0013_AHY7LFAFXX_PandaQC
 
 
 
@@ -42,6 +162,25 @@ echo -e " RunID : $RunDate "
 echo -e " PoolName : $PoolName "
 echo -e " Platform : $Platform "
 ###############################################################################
+# #I don't think we mkdir, we specify the path of the fastqs in the BaseSpaceR script:
+# #[decypher@sarah:~/Imperial_bioinformatics_pipeline/data/results/Illumina/Reads/19.7.2017/Lib]$ 
+# #getFiles(aAuth, id= Id(f), destDir = '$TopDir/Reads/$RunDate/Lib/', verbose = TRUE)
+
+# #In this trial I used mkdir
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Illumina/
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Illumina/Reads/
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Illumina/Reads/$RunDate/ (where Lib_1 and script are stored)
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Illumina/Reads/$RunDate/Lib_1 (where fastqs are stored)
+
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research
+
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research/TargetFiles/ (where TargetFile, CDSFile, CanonTranFile are stored)
+
+# #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp --> for bwa version, and temporary files of java
 
 TopDir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/$Platform
 StoreDir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research
@@ -171,11 +310,18 @@ MyOutDir=$TopDir/$RunDate/$PoolName/$outdir
 # #Testing
 echo -e "MyOutDir: $MyOutDir"
 ###############################################################################
+# # #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/reference/
+# # #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/reference/human/
+# # #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/reference/human/UCSC_hg19
+# # #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/reference/human/dbSNP
+# # #mkdir /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/reference/human/dbSNP/dbSNP137
 
 #The dict and fai files are also available in the same folder.
 #Therefore, I'll keep the code that creates them commented.
 Ref=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/UCSChg19/allchrom.Chr1ToChrM.validated.fa
 dbSNP=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/dbSNP138/hg19_dbSNP138.vcf
+
+
 
 omni=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_omni2.5.hg19.vcf
 TenK=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_phase1.snps.high_confidence.hg19.vcf
@@ -183,13 +329,67 @@ hapmap=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GA
 mills=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/Mills_and_1000G_gold_standard.indels.hg19.vcf
 TenKIndel=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_phase1.indels.hg19.vcf
 
-
+GATKs=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/GenomeAnalysisTK
+bwa=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/bwa-0.7.10/bwa
+picard=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/hassan/picard-tools-1.117/
+fastqc=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/FastQC/
+samtools=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/samtools-0.2.0-rc12/samtools
+Java7=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/Java7/jdk1.7.0_40/bin/java
 snpeff=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/snpEff/
+bedtools=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/BEDTools-Version-2.11.2/bin/
 group=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/filo2/bin/
+prinseq=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/prinseq-lite-0.20.4/
 VEP=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/ensembl-tools-release-83/scripts/variant_effect_predictor/
 LOFTEE=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/loftee-master/src
+
+# ##TESTING
+# echo -e "Ref: $Ref"
+# echo -e "dbSNP: $dbSNP"
+# echo -e "omni: $omni"
+# echo -e "TenK: $TenK"
+# echo -e "hapmap: $hapmap"
+# echo -e "mills: $mills"
+# echo -e "TenKIndel: $TenkKIndel"
+# echo -e "GATKs: $GATKs"
+# echo -e "bwa: $bwa"
+# echo -e "picard: $picard"
+# echo -e "fastqc: $fastqc"
+# echo -e "samtools: $samtools"
+# echo -e "Java7: $Java7"
+# echo -e "snpeff: $snpeff"
+# echo -e "bedtools: $bedtools"
+# echo -e "group: $group"
+# echo -e "prinseq: $prinseq"
+# echo -e "VEP: $VEP"
+# echo -e "LOFTEE: $LOFTEE"
 			  
 PATH=$PATH ; export PATH
+###############################################################################
+# # The GATK uses two files to access and safety check access to the reference files:
+# # 1) a .dict dictionary of the contig names and sizes
+# # 2) a .fai fasta index file to allow efficient random access to the reference bases.
+# # You have to generate these files in order to be able to use a Fasta file as reference.
+
+# #Creating the fasta sequence dictionary file
+# echo -e "Creating the fasta sequence dictionary file started"
+# #$Java7 $memory -jar -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp $picard/CreateSequenceDictionary.jar R=$Ref O=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/reference/human/UCSC_hg19/hg19_Galaxy.dict 
+# echo -e "Creating the fasta sequence dictionary file ended"
+
+# #Creating the fasta index file
+# echo -e "Creating the fasta index file started"
+# #$samtools faidx $Ref
+# echo -e "Creating the fasta index file ended"
+# # ###############################################################################
+# # #To use BWA, you need to first index the genome with `bwa index': bwa index ref.fa
+# # echo -e "bwa index started"
+# # $bwa index $Ref
+# # echo -e "bwa index ended"
+# # # ###############################################################################
+# # #These variables should modify based on runs
+
+# # #Play with this later
+# # #Trial 2: Use the following command when the script is located in: ~/Imperial_bioinformatics_pipeline/Trial3/
+# # #for Lib in $runDir/*/
 
 # #Trial 1: Use the following command when the script is located in: ~/Imperial_bioinformatics_pipeline/data/results/Platform/Reads/Rundate
 for Lib in */
@@ -230,17 +430,8 @@ echo "Lib: $Lib"
 		echo "ERROR : Read2 [$runDir/$Lib/$Read2] does not exist !"
 	exit 1
 	fi
-
-
-
-
-
-
-###########################################################################
-###########################################################################
+###############################################################################
 ## FastQC 
-###########################################################################
-###########################################################################
 	 echo -e "FastQC started"
 	$fastqc/fastqc $runDir/$Lib/$Read1
 	$fastqc/fastqc $runDir/$Lib/$Read2
@@ -282,18 +473,6 @@ echo "Lib: $Lib"
 	echo -e "LaneID: $LaneID"
 	echo -e "Get Sample ID ended"
 ##############################################################################	
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-# Trim low qual bases < 20 from both ends using Prinseq
-###########################################################################
-###########################################################################
-
 ## Trim low qual bases < 20 from both ends using #http://prinseq.sourceforge.net/manual.html
 	echo -e "Trimming started"
 	perl $prinseq/prinseq-lite.pl \
@@ -307,7 +486,7 @@ echo "Lib: $Lib"
 	
 	Step_Check $? $runDir/$Lib/"$SampleID"_"$Lane"_trimqual_prinseq_good_Read_1.fastq 100 	#min 100K [750 reads]
 	echo -e "Trimming Step Check ended"
-
+##############################################################################
 # ## Get read name after trimmed
 	# echo -e "Get read name after trimmed started"
 	Read1a=`ls $runDir/$Lib | grep _"$Lane"_ | grep Read_1 | grep -v fastqc | awk 'NR==1'`
@@ -315,32 +494,25 @@ echo "Lib: $Lib"
 	echo -e "Read1a: $Read1a"
 	echo -e "Read1b: $Read1b"
 	echo -e "Get read name after trimmed ended"
-
-
-
-
-###########################################################################
-###########################################################################
+##############################################################################
 # FastQC after trimmed
-###########################################################################
-###########################################################################
 	echo -e "FastQC after trimmed started"
 	$fastqc/fastqc $runDir/$Lib/$Read1a
 	$fastqc/fastqc $runDir/$Lib/$Read1b
 	echo -e "FastQC after trimmed ended"
-
+##############################################################################
 ## Zip trimmed read
 	echo -e "Zip trimmed read started"
 	gzip $runDir/$Lib/$Read1a
 	gzip $runDir/$Lib/$Read1b
 	echo -e "Zip trimmed read ended"
-
+#############################################################################
 # Zip orginal read
 	echo -e "Zip orginal read started"
 	gzip $runDir/$Lib/$Read1aTRa
 	gzip $runDir/$Lib/$Read1bTRa
 	echo -e "Zip orginal read ended"
-
+##############################################################################
 # ##Get Read name after trim&zip
 	# echo -e "Get Read name after trim&zip started"
 	Read1=`ls $runDir/$Lib | grep _"$Lane"_ | grep Read_1 | grep -v fastqc | awk 'NR==1'`
@@ -348,28 +520,20 @@ echo "Lib: $Lib"
 	echo -e "Read1: $Read1"
 	echo -e "Read2: $Read2"
 	echo -e "Get Read name after trim&zip ended"
-
+###############################################################################
 	echo -e "Lane : $LaneID"
 	echo -e "Read1 : $runDir/$Lib/$Read1"
 	echo -e "Read2 : $runDir/$Lib/$Read2"
-
+#############################################################################
 ## Create directory for sample
 	mkdir $MyOutDir/"$SampleID"
-
-
-
-
-
-###########################################################################
-###########################################################################
-## BWA alignment
-###########################################################################
-###########################################################################
+############################################################################
 ## Get BWA version
 	$bwa 2> /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/bwa.txt
 	bwaver=`cat /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/bwa.txt | grep Version | awk '{print $2}'`
 	echo -e "bwaver : $bwaver"
-
+############################################################################	
+## BWA alignment
 	## -M	 Mark shorter split hits as secondary (for Picard compatibility). -t number of threads
 	echo -e "BWA mapping started"
 	
@@ -399,18 +563,8 @@ echo "Lib: $Lib"
 	date
 
 	echo -e "BWA run completed"
-
-
-
-
-
-
-###########################################################################
 ###########################################################################	
-## Add Read Groups
-###########################################################################
-###########################################################################
-
+## Add RG tag
 	echo -e "Add RG tag started"
 	$Java7 $memory -jar -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp $picard/AddOrReplaceReadGroups.jar \
 	INPUT=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam \
@@ -436,23 +590,11 @@ echo "Lib: $Lib"
 	$samtools index $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam
 	Step_Check $? $MyOutDir/$SampleID/$SampleID."$Lane".bam.bai 100
 	echo -e "Step check samtools index started"
-###########################################################################
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Mark duplicates
-###########################################################################
-###########################################################################
+#############################################################################
+# #Mark duplicates...IndelRealign......TabelRecalibration
+# #Mark duplicates
 	echo -e "mark duplicates started"
-	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp \
-	$memory -jar \
-	$picard/MarkDuplicates.jar \
+	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp $memory -jar $picard/MarkDuplicates.jar \
 	INPUT=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam \
 	OUTPUT=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.bam \
 	METRICS_FILE=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.bam.metrics.txt \
@@ -470,13 +612,6 @@ echo "Lib: $Lib"
 	markDup_bam_file=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.bam
 	echo -e "markDup_bam_file: $markDup_bam_file"
 	echo -e "markDup_bam_file assignment ended"
-
-
-
-
-
-
-	
 #############################################################################	
 # ## Get GATK version
 	echo -e "GATK version started"
@@ -497,20 +632,6 @@ echo "Lib: $Lib"
 	 echo -e "MyOutDir_default: $MyOutDir_default"
 	 echo -e "GATKs_default: $GATKs_default"
 ##############################################################################
-
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Target stuff
-###########################################################################
-###########################################################################
-
 # Create directory by SampleName/Target/ and SampleName/Exon
 	
 	Target=Target
@@ -550,17 +671,8 @@ echo "Lib: $Lib"
 
 	 mkdir $MyOutDir/"$SampleID"/"$CanonTran30x"
 	 mkdir $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran30x"
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Creating Intervals (Depricated)
-###########################################################################
-###########################################################################
+#############################################################################
+# ##Creating Intervals 
 		 echo -e "Creating Intervals started"
 		$Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 		-T RealignerTargetCreator \
@@ -574,18 +686,7 @@ echo "Lib: $Lib"
 			
 		Step_Check $? $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.bam.intervals 10
 		echo -e "Step_Check Creating Intervals ended"
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Indel Realigning (Depricated)
-###########################################################################
-###########################################################################
-
+#############################################################################
 	# ##Indel Realigning -model USE_READS	
 	## If GATK_2_3, use -rf NotPrimaryAlignment [Ignore all non-primary alignments]
 		
@@ -603,26 +704,13 @@ echo "Lib: $Lib"
 		Step_Check $? $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.Realigned.bam 50
 		echo -e "Step_Check Indel Realigning ended"
 
-	echo -e "\nDone Indel Realigning ($GATK_version) : $Lib"
 
+	echo -e "\nDone Indel Realigning ($GATK_version) : $Lib"
+#############################################################################
 	echo -e "samtools index started"
 	$samtools index $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.Realigned.bam
 	echo -e "samtools index ended"
-
-
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## BaseRecalibrator
-###########################################################################
-###########################################################################
-
+##############################################################################
 ##CountCovariates changed to BaseRecalibrator in v2  (For 454  include  -cov HomopolymerCovariate; For SOLiD -cov PrimerRoundCovariate )
 	
 	echo -e "BaseRecalibrator started"
@@ -645,12 +733,8 @@ echo "Lib: $Lib"
 	echo -e "Step_Check BaseRecalibrator ended"
 
 	echo -e "\nDone : CountCovariates ($GATK_version) : $Lib"
-
-
-
-###########################################################################
-###########################################################################
-## PrintReads (changed to ApplyBQSR???)
+##############################################################################
+# ##TableRecalibration changed to PrintReads in v2 # removed $TargetFile
 	
 	echo -e "TableRecalibration started"
 	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ $memory -jar $GATKs/GenomeAnalysisTK.jar \
@@ -670,41 +754,7 @@ echo "Lib: $Lib"
 	echo -e "Cp ended"
 # # ###############################################################################	
 	done
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Merging BAM files by Lanes
-###########################################################################
-###########################################################################
-
+# # ###############################################################################	
 	## Merging BAM files by Lanes
 	NumLanes=`ls $runDir/$Lib | grep fastq | grep -v prinseq | grep -v fastqc  | awk 'BEGIN {FS="_";} {print $3}' |sort -u |wc -l | awk 'NR==1'| awk '{print $1}'`
 	echo -e "\n Number of Lanes = $NumLanes"
@@ -728,22 +778,67 @@ echo "Lib: $Lib"
 		VALIDATION_STRINGENCY=SILENT
 		
 		mv $MyOutDir/"$SampleID"/"$SampleID".bai $MyOutDir/"$SampleID"/"$SampleID".bam.bai
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Mark duplicates for merged BAM
-###########################################################################
-###########################################################################
+		
+		
+	elif [ $NumLanes -eq 3 ]
+	then
+		echo -e "Number of lanes = $NumLanes"
+		Lane1=`ls $MyOutDir/"$SampleID"/ | grep 'markDup.Realigned.recalibrated.bam$' | awk 'NR==1'`
+		Lane2=`ls $MyOutDir/"$SampleID"/ | grep 'markDup.Realigned.recalibrated.bam$' | awk 'NR==2'`
+		Lane3=`ls $MyOutDir/"$SampleID"/ | grep 'markDup.Realigned.recalibrated.bam$' | awk 'NR==3'`
+				
+	### Merge BAM files
+	$Java7 $memory -jar -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ $picard/MergeSamFiles.jar \
+		INPUT=$MyOutDir/"$SampleID"/$Lane1 \
+		INPUT=$MyOutDir/"$SampleID"/$Lane2 \
+		INPUT=$MyOutDir/"$SampleID"/$Lane3 \
+		OUTPUT=$MyOutDir/"$SampleID"/"$SampleID".bam \
+		CREATE_INDEX=TRUE \
+		VALIDATION_STRINGENCY=SILENT
+		
+		mv $MyOutDir/"$SampleID"/"$SampleID".bai $MyOutDir/"$SampleID"/"$SampleID".bam.bai
+		
+		
+		
+	elif [ $NumLanes -eq 2 ]	
+	then
+		echo -e "Number of lanes = $NumLanes"
+		Lane1=`ls $MyOutDir/"$SampleID"/ | grep 'markDup.Realigned.recalibrated.bam$' | awk 'NR==1'`
+		Lane2=`ls $MyOutDir/"$SampleID"/ | grep 'markDup.Realigned.recalibrated.bam$' | awk 'NR==2'`
+					
+	### Merge BAM files
+	$Java7 $memory -jar -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ $picard/MergeSamFiles.jar \
+		INPUT=$MyOutDir/"$SampleID"/$Lane1 \
+		INPUT=$MyOutDir/"$SampleID"/$Lane2 \
+		OUTPUT=$MyOutDir/"$SampleID"/"$SampleID".bam \
+		CREATE_INDEX=TRUE \
+		VALIDATION_STRINGENCY=SILENT
+		
+		mv $MyOutDir/"$SampleID"/"$SampleID".bai $MyOutDir/"$SampleID"/"$SampleID".bam.bai
+		
+		
+		
+	elif [ $NumLanes -eq 1 ]	
+	then
+		echo -e "In if: Number of lanes = $NumLanes"
+		Lane1=`ls $MyOutDir/"$SampleID"/ | grep 'markDup.Realigned.recalibrated.bam$' | awk 'NR==1'`
+		echo -e "Lane1: $Lane1"
+		### moving Lane1 markDup.Realigned.recalibrated.bam file into sample.bam
+		mv $MyOutDir/"$SampleID"/$Lane1 $MyOutDir/"$SampleID"/"$SampleID".bam 
+		
+		mv $MyOutDir/"$SampleID"/$Lane1.bai $MyOutDir/"$SampleID"/"$SampleID".bam.bai
+		
+	else
+		echo -e "No 'markDup.Realigned.recalibrated.bam' found"
+		echo -e "!!! Exiting ... `date`\n!!!\n"
+		exit 1
+		
+		fi
+##############################################################################
+##Mark duplicates...IndelRealign..........
+##Mark duplicates
 	echo -e "Mark duplicates on merged started"
-	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ \
-	$memory -jar \
-	$picard/MarkDuplicates.jar \
+	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ $memory -jar $picard/MarkDuplicates.jar \
 	INPUT=$MyOutDir/"$SampleID"/"$SampleID".bam \
 	OUTPUT=$MyOutDir/"$SampleID"/"$SampleID".markDup.bam \
 	METRICS_FILE=$MyOutDir/"$SampleID"/"$SampleID".markDup.bam.metrics.txt \
@@ -761,23 +856,10 @@ echo "Lib: $Lib"
 	markDup_bam_file=$MyOutDir/"$SampleID"/"$SampleID".markDup.bam
 	echo -e "markDup_bam_file : $markDup_bam_file"
 	echo -e "markDup_bam_file assignment on merged ended"
-	
+##############################################################################	
 echo -e "\nStarting Analysis for $GATK_version : $Lib"
-
-
-
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Creating Intervals on merged BAM (Depricated)
-###########################################################################
-###########################################################################
+###############################################################################
+# ##Creating Intervals 
 	echo -e "Creating Intervals on merged started"
 	$Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 		-T RealignerTargetCreator \
@@ -791,12 +873,8 @@ echo -e "\nStarting Analysis for $GATK_version : $Lib"
 	
 	Step_Check $? $MyOutDir/"$SampleID"/"$SampleID".markDup.bam.intervals 10
 	echo -e "Step_Check Creating Intervals on merged ended"
-###########################################################################
-###########################################################################
-## Indel Realigning on merged BAM (Depricated)
-###########################################################################
-###########################################################################
-##Indel Realigning  -model USE_READS
+############################################################################
+# ##Indel Realigning  -model USE_READS
 	echo -e "Indel Realigning on merged started"	
 	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ $memory -jar $GATKs/GenomeAnalysisTK.jar \
 		-I $MyOutDir/"$SampleID"/"$SampleID".markDup.bam \
@@ -815,22 +893,7 @@ echo -e "\nStarting Analysis for $GATK_version : $Lib"
 	 echo -e "samtools index on merged started"
 	 $samtools index $MyOutDir/"$SampleID"/"$SampleID".markDup.Realigned.recalibrated.bam
 	 echo -e "samtools index on merged ended"
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Filter BAM file for MAP qual > 8 for OnTarget, OnProtCodingTarget, OnCanonTranFile
-###########################################################################
-###########################################################################
-
-TargetFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed
-CDSFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed
-CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed
-
+##############################################################################
 	# Define orgFile, OnTargetFile, OnProtCodingTargetFile, OnCanonTranFile
 	OrgFile="$SampleID".markDup.Realigned.recalibrated.bam
 	OnTargetFile="$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam
@@ -868,22 +931,8 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "samtools index OnCanonTranFile started"
 	$samtools index $MyOutDir/"$SampleID"/$CanonTran/"$OnCanonTranFile"
 	echo -e "samtools index OnCanonTranFile ended"
-
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Flagstat reports
-###########################################################################
-###########################################################################
-
-##Generating flagstat reports 
-##Take out chimeric reads to get exact number of reads in flagstat -F 0x100
-
+##############################################################################
+# ##Generating flagstat reports for ###Take out chimeric reads to get exact number of reads in flagstat -F 0x100
 	##Target File
 	echo -e "samtools view -F OnTargetFile started"
 	$samtools view -u -F 0x100 $MyOutDir/"$SampleID"/$Target/$OnTargetFile | $samtools flagstat - > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.flagstat
@@ -904,18 +953,6 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	$samtools view -u -F 0x100 $MyOutDir/"$SampleID"/$OrgFile | $samtools flagstat - > $MyOutDir/"$SampleID"/$OrgFile.flagstat
 	echo -e "samtools view -F OrgFile ended"
 	
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Coverage Stats and sort for OnProtCodingTarget
-###########################################################################
-###########################################################################
-
 	## On ProteinCoding Target
 	## CoverageStas [ duplicateReads were removed to calculate stats]
 	echo -e "CoverageStats OnProtCodingTargetFile started"
@@ -947,18 +984,7 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	mv $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoveragePerBase.sorted $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoveragePerBase
 	echo -e "mv ended"
 	echo -e "\nDone : Sorting of Protein coding OnTarget (Targets).CoveragePerBase completed ($GATK_version) : $Lib"
-
-
-
-
-
-
-###########################################################################
-###########################################################################
-## Callable Loci
-###########################################################################
-###########################################################################
-
+###############################################################################
 	## No of callable Bases by Exon --minDepth 10
 	echo -e "No of callable Bases by Exon --minDepth 10 started"
 	$Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
@@ -974,13 +1000,7 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 		-summary $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.summary
 	echo -e "No of callable Bases by Exon --minDepth 10 ended"	
 	echo -e " \n Done : CallableLoci  for ($GATK_version) : $Lib"
-
-
-###########################################################################
-###########################################################################
-## Depth of coverage
-###########################################################################
-###########################################################################
+###############################################################################
 ## Depth of coverage in $Target
 	echo -e "Depth of coverage in $Target started"
 	$Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
@@ -996,15 +1016,8 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 		--outputFormat table --summaryCoverageThreshold --omitDepthOutputAtEachBase
 	echo -e "Depth of coverage in $Target ended"
 	echo -e " \n Done : DepthOfCoverage for  : $Lib"
-
-
-
-###########################################################################
-###########################################################################
-## Mean coverage per Exon
-###########################################################################
-###########################################################################
-
+###############################################################################
+	# Getting mean coverage per Exon
 	echo -e "cat started"
 	cat $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.DepthOfCvg.txt.sample_interval_summary | sed 's/chr16:997401/chr16:997401-997401/' | awk 'BEGIN {FS=":"} {OFS="\t"} {print $1,$2}'| awk 'BEGIN {FS="-"} {OFS="\t"} {print $1,$2}' |  awk 'BEGIN {FS=" "} {OFS="\t"} {print $1,$2-1,$3,$4,$5,$9}' | sed '1d'| $bedtools/sortBed -i stdin > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp.depth1.bed
 	echo -e "cat ended"
@@ -1021,12 +1034,6 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed $SampleDir/"$Enrich_Report"/$SampleID/"$Exon"/
 	echo -e "ln ended"
-
-
-
-
-
-
 ###############################################################################	
 	## CollectAlignmentSummaryMetrics in OnTarget.bam
 	echo -e "CollectAlignmentSummaryMetrics in OnTarget.bam started"
@@ -1038,20 +1045,11 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 		VALIDATION_STRINGENCY=SILENT
 	echo -e "CollectAlignmentSummaryMetrics in OnTarget.bam ended"
 	echo -e " \n Done : CollectAlignmentSummaryMetrics for  ($GATK_version) : $Lib"
-
-
-
-
-
 ###############################################################################
 	## Generate Bases callable by target file
 	echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable | $bedtools/intersectBed -a $CDSFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget
 	echo -e "awk ended"
-
-
-
-
 # ##############################################################################
 	### Perl script to generate this format 
 	#Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
@@ -1062,10 +1060,6 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget
 	echo -e "mv ended"
-
-
-
-
 # ###############################################################################
 # # Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
 	echo -e "Generate  soft links in Enrich_Report folder started"
@@ -1863,7 +1857,54 @@ echo -e "Ts/Tv ratio for HaplotyeCaller SNP ended"
 echo -e "ln started" 
 ln -s $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.filtered.vcf.all.snp.TsTv.txt $SampleDir/"$Enrich_Report"/$SampleID/"$Target"/
 echo -e "ln ended" 
+###############################################################################
+# # VEP -  generate annotated VCFs  - UnifiedGenotyper.snp.vcf
+# ###############################################################################
+# # VEP - AHC Cluster Debugging
+# # RunDate=180911_M02614_0041_000000000-BNMP6
+# # PoolName=ICCNexteraV4_169
+# # Platform=MiSeq
+# # mode=Live
 
+# # nt=15
+# # dcovg=1000
+# # memory="-Xmx25g"
+# # Skip_size_Check=1
+
+# # TopDir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/$Platform
+# # StoreDir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research
+
+# # TargetFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed
+# # CDSFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed
+# # CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed
+
+# # SampleDir=$TopDir/$RunDate
+# # runDir=$TopDir/Reads/$RunDate
+# # outdir="gatk_snp_indel"
+# # MyOutDir=$TopDir/$RunDate/$PoolName/$outdir
+
+# # omni=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_omni2.5.hg19.vcf
+# # TenK=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_phase1.snps.high_confidence.hg19.vcf
+# # hapmap=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/hapmap_3.3.hg19.vcf
+# # mills=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/Mills_and_1000G_gold_standard.indels.hg19.vcf
+# # TenKIndel=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_phase1.indels.hg19.vcf
+# # GATKs=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/GenomeAnalysisTK
+# # bwa=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/bwa-0.7.10/bwa
+# # picard=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/hassan/picard-tools-1.117/
+# # fastqc=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/FastQC/
+# # samtools=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/samtools-0.2.0-rc12/samtools
+# # Java7=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/Java7/jdk1.7.0_40/bin/java
+# # snpeff=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/snpEff/
+# # bedtools=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/BEDTools-Version-2.11.2/bin/
+# # group=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/filo2/bin/
+# # prinseq=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/prinseq-lite-0.20.4/
+# # VEP=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/ensembl-tools-release-83/scripts/variant_effect_predictor/
+# # LOFTEE=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/loftee-master/src
+# # PATH=$PATH ; export PATH
+# ###############################################################################
+
+###############################################################################
+# # VEP -  generate annotated VCFs  - UnifiedGenotyper.snp.vcf
 # ##############################################################################
 
     mkdir $MyOutDir/"$SampleID"/$Target/"VEP"
@@ -1954,3 +1995,12 @@ date
 date 
 date
 # # ################################################################################
+
+# The chmod 550 at the end in line 1877 doesn't let me erase fastqc
+# either remove this line of code
+# or chmod 777 -R /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/18.11.2017_EHVOL_HCM_NoRachel/20XP06102/*
+# or chmod 777 -R /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/18.11.2017_EHVOL_HCM_NoRachel/*	
+# chmod 777 -R /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/29.10.2017/*
+# chmod 777 -R /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/27.10.2017/*
+# chmod 777 -R /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/20.11.2017_Prof201117/*
+# chmod 777 -R /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/Prof_MiSeq/Reads/26.10.2017/*

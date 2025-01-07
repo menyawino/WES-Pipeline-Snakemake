@@ -48,12 +48,13 @@ configfile: "workflow/config.yml"
 ####### Include rules ######
 ############################
 
-include: "rules/001_qc.smk"
-include: "rules/001_posttrim_qc.smk"
+# include: "rules/001_qc.smk"
+# include: "rules/001_posttrim_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_alignment.smk"
-include: "rules/004_bam_prep.smk"
-include: "rules/005_variant_calling.smk"
+# include: "rules/004_bam_prep.smk"
+# include: "rules/005_bam_qc.smk"
+# include: "rules/005_variant_calling.smk"
 
 # include: "rules/006_variant_filtering.smk"
 # include: "rules/007_annotation.smk"
@@ -64,7 +65,19 @@ include: "rules/005_variant_calling.smk"
 ############################
 rule all:
     input:
-        expand(rules.haplotypecaller.output.vcf, sample=sample_filename, lane=lane),
+        expand(rules.bwa_alignment.output.bam, sample=sample_filename, lane=lane),
+        # expand(rules.genotype_gvcfs.output.vcf, sample=sample_filename, lane=lane),
+        # expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
+        # expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),
+        # expand(rules.flagstat_prot_coding.output.flagstat_prot_coding, sample=sample_filename),
+        # expand(rules.flagstat_canon_tran.output.flagstat_canon_tran, sample=sample_filename),
+        # expand(rules.coverage_stats.output.coverage_stats, sample=sample_filename),
+        # expand(rules.coverage_stats_per_base.output.coverage_stats_per_base, sample=sample_filename),
+        # expand(rules.coverage_hist.output.coverage_hist, sample=sample_filename),
+        # expand(rules.callable_bases_exon.output.callable_bases, sample=sample_filename),
+        # expand(rules.depth_of_coverage.output.depth_of_coverage, sample=sample_filename),
+        # expand(rules.mean_coverage_per_exon.output.mean_coverage, sample=sample_filename),
+        # expand(rules.collect_alignment_summary_metrics.output.alignment_summary_metrics, sample=sample_filename)
 
 # delete samples_data.csv with python
 # os.remove("sample_data.csv")

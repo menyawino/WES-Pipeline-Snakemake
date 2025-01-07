@@ -26,7 +26,6 @@ rule raw_fastqc:
         # Create the output directory
         mkdir -p "$parent_path"
 
-        # Run FastQC
         fastqc {input} \
         -t {threads} \
         -o "$parent_path" \

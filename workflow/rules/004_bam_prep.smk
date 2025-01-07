@@ -36,7 +36,6 @@ rule add_read_groups:
         > {log} 2>&1
         """
 
-
 rule mark_duplicates:
     message:
         "Marking duplicates in BAM for sample {wildcards.sample}"
@@ -47,6 +46,8 @@ rule mark_duplicates:
         metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
         "icc_gatk"
+    params:
+        validation_stringency=config["gatk"]["MarkDuplicates"]["validation_stringency"]
     threads:
         config["threads"]
     log:
@@ -59,6 +60,7 @@ rule mark_duplicates:
         -I {input.rg_bam} \
         -O {output.markdup_bam} \
         -M {output.metrics} \
+        -VS {params.validation_stringency} \
         --spark-master local[{threads}] \
         > {log} 2>&1
         """
@@ -96,7 +98,12 @@ rule base_recalibrator:
         config["threads"]
     params:
         ref=config["reference_genome"],
-        known_sites=config["gatk"]["BaseRecalibrator"]["known_sites"]
+        dbsnp=config["dbsnp"],
+        omni=config["omni"],
+        tenk=config["tenk"],
+        hapmap=config["hapmap"],
+        mills=config["mills"],
+        tenk_indel=config["tenk_indel"]
     log:
         config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_base_recalibrator.log"
     benchmark:
@@ -107,7 +114,9 @@ rule base_recalibrator:
         -I {input.bam} \
         -R {params.ref} \
         -O {output.recal_table} \
-        --known-sites {params.known_sites} \
+        --known-sites {params.dbsnp} \
+        --known-sites {params.mills} \
+        --known-sites {params.tenk_indel} \
         --spark-master local[{threads}] \
         > {log} 2>&1
         """
@@ -139,4 +148,85 @@ rule apply_bqsr:
         -O {output.bqsr_bam} \
         --spark-master local[{threads}] \
         > {log} 2>&1
+        """
+
+rule filter_bam_target:
+    message:
+        "Filtering BAM for target regions for sample {wildcards.sample}"
+    input:
+        bam=rules.apply_bqsr.output.bqsr_bam
+    output:
+        bam_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads"]
+    params:
+        TargetFile=config["icc_panel"]
+    log:
+        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_target.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_target.txt"
+    shell:
+        """
+        samtools view -@ {threads} -uq 8 {input.bam} | \
+        bedtools intersect -abam stdin \
+        -b {params.TargetFile} -u > \
+        {output.bam_target}
+
+        samtools index -@ {threads} {output.bam_target}
+        """
+
+rule filter_bam_prot_coding:
+    message:
+        "Filtering BAM for protein coding regions for sample {wildcards.sample}"
+    input:
+        bam=rules.apply_bqsr.output.bqsr_bam
+    output:
+        bam_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads"]
+    params:
+        CDSFile=config["cds_panel"]
+    log:
+        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.txt"
+    shell:
+        """
+        samtools view -@ {threads} -uq 8 {input.bam} | \
+        bedtools intersect -abam stdin \
+        -b {params.CDSFile} -u > \
+        {output.bam_prot_coding}
+
+        samtools index -@ {threads} {output.bam_prot_coding}
+        """
+
+rule filter_bam_canon_tran:
+    message:
+        "Filtering BAM for canonical transcript regions for sample {wildcards.sample}"
+    input:
+        bam=rules.apply_bqsr.output.bqsr_bam
+    output:
+        bam_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads"]
+    params:
+        CanonTranFile=config["canontran_panel"]
+    log:
+        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.txt"
+    shell:
+        """
+        samtools view -@ {threads} -uq 8 {input.bam} | \
+        bedtools intersect -abam stdin \
+        -b {params.CanonTranFile} -u > \
+        {output.bam_canon_tran}
+
+        samtools index -@ {threads} {output.bam_canon_tran}
         """

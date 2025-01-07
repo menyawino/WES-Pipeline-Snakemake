@@ -31,6 +31,7 @@ rule posttrim_fastqc:
         -o "$parent_path" \
         &> {log}
 
+        # Move the FastQC outputs to the desired location
         mv {params.path}_{wildcards.lane}_{wildcards.R}_fastqc.zip {output.zip}
         mv {params.path}_{wildcards.lane}_{wildcards.R}_fastqc.html {output.html}
         """
