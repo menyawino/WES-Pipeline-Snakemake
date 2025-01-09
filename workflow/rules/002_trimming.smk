@@ -13,8 +13,6 @@ rule trimming:
         fq1s=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1_singletons.fastq",
         fq2=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq",
         fq2s=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2_singletons.fastq"
-    threads:
-        config["threads"]
     params:
         path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}"
     log:

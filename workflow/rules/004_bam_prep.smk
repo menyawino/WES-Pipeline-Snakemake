@@ -2,7 +2,7 @@ rule add_read_groups:
     message:
         "Adding read groups to BAM for sample {wildcards.sample}"
     input:
-        sorted_bam=rules.merge_bams.output.merged_bam
+        bam=rules.merge_bams.output.merged_bam
     output:
         rg_bam=config["outdir"] + "/analysis/003_alignment/03_read_grouped/{sample}.rg.bam"
     conda:
@@ -23,7 +23,7 @@ rule add_read_groups:
     shell:
         """
         gatk AddOrReplaceReadGroups \
-        I={input.sorted_bam} \
+        I={input.bam} \
         O={output.rg_bam} \
         RGID={params.rgid} \
         RGLB={params.rglb} \
@@ -49,7 +49,7 @@ rule mark_duplicates:
     params:
         validation_stringency=config["gatk"]["MarkDuplicates"]["validation_stringency"]
     threads:
-        config["threads"]
+        config["threads_high"]
     log:
         config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_markdup.log"
     benchmark:
@@ -65,26 +65,6 @@ rule mark_duplicates:
         > {log} 2>&1
         """
 
-rule index_markdup_bam:
-    message:
-        "Indexing markdup BAM for sample {wildcards.sample}"
-    input:
-        markdup_bam=rules.mark_duplicates.output.markdup_bam
-    output:
-        indexed_markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai"
-    conda:
-        "icc_gatk"
-    log:
-        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_index_markdup.log"
-    benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_index_markdup.txt"
-    shell:
-        """
-        samtools index \
-        {input.markdup_bam} \
-        > {log} 2>&1
-        """
-
 rule base_recalibrator:
     message:
         "Running BaseRecalibrator for sample {wildcards.sample}"
@@ -95,7 +75,7 @@ rule base_recalibrator:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_high"]
     params:
         ref=config["reference_genome"],
         dbsnp=config["dbsnp"],
@@ -132,7 +112,7 @@ rule apply_bqsr:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_high"]
     params:
         ref=config["reference_genome"]
     log:
@@ -160,7 +140,7 @@ rule filter_bam_target:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_high"]
     params:
         TargetFile=config["icc_panel"]
     log:
@@ -169,12 +149,12 @@ rule filter_bam_target:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_target.txt"
     shell:
         """
-        samtools view -@ {threads} -uq 8 {input.bam} | \
-        bedtools intersect -abam stdin \
-        -b {params.TargetFile} -u > \
-        {output.bam_target}
-
-        samtools index -@ {threads} {output.bam_target}
+        sambamba view \
+        -t {threads} \
+        -L {params.TargetFile} \
+        -f bam -F "mapping_quality > 8" \
+        {input.bam} \
+        -o {output.bam_target}
         """
 
 rule filter_bam_prot_coding:
@@ -187,7 +167,7 @@ rule filter_bam_prot_coding:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_high"]
     params:
         CDSFile=config["cds_panel"]
     log:
@@ -196,12 +176,12 @@ rule filter_bam_prot_coding:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.txt"
     shell:
         """
-        samtools view -@ {threads} -uq 8 {input.bam} | \
-        bedtools intersect -abam stdin \
-        -b {params.CDSFile} -u > \
-        {output.bam_prot_coding}
-
-        samtools index -@ {threads} {output.bam_prot_coding}
+        sambamba view \
+        -t {threads} \
+        -L {params.CDSFile} \
+        -f bam -F "mapping_quality > 8" \
+        {input.bam} \
+        -o {output.bam_prot_coding}
         """
 
 rule filter_bam_canon_tran:
@@ -214,7 +194,7 @@ rule filter_bam_canon_tran:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_high"]
     params:
         CanonTranFile=config["canontran_panel"]
     log:
@@ -223,10 +203,10 @@ rule filter_bam_canon_tran:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.txt"
     shell:
         """
-        samtools view -@ {threads} -uq 8 {input.bam} | \
-        bedtools intersect -abam stdin \
-        -b {params.CanonTranFile} -u > \
-        {output.bam_canon_tran}
-
-        samtools index -@ {threads} {output.bam_canon_tran}
+        sambamba view \
+        -t {threads} \
+        -L {params.CanonTranFile} \
+        -f bam -F "mapping_quality > 8" \
+        {input.bam} \
+        -o {output.bam_canon_tran}
         """

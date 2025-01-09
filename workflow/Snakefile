@@ -52,10 +52,9 @@ configfile: "workflow/config.yml"
 # include: "rules/001_posttrim_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_alignment.smk"
-# include: "rules/004_bam_prep.smk"
+include: "rules/004_bam_prep.smk"
 # include: "rules/005_bam_qc.smk"
 # include: "rules/005_variant_calling.smk"
-
 # include: "rules/006_variant_filtering.smk"
 # include: "rules/007_annotation.smk"
 # include: "rules/008_summary.smk"
@@ -65,7 +64,7 @@ include: "rules/003_alignment.smk"
 ############################
 rule all:
     input:
-        expand(rules.bwa_alignment.output.bam, sample=sample_filename, lane=lane),
+        expand(rules.merge_bams.output.merged_bam, sample=sample_filename, lane=lane),
         # expand(rules.genotype_gvcfs.output.vcf, sample=sample_filename, lane=lane),
         # expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
         # expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),

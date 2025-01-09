@@ -15,9 +15,7 @@ rule flagstat_original:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_original.txt"
     shell:
         """
-        samtools stats -@ {threads} \
-        -uq 8 -F 0x100 {input.bam} \
-        > {output.flagstat_original}
+        sambamba view -t {threads} -F "not secondary_alignment" {input.bam} | sambamba flagstat /dev/stdin > {output.flagstat_original}
         """
 
 rule flagstat_target:
@@ -35,9 +33,7 @@ rule flagstat_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_target.txt"
     shell:
         """
-        samtools stats -@ {threads} \
-        -uq 8 -F 0x100 {input.bam_target} \
-        > {output.flagstat_target}
+        sambamba view -t {threads} -F "not secondary_alignment" {input.bam_target} | sambamba flagstat /dev/stdin > {output.flagstat_target}
         """
 
 rule flagstat_prot_coding:
@@ -55,9 +51,7 @@ rule flagstat_prot_coding:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_prot_coding.txt"
     shell:
         """
-        samtools stats -@ {threads} \
-        -uq 8 -F 0x100 {input.bam_prot_coding} \
-        > {output.flagstat_prot_coding}
+        sambamba view -t {threads} -F "not secondary_alignment" {input.bam_prot_coding} | sambamba flagstat /dev/stdin > {output.flagstat_prot_coding}
         """
 
 rule flagstat_canon_tran:
@@ -75,9 +69,7 @@ rule flagstat_canon_tran:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_canon_tran.txt"
     shell:
         """
-        samtools stats -@ {threads} \
-        -uq 8 -F 0x100 {input.bam_canon_tran} \
-        > {output.flagstat_canon_tran}
+        sambamba view -t {threads} -F "not secondary_alignment" {input.bam_canon_tran} | sambamba flagstat /dev/stdin > {output.flagstat_canon_tran}
         """
 
 
@@ -99,7 +91,7 @@ rule coverage_stats:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats.txt"
     shell:
         """
-        samtools view -uF 0x400 {input.bam_prot_coding} | \
+        sambamba view -t {threads} -F "not duplicate" {input.bam_prot_coding} | \
         bedtools coverage -abam stdin -b {params.CDSFile} | \
         sort -k 1,1 -k 2,2n > \
         {output.coverage_stats}
@@ -124,7 +116,7 @@ rule coverage_stats_per_base:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats_per_base.txt"
     shell:
         """
-        samtools view -uF 0x400 {input.bam_prot_coding} | \
+        sambamba view -t {threads} -F "not duplicate" {input.bam_prot_coding} | \
         bedtools coverage -abam stdin -b {params.CDSFile} -d | \
         sort -k 1,1 -k 2,2n -k 5,5n > \
         {output.coverage_stats_per_base}
@@ -147,7 +139,7 @@ rule coverage_hist:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_hist.txt"
     shell:
         """
-        samtools view -uF 0x400 {input.bam_prot_coding} | \
+        sambamba view -t {threads} -F "not duplicate" {input.bam_prot_coding} | \
         bedtools coverage -abam stdin -b {params.CDSFile} -hist > \
         {output.coverage_hist}
         """
@@ -279,4 +271,4 @@ rule collect_alignment_summary_metrics:
         ASSUME_SORTED=true \
         VALIDATION_STRINGENCY=SILENT \
         > {log} 2>&1
-        """
+        
