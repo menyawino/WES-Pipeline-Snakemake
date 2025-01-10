@@ -33,7 +33,7 @@ rule add_read_groups:
         RGCN={params.rgcn} \
         RGDS={params.rgds} \
         VALIDATION_STRINGENCY={params.validation_stringency} \
-        > {log} 2>&1
+        &> {log}
         """
 
 rule mark_duplicates:
@@ -62,7 +62,7 @@ rule mark_duplicates:
         -M {output.metrics} \
         -VS {params.validation_stringency} \
         --spark-master local[{threads}] \
-        > {log} 2>&1
+        &> {log}
         """
 
 rule base_recalibrator:
@@ -98,7 +98,7 @@ rule base_recalibrator:
         --known-sites {params.mills} \
         --known-sites {params.tenk_indel} \
         --spark-master local[{threads}] \
-        > {log} 2>&1
+        &> {log}
         """
 
 rule apply_bqsr:
@@ -127,7 +127,7 @@ rule apply_bqsr:
         --bqsr-recal-file {input.recal_table} \
         -O {output.bqsr_bam} \
         --spark-master local[{threads}] \
-        > {log} 2>&1
+        &> {log}
         """
 
 rule filter_bam_target:
@@ -154,7 +154,8 @@ rule filter_bam_target:
         -L {params.TargetFile} \
         -f bam -F "mapping_quality > 8" \
         {input.bam} \
-        -o {output.bam_target}
+        -o {output.bam_target} \
+        2> {log}
         """
 
 rule filter_bam_prot_coding:
@@ -181,7 +182,8 @@ rule filter_bam_prot_coding:
         -L {params.CDSFile} \
         -f bam -F "mapping_quality > 8" \
         {input.bam} \
-        -o {output.bam_prot_coding}
+        -o {output.bam_prot_coding} \
+        2> {log}
         """
 
 rule filter_bam_canon_tran:
@@ -208,5 +210,6 @@ rule filter_bam_canon_tran:
         -L {params.CanonTranFile} \
         -f bam -F "mapping_quality > 8" \
         {input.bam} \
-        -o {output.bam_canon_tran}
+        -o {output.bam_canon_tran} \
+        2> {log}
         """

@@ -64,7 +64,7 @@ include: "rules/004_bam_prep.smk"
 ############################
 rule all:
     input:
-        expand(rules.merge_bams.output.merged_bam, sample=sample_filename, lane=lane),
+        expand(rules.filter_bam_prot_coding.output.bam_prot_coding, sample=sample_filename),
         # expand(rules.genotype_gvcfs.output.vcf, sample=sample_filename, lane=lane),
         # expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
         # expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),
