@@ -6,8 +6,7 @@ rule haplotypecaller:
     input:
         bam=rules.apply_bqsr.output.bqsr_bam
     output:
-        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf",
-        bam=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.bam"
+        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf"
     conda:
         "icc_gatk"
     threads:
@@ -27,60 +26,27 @@ rule haplotypecaller:
         -R {params.ref} \
         -I {input.bam} \
         -O {output.gvcf} \
-        -A Coverage \
 	    -A AlleleBalance \
+        -A Coverage \
+        -A HaplotypeScore \
+        -A InbreedingCoeff \
+        -A HomopolymerRun \
+        -A HardyWeinberg \
+        -A GCContent \
 	    -G Standard \
         -ERC GVCF \
         --downsample_to_coverage {params.dcovg} \
         --intervals {params.target} \
         --dbsnp {params.dbsnp} \
         --spark-master local[{threads}] \
-        --bamOutput {output.bam} \
-        > {log} 2>&1
-        """
-
-rule annotate_variants:
-    message:
-        "Annotating variants for sample {wildcards.sample}"
-    input:
-        vcf=rules.haplotypecaller.output.gvcf
-    output:
-        annotated_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.annotated.vcf"
-    conda:
-        "gatk"
-    threads:
-        config["threads"]
-    params:
-        ref=config["reference_genome"],
-        dbsnp=config["dbsnp"],
-        target=config["icc_panel"]
-    log:
-        config["outdir"] + "/logs/005_variant_calling/{sample}_annotate_variants.log"
-    benchmark:
-        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_annotate_variants.txt"
-    shell:
-        """
-        gatk VariantAnnotator \
-        -R {params.ref} \
-        -V {input.vcf} \
-        -O {output.annotated_vcf} \
-        -A Coverage \
-        -A AlleleBalance \
-        -A HaplotypeScore \
-        -A InbreedingCoeff \
-        -A HomopolymerRun \
-        -A HardyWeinberg \
-        -A GCContent \
-        --dbsnp {params.dbsnp} \
-        --intervals {params.target} \
-        > {log} 2>&1
+        &> {log}
         """
 
 rule genotype_gvcfs:
     message:
         "Genotyping GVCFs for sample {wildcards.sample}"
     input:
-        gvcf=rules.annotate_variants.output.annotated_vcf
+        gvcf=rules.haplotypecaller.output.gvcf
     output:
         vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
     conda:
@@ -104,7 +70,38 @@ rule genotype_gvcfs:
         -A AlleleBalance \
         -A DepthPerAlleleBySample \
         -A Coverage \
+        -A HaplotypeScore \
+        -A InbreedingCoeff \
+        -A HomopolymerRun \
+        -A HardyWeinberg \
+        -A GCContent \
         --intervals {params.target} \
         --dbsnp {params.dbsnp} \
-        > {log} 2>&1
+        &> {log}
+        """
+
+rule split_vcfs:
+    message:
+        "Splitting VCFs into SNPs and Indels for sample {wildcards.sample}"
+    input:
+        vcf=rules.genotype_gvcfs.output.vcf
+    output:
+        snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf",
+        indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_split_vcfs.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_split_vcfs.txt"
+    shell:
+        """
+        gatk SplitVcfs \
+        I={input.vcf} \
+        SNP_OUTPUT={output.snp_vcf} \
+        INDEL_OUTPUT={output.indel_vcf} \
+        STRICT=false \
+        &> {log}
         """

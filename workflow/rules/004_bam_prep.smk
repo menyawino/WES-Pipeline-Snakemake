@@ -200,7 +200,8 @@ rule filter_bam_canon_tran:
     params:
         CanonTranFile=config["canontran_panel"]
     log:
-        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.log"
+        sambamba_view=config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.log",
+        sambamba_flagstat=config["outdir"] + "/logs/004_bam_qc/{sample}_flagstat_prot_coding.log"
     benchmark:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.txt"
     shell:
@@ -211,5 +212,5 @@ rule filter_bam_canon_tran:
         -f bam -F "mapping_quality > 8" \
         {input.bam} \
         -o {output.bam_canon_tran} \
-        2> {log}
+        2> {log.sambamba_view}
         """

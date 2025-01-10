@@ -1,57 +1,29 @@
-# A rule to filter variants using GATK VariantFiltration
+# Variant Filtering
 
-rule print_reads:
+rule filter_snps:
     message:
-        "Printing reads for sample {wildcards.sample}"
+        "Filtering SNPs for sample {wildcards.sample}"
     input:
-        realigned_bam=config["outdir"] + "/analysis/005_variant_calling/{sample}.realigned.bam",
-        recal_table=config["outdir"] + "/analysis/006_variant_filtering/{sample}.recal_data.table"
+        snp_vcf=rules.split_vcfs.output.snp_vcf
     output:
-        recal_bam=config["outdir"] + "/analysis/006_variant_filtering/{sample}.recal.bam"
+        filtered_snp_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.snp.vcf"
     conda:
-        "gatk"
-    log:
-        config["outdir"] + "/logs/006_variant_filtering/{sample}_print_reads.log"
-    shell:
-        """
-        gatk PrintReads \
-        -R {params.target} \
-        -I {input.realigned_bam} \
-        -BQSR {input.recal_table} \
-        -O {output.recal_bam} \
-        > {log} 2>&1
-        """
-
-rule filter_variants:
-    message:
-        "Filtering variants for sample {wildcards.sample}"
-    input:
-        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.vcf"
-    output:
-        filtered_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.vcf"
-    conda:
-        "gatk"
+        "icc_gatk"
     threads:
         config["threads"]
     params:
         ref=config["reference_genome"],
-        dbsnp=config["dbsnp"],
-        omni=config["omni"],
-        tenk=config["tenk"],
-        hapmap=config["hapmap"],
-        mills=config["mills"],
-        tenk_indel=config["tenk_indel"],
         target=config["icc_panel"]
     log:
-        config["outdir"] + "/logs/006_variant_filtering/{sample}_filtering.log"
+        config["outdir"] + "/logs/006_variant_filtering/{sample}_filter_snps.log"
     benchmark:
-        config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filtering.txt"
+        config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filter_snps.txt"
     shell:
         """
         gatk VariantFiltration \
         -R {params.ref} \
-        -V {input.vcf} \
-        -O {output.filtered_vcf} \
+        -V {input.snp_vcf} \
+        -O {output.filtered_snp_vcf} \
         --filter-expression "QD < 2.0" \
         --filter-expression "FS > 60.0" \
         --filter-expression "MQ < 40.0" \
@@ -63,10 +35,39 @@ rule filter_variants:
         --filter-name "MQRankSumFilter" \
         --filter-name "ReadPosFilter" \
         --intervals {params.target} \
-        --known-sites {params.omni} \
-        --known-sites {params.tenk} \
-        --known-sites {params.hapmap} \
-        --known-sites {params.mills} \
-        --known-sites {params.tenk_indel} \
-        > {log} 2>&1
+        &> {log}
+        """
+
+rule filter_indels:
+    message:
+        "Filtering Indels for sample {wildcards.sample}"
+    input:
+        indel_vcf=rules.split_vcfs.output.indel_vcf
+    output:
+        filtered_indel_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.indel.vcf"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads"]
+    params:
+        ref=config["reference_genome"],
+        target=config["icc_panel"]
+    log:
+        config["outdir"] + "/logs/006_variant_filtering/{sample}_filter_indels.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filter_indels.txt"
+    shell:
+        """
+        gatk VariantFiltration \
+        -R {params.ref} \
+        -V {input.indel_vcf} \
+        -O {output.filtered_indel_vcf} \
+        --filter-expression "QD < 2.0" \
+        --filter-expression "ReadPosRankSum < -20.0" \
+        --filter-expression "FS > 200.0" \
+        --filter-name "QDFilter" \
+        --filter-name "ReadPosFilter" \
+        --filter-name "FSFilter" \
+        --intervals {params.target} \
+        &> {log}
         """

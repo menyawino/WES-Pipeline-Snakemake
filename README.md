@@ -105,6 +105,9 @@ The pipeline tracks resource usage, including CPU, memory, and network usage. A 
 ## Inhouse vs new pipeline changelog
 
 - Removed IndelRealigner and RealignerTargetCreator because gatk4 HaplotypeCaller realigns the reads on the fly.
-- Removed samtools flagstat and used stat right away with the same filters as the original command
-- 
+- Removed samtools and used sambamba with the same filters as the original command
+- Removed gatk CallableLoci and kept gatk DepthOfCoverage. Both are coverage-based and can be addressed in one step with the right configuration.
+            --omitDepthOutputAtEachBase false \
+            --includeDeletions true
+
 
