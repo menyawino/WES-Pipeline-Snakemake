@@ -11,7 +11,7 @@ rule raw_fastqc:
         html=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}_{lane}_{R}_pretrim_fastqc.html",
         zip=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}_{lane}_{R}_pretrim_fastqc.zip"
     threads: 
-        config["np_threads"]
+        config["threads_mid"]
     params: 
         path=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}",
     log:
@@ -35,3 +35,5 @@ rule raw_fastqc:
         mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.html {output.html}
         mv {params.path}_{wildcards.lane}_{wildcards.R}_001_fastqc.zip {output.zip}
         """
+
+ 

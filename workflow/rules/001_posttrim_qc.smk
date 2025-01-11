@@ -6,12 +6,12 @@ rule posttrim_fastqc:
     conda:
         "fastqc_env"
     input:
-        fq=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_{R}.fastq"
+        fq=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_{R}.fastq.gz"
     output:
         zip=config["outdir"] + "/analysis/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.zip",
         html=config["outdir"] + "/analysis/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.html"
     threads:
-        config["threads"]
+        config["threads_mid"]
     params:
         path=config["outdir"] + "/analysis/001_QC/posttrim/{sample}"
     log:

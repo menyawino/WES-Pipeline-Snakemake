@@ -10,7 +10,7 @@ rule filter_snps:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"]
@@ -48,7 +48,7 @@ rule filter_indels:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"]

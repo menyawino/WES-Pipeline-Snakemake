@@ -4,8 +4,8 @@ rule bwa_mem:
     message:
         "Aligning and converting to BAM for sample {wildcards.sample}_{lane}"
     input:
-        fq1=rules.trimming.output.fq1,
-        fq2=rules.trimming.output.fq2
+        fq1=rules.trimming_fp.output.fq1,
+        fq2=rules.trimming_fp.output.fq2
     output:
         bam=config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam"
     conda:
@@ -22,7 +22,7 @@ rule bwa_mem:
         config["outdir"] + "/benchmarks/003_alignment/01_bwa/{sample}_{lane}_alignment.txt"
     shell:
         """
-        bwa mem \
+        bwa-mem2 mem \
         -t {threads} \
         {params.ref} \
         {input.fq1} \
@@ -45,7 +45,7 @@ rule merge_bams:
     message:
         "Merging BAM files for sample {wildcards.sample}"
     input:
-        bams=expand(rules.bwa_mem.output.bam, sample="{sample}", lane=("L001", "L002", "L003", "L004"))
+        bams=expand(rules.bwa_mem.output.bam, sample="{sample}", lane=("L001", "L002", "L003", "L004")),
     output:
         merged_bam=config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam"
     conda:

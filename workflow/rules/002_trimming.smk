@@ -42,3 +42,38 @@ rule trimming:
         mv {params.path}_2.fastq {output.fq2}
         mv {params.path}_2_singletons.fastq {output.fq2s}
         """
+
+rule trimming_fp:
+    message: 
+        "Trimming and removing adapters from sample {wildcards.sample}_{lane}"
+    conda: 
+        "icc_02_trimming"
+    input:
+        fq1=config["inputdir"] + "/{sample}_{lane}_R1_001.fastq.gz",
+        fq2=config["inputdir"] + "/{sample}_{lane}_R2_001.fastq.gz",
+    output:
+        fq1=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz",
+        fq2=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz",
+        report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.fastq"
+    threads:
+        config["threads_high"]
+    params:
+        path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}"
+    log:
+        config["outdir"] + "/logs/002_trimming/{sample}/{sample}_{lane}.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/002_trimming/{sample}/{sample}_{lane}.txt"
+    shell:
+        """
+        fastp \
+        -i {input.fq1} \
+        -I {input.fq2} \
+        -o {output.fq1} \
+        -O {output.fq2} \
+        -h {output.report} \
+        -w {threads} \
+        &> {log}
+        """
+
+
+        

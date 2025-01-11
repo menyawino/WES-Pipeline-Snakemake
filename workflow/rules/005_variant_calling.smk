@@ -4,17 +4,15 @@ rule haplotypecaller:
     message:
         "Calling variants with HaplotypeCaller for sample {wildcards.sample}"
     input:
-        bam=rules.apply_bqsr.output.bqsr_bam
+        bam=rules.filter_bam_target.output.bam_target
     output:
         gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf"
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_high"]
     params:
         ref=config["reference_genome"],
-        dbsnp=config["dbsnp"],
-        dcovg=config["gatk"]["HaplotypeCaller"]["dcovg"],
         target=config["icc_panel"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_haplotypecaller.log"
@@ -26,33 +24,83 @@ rule haplotypecaller:
         -R {params.ref} \
         -I {input.bam} \
         -O {output.gvcf} \
-	    -A AlleleBalance \
-        -A Coverage \
-        -A HaplotypeScore \
-        -A InbreedingCoeff \
-        -A HomopolymerRun \
-        -A HardyWeinberg \
-        -A GCContent \
-	    -G Standard \
         -ERC GVCF \
-        --downsample_to_coverage {params.dcovg} \
+        -OVI true \
         --intervals {params.target} \
-        --dbsnp {params.dbsnp} \
         --spark-master local[{threads}] \
         &> {log}
         """
+    
+rule index_gvcf:
+    message:
+        "Indexing GVCF for sample {wildcards.sample}"
+    input:
+        gvcf=rules.haplotypecaller.output.gvcf
+    output:
+        gvcf_index=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.idx"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_low"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_index_gvcf.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_index_gvcf.txt"
+    shell:
+        """
+        gatk IndexFeatureFile \
+        -I {input.gvcf} \
+        &> {log}
+        """
+
+rule variant_annotation:
+    message:
+        "Annotating variants for sample {wildcards.sample}"
+    input:
+        vcf=rules.haplotypecaller.output.gvcf,
+        idx=rules.index_gvcf.output.gvcf_index
+    output:
+        annotated_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.annotated.vcf"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_low"]
+    params:
+        ref=config["reference_genome"],
+        target=config["icc_panel"],
+        dbsnp=config["dbsnp"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_variant_annotation.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_variant_annotation.txt"
+    shell:
+        """
+        gatk VariantAnnotator \
+        -R {params.ref} \
+        -V {input.vcf} \
+        -O {output.annotated_vcf} \
+        -A Coverage \
+        -A DepthPerAlleleBySample \
+        -A QualByDepth \
+        -A InbreedingCoeff \
+        -G StandardAnnotation \
+        --dbsnp {params.dbsnp} \
+        --intervals {params.target} \
+        &> {log}
+        """
+
 
 rule genotype_gvcfs:
     message:
         "Genotyping GVCFs for sample {wildcards.sample}"
     input:
-        gvcf=rules.haplotypecaller.output.gvcf
+        gvcf=rules.variant_annotation.output.annotated_vcf
     output:
         vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"],
@@ -67,14 +115,9 @@ rule genotype_gvcfs:
         -R {params.ref} \
         -V {input.gvcf} \
         -O {output.vcf} \
-        -A AlleleBalance \
         -A DepthPerAlleleBySample \
         -A Coverage \
-        -A HaplotypeScore \
         -A InbreedingCoeff \
-        -A HomopolymerRun \
-        -A HardyWeinberg \
-        -A GCContent \
         --intervals {params.target} \
         --dbsnp {params.dbsnp} \
         &> {log}
@@ -91,7 +134,7 @@ rule split_vcfs:
     conda:
         "icc_gatk"
     threads:
-        config["threads"]
+        config["threads_low"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_split_vcfs.log"
     benchmark:
