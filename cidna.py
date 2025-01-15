@@ -35,39 +35,39 @@ def track_resources(start_time, net_start, outdir, verbose=False):
     bytes_recv = (net_end.bytes_recv - net_start.bytes_recv) / (1024 ** 2)  # Convert to MB
 
     # Get the size of the files in Gb
-    output_folder_size = get_folder_size(os.path.join(outdir, 'results')) / (1024 ** 3) + get_folder_size(os.path.join(outdir, 'analysis')) / (1024 ** 3)
+    output_folder_size = get_folder_size(outdir) / (1024 ** 3)
 
 
     # Print resource usage stats
     print(f"""
-     _____________________________________________________________
-    |                                                             |
-    |                 Pipeline Resource Usage Report              |
-    |_____________________________________________________________|
-    |   Runtime:                    {str(timedelta(seconds=elapsed_time))}                |
-    |   CPU Usage:                  {cpu_usage}%                          |
-    |   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           |
-    |   Network Sent:               {bytes_sent:.2f} MB                       |
-    |   Network Received:           {bytes_recv:.2f} MB                       |
-    |   Output Files Size:         {output_folder_size:.2f} GB                       |
-    |_____________________________________________________________|
+    ╭─────────────────────────────────────────────────────────────╮
+    │                                                             │
+    │                 Pipeline Resource Usage Report              │
+    │─────────────────────────────────────────────────────────────│
+    │   Runtime:                    {str(timedelta(seconds=elapsed_time))}                │
+    │   CPU Usage:                  {cpu_usage}%                          │
+    │   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           │
+    │   Network Sent:               {bytes_sent:.2f} MB                       │
+    │   Network Received:           {bytes_recv:.2f} MB                       │
+    │   Output Files Size:          {output_folder_size:.2f} GB                       │
+    ╰─────────────────────────────────────────────────────────────╯
     """)
     
     # output the resource usage to a file with date and time before runtime
     with open(os.path.join(outdir, 'benchmarks/resource_usage.txt'), 'w') as f:
         f.write(f"""
-     _____________________________________________________________
-    |                                                             |
-    |                 Pipeline Resource Usage Report              |
-    |_____________________________________________________________|
-    |   Date and Time:              {time.ctime()}                |
-    |   Runtime:                    {str(timedelta(seconds=elapsed_time))}                |
-    |   CPU Usage:                  {cpu_usage}%                          |
-    |   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           |
-    |   Network Sent:               {bytes_sent:.2f} MB                       |
-    |   Network Received:           {bytes_recv:.2f} MB                       |
-    |   Output Files Size:         {output_folder_size:.2f} GB                       |
-    |_____________________________________________________________|
+     ─────────────────────────────────────────────────────────────╮
+    │                                                             │
+    │                 Pipeline Resource Usage Report              │
+    │─────────────────────────────────────────────────────────────│
+    │   Date and Time:              {time.ctime()}                │
+    │   Runtime:                    {str(timedelta(seconds=elapsed_time))}                │
+    │   CPU Usage:                  {cpu_usage}%                          │
+    │   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           │
+    │   Network Sent:               {bytes_sent:.2f} MB                       │
+    │   Network Received:           {bytes_recv:.2f} MB                      │
+    │   Output Files Size:          {output_folder_size:.2f} GB                      │
+    ╰─────────────────────────────────────────────────────────────╯
     """)
     
 
@@ -141,10 +141,10 @@ def run_snakemake_plan(configfile):
     
     os.system("snakemake -s " + snakefile + " --use-conda --dag \
         --configfile " + configfile + " --quiet \
-        | dot -Tpng > results/dag.png")
+        │ dot -Tpng > results/dag.png")
     os.system("snakemake -s " + snakefile + " --use-conda --rulegraph \
         --configfile " + configfile + " --quiet \
-        | dot -Tpng > results/rulegraph.png")
+        │ dot -Tpng > results/rulegraph.png")
 
 
 # generate snakemake report for the pipeline
@@ -198,29 +198,29 @@ NC = '\033[0m'    # No color
 def main():
     """Main entry point."""
     print(f"""
- _____________________________________________________________
-|                                                             |
-|         ██████  █████  ██████  ██████  ██  ██████           |
-|        ██      ██   ██ ██   ██ ██   ██ ██ ██    ██          |
-|        ██      ███████ ██████  ██   ██ ██ ██    ██          |
-|        ██      ██   ██ ██   ██ ██   ██ ██ ██    ██          |
-|         ██████ ██   ██ ██   ██ ██████  ██  ██████           |
-|                                                             |
-|     ██ ███    ██ ██████  ██████  ██████  ███      ███       |
-|     ██ ████   ██ ██     ██    ██ ██   ██ ████    ████       |
-|     ██ ██ ██  ██ ██████ ██    ██ ██████  ██ ██  ██ ██       |
-|     ██ ██  ██ ██ ██     ██    ██ ██   ██ ██  ████  ██       |
-|     ██ ██   ████ ██      ██████  ██   ██ ██   ██   ██       |
-|                                                             |
-|   ██████  ███    ██  █████       ███████ ███████  ██████    |
-|   ██   ██ ████   ██ ██   ██      ██      ██      ██    ██   |
-|   ██   ██ ██ ██  ██ ███████ ████ ███████ ███████ ██    ██   |
-|   ██   ██ ██  ██ ██ ██   ██           ██ ██      ██    ██   |
-|   ██████  ██   ████ ██   ██      ███████ ███████  ██████▄   |
-|                                                             |
-| {GRE}      DNAseq Analysis Toolkit for Cardiology Research{NC}       |
-|_____________________________________________________________|
-
+╭─────────────────────────────────────────────────────────────╮
+│                                                             │
+│         ██████  █████  ██████  ██████  ██  ██████           │
+│        ██      ██   ██ ██   ██ ██   ██ ██ ██    ██          │
+│        ██      ███████ ██████  ██   ██ ██ ██    ██          │
+│        ██      ██   ██ ██   ██ ██   ██ ██ ██    ██          │
+│         ██████ ██   ██ ██   ██ ██████  ██  ██████           │
+│                                                             │
+│     ██ ███    ██ ██████  ██████  ██████  ███      ███       │
+│     ██ ████   ██ ██     ██    ██ ██   ██ ████    ████       │
+│     ██ ██ ██  ██ ██████ ██    ██ ██████  ██ ██  ██ ██       │
+│     ██ ██  ██ ██ ██     ██    ██ ██   ██ ██  ████  ██       │
+│     ██ ██   ████ ██      ██████  ██   ██ ██   ██   ██       │
+│                                                             │
+│   ██████  ███    ██  █████       ███████ ███████  ██████    │
+│   ██   ██ ████   ██ ██   ██      ██      ██      ██    ██   │
+│   ██   ██ ██ ██  ██ ███████ ████ ███████ ███████ ██    ██   │
+│   ██   ██ ██  ██ ██ ██   ██           ██ ██      ██    ██   │
+│   ██████  ██   ████ ██   ██      ███████ ███████  ██████▄   │
+│                                                             │
+│ {GRE}      DNAseq Analysis Toolkit for Cardiology Research{NC}       │
+│                    Author: {GRE}Omar Ahmed{NC}                       │
+╰─────────────────────────────────────────────────────────────╯
 """)
     cli()
 

@@ -196,7 +196,7 @@ rule coverage_stats_per_base:
     input:
         bam_prot_coding=rules.filter_bam_prot_coding.output.bam_prot_coding
     output:
-        coverage_stats_per_base=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.coverage_per_base.txt"
+        coverage_stats_per_base=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.per-base.bed.gz"
     conda:
         "icc_gatk"
     threads:
@@ -219,11 +219,10 @@ rule coverage_stats_per_base:
         -abam stdin \
         -b {params.cds_file} \
         -d \
-        | sort -k 1,1 -k 2,2n -k 5,5n \
         > {output.coverage_stats_per_base} \
         2> {log}
         """
-
+        
 rule coverage_stats_per_base_target:
     message:
         "Calculating coverage stats per base for target BAM for sample {wildcards.sample}"
@@ -253,7 +252,6 @@ rule coverage_stats_per_base_target:
         -abam stdin \
         -b {params.cds_file} \
         -d \
-        | sort -k 1,1 -k 2,2n -k 5,5n \
         > {output.coverage_stats_per_base_target} \
         2> {log}
         """

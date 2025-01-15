@@ -89,7 +89,6 @@ rule variant_annotation:
         &> {log}
         """
 
-
 rule genotype_gvcfs:
     message:
         "Genotyping GVCFs for sample {wildcards.sample}"
@@ -123,11 +122,147 @@ rule genotype_gvcfs:
         &> {log}
         """
 
+rule vqsr_snp_recalibration:
+    message:
+        "Recalibrating SNPs for sample {wildcards.sample}"
+    input:
+        vcf=rules.genotype_gvcfs.output.vcf
+    output:
+        recal_snp=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_SNP.recal",
+        tranches_snp=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_SNP.tranches"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_high"]
+    params:
+        ref=config["reference_genome"],
+        hapmap=config["hapmap"],
+        omni=config["omni"],
+        tenk=config["tenk"],
+        dbsnp=config["dbsnp"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_vqsr_snp_recalibration.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_vqsr_snp_recalibration.txt"
+    shell:
+        """
+        gatk VariantRecalibrator \
+        -R {params.ref} \
+        -V {input.vcf} \
+        --resource:hapmap,known=false,training=true,truth=true,prior=15.0 {params.hapmap} \
+        --resource:omni,known=false,training=true,truth=true,prior=12.0 {params.omni} \
+        --resource:1000G,known=false,training=true,truth=false,prior=10.0 {params.tenk} \
+        --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 {params.dbsnp} \
+        -an QD -an MQRankSum -an ReadPosRankSum -an FS -an SOR -an DP \
+        -mode SNP \
+        -O {output.recal_snp} \
+        --tranches-file {output.tranches_snp} \
+        &> {log}
+        """
+
+rule apply_vqsr_snp:
+    message:
+        "Applying VQSR for SNPs for sample {wildcards.sample}"
+    input:
+        vcf=rules.genotype_gvcfs.output.vcf,
+        recal_snp=rules.vqsr_snp_recalibration.output.recal_snp,
+        tranches_snp=rules.vqsr_snp_recalibration.output.tranches_snp
+    output:
+        recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.vcf"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_high"]
+    params:
+        ref=config["reference_genome"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_apply_vqsr_snp.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_apply_vqsr_snp.txt"
+    shell:
+        """
+        gatk ApplyVQSR \
+        -R {params.ref} \
+        -V {input.vcf} \
+        -O {output.recal_vcf} \
+        --recal-file {input.recal_snp} \
+        --tranches-file {input.tranches_snp} \
+        -mode SNP \
+        --truth-sensitivity-filter-level 99.0 \
+        &> {log}
+        """
+
+rule vqsr_indel_recalibration:
+    message:
+        "Recalibrating Indels for sample {wildcards.sample}"
+    input:
+        vcf=rules.apply_vqsr_snp.output.recal_vcf
+    output:
+        recal_indel=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_INDEL.recal",
+        tranches_indel=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_INDEL.tranches"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_high"]
+    params:
+        ref=config["reference_genome"],
+        mills=config["mills"],
+        dbsnp=config["dbsnp"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_vqsr_indel_recalibration.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_vqsr_indel_recalibration.txt"
+    shell:
+        """
+        gatk VariantRecalibrator \
+        -R {params.ref} \
+        -V {input.vcf} \
+        --resource:mills,known=true,training=true,truth=true,prior=12.0 {params.mills} \
+        --resource:dbsnp,known=true,training=false,truth=false,prior=2.0 {params.dbsnp} \
+        -an QD -an ReadPosRankSum -an FS -an SOR -an DP \
+        -mode INDEL \
+        -O {output.recal_indel} \
+        --tranches-file {output.tranches_indel} \
+        &> {log}
+        """
+
+rule apply_vqsr_indel:
+    message:
+        "Applying VQSR for Indels for sample {wildcards.sample}"
+    input:
+        vcf=rules.apply_vqsr_snp.output.recal_vcf,
+        recal_indel=rules.vqsr_indel_recalibration.output.recal_indel,
+        tranches_indel=rules.vqsr_indel_recalibration.output.tranches_indel
+    output:
+        recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.vcf"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_high"]
+    params:
+        ref=config["reference_genome"]
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_apply_vqsr_indel.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_apply_vqsr_indel.txt"
+    shell:
+        """
+        gatk ApplyVQSR \
+        -R {params.ref} \
+        -V {input.vcf} \
+        -O {output.recal_vcf} \
+        --recal-file {input.recal_indel} \
+        --tranches-file {input.tranches_indel} \
+        -mode INDEL \
+        --truth-sensitivity-filter-level 99.0 \
+        &> {log}
+        """
+
 rule split_vcfs:
     message:
         "Splitting VCFs into SNPs and Indels for sample {wildcards.sample}"
     input:
-        vcf=rules.genotype_gvcfs.output.vcf
+        vcf=rules.apply_vqsr_indel.output.recal_vcf
     output:
         snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf",
         indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"

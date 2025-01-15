@@ -11,7 +11,7 @@ rule posttrim_fastqc:
         zip=config["outdir"] + "/analysis/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.zip",
         html=config["outdir"] + "/analysis/001_QC/posttrim/{sample}_{lane}_{R}_posttrim_fastqc.html"
     threads:
-        config["threads_mid"]
+        config["threads_low"]
     params:
         path=config["outdir"] + "/analysis/001_QC/posttrim/{sample}"
     log:

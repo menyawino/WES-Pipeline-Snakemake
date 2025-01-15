@@ -54,9 +54,9 @@ rule trimming_fp:
     output:
         fq1=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz",
         fq2=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz",
-        report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.fastq"
+        report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html"
     threads:
-        config["threads_high"]
+        config["threads_mid"]
     params:
         path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}"
     log:
