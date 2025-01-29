@@ -91,7 +91,7 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
     snakefile = os.path.join(thisdir, 'workflow/Snakefile')
 
     # Basic Snakemake command
-    cmd = ["snakemake", "-s", snakefile, "--use-conda", "-k", "--benchmark-extended"]
+    cmd = ["snakemake", "-s", snakefile, "--use-conda", "-k", "--benchmark-extended", "--printshellcmds", "--rerun-incomplete"]
 
     # Add additional Snakemake arguments
     cmd += list(extra_args)

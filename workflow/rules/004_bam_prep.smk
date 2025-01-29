@@ -2,7 +2,7 @@ rule add_read_groups:
     message:
         "Adding read groups to BAM for sample {wildcards.sample}"
     input:
-        bam=rules.merge_bams.output.merged_bam
+        sorted_bam=rules.merge_bams.output.merged_bam
     output:
         rg_bam=config["outdir"] + "/analysis/003_alignment/03_read_grouped/{sample}.rg.bam"
     conda:
@@ -23,7 +23,7 @@ rule add_read_groups:
     shell:
         """
         gatk AddOrReplaceReadGroups \
-        I={input.bam} \
+        I={input.sorted_bam} \
         O={output.rg_bam} \
         RGID={params.rgid} \
         RGLB={params.rglb} \
@@ -33,8 +33,9 @@ rule add_read_groups:
         RGCN={params.rgcn} \
         RGDS={params.rgds} \
         VALIDATION_STRINGENCY={params.validation_stringency} \
-        &> {log}
+        > {log} 2>&1
         """
+
 
 rule mark_duplicates:
     message:
@@ -46,10 +47,8 @@ rule mark_duplicates:
         metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
         "icc_gatk"
-    params:
-        validation_stringency=config["gatk"]["MarkDuplicates"]["validation_stringency"]
     threads:
-        config["threads_high"]
+        config["threads_mid"]
     log:
         config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_markdup.log"
     benchmark:
@@ -60,9 +59,28 @@ rule mark_duplicates:
         -I {input.rg_bam} \
         -O {output.markdup_bam} \
         -M {output.metrics} \
-        -VS {params.validation_stringency} \
         --spark-master local[{threads}] \
-        &> {log}
+        > {log} 2>&1
+        """
+
+rule index_markdup_bam:
+    message:
+        "Indexing markdup BAM for sample {wildcards.sample}"
+    input:
+        markdup_bam=rules.mark_duplicates.output.markdup_bam
+    output:
+        indexed_markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai"
+    conda:
+        "icc_gatk"
+    log:
+        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_index_markdup.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_index_markdup.txt"
+    shell:
+        """
+        samtools index \
+        {input.markdup_bam} \
+        > {log} 2>&1
         """
 
 rule base_recalibrator:
@@ -75,15 +93,10 @@ rule base_recalibrator:
     conda:
         "icc_gatk"
     threads:
-        config["threads_high"]
+        config["threads_mid"]
     params:
         ref=config["reference_genome"],
-        dbsnp=config["dbsnp"],
-        omni=config["omni"],
-        tenk=config["tenk"],
-        hapmap=config["hapmap"],
-        mills=config["mills"],
-        tenk_indel=config["tenk_indel"]
+        known_sites=config["dbsnp"]
     log:
         config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_base_recalibrator.log"
     benchmark:
@@ -94,11 +107,9 @@ rule base_recalibrator:
         -I {input.bam} \
         -R {params.ref} \
         -O {output.recal_table} \
-        --known-sites {params.dbsnp} \
-        --known-sites {params.mills} \
-        --known-sites {params.tenk_indel} \
+        --known-sites {params.known_sites} \
         --spark-master local[{threads}] \
-        &> {log}
+        > {log} 2>&1
         """
 
 rule apply_bqsr:
@@ -112,7 +123,7 @@ rule apply_bqsr:
     conda:
         "icc_gatk"
     threads:
-        config["threads_high"]
+        config["threads_mid"]
     params:
         ref=config["reference_genome"]
     log:
@@ -127,7 +138,7 @@ rule apply_bqsr:
         --bqsr-recal-file {input.recal_table} \
         -O {output.bqsr_bam} \
         --spark-master local[{threads}] \
-        &> {log}
+        > {log} 2>&1
         """
 
 rule filter_bam_target:
