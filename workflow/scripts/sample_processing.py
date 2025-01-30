@@ -19,10 +19,15 @@ def get_sample_data(csv_file, input_dir):
 
     # Dictionary to hold the fastq file paths for each sample
     sample_fastq_files = {}
+    all_samples_in_dir = set(os.listdir(input_dir))  # Get all samples present in the input directory
 
     missing_files = []
+    not_found_samples = []
 
     for sample in sample_names:
+        if sample not in all_samples_in_dir:
+            not_found_samples.append(sample)
+            continue
         sample_fastq_files[sample] = []
         for lane in range(1, 5):  # Loop through lanes 1 to 4 (1, 5), for deployment change to (1, 2)
             # Update the pattern to include sample directories
@@ -67,8 +72,24 @@ def get_sample_data(csv_file, input_dir):
         else:
             raise ValueError("Invalid response. Please enter 'y' or 'n'.")
         
-    # else:
-        # print("All files are present.")
+    # Print the number of found samples and samples not mentioned in the input list but present in the input directory
+    found_samples = len(sample_fastq_files)
+    extra_samples = all_samples_in_dir - set(sample_names)
+    print(f"Found {found_samples} samples.")
+    print(f"{len(extra_samples)} samples are not mentioned in the input list but present in the input directory: {', '.join(extra_samples)}")
+
+    # Check for samples in the input list but not found in the input directory
+    if not_found_samples:
+        print(f"{len(not_found_samples)} samples are mentioned in the input list but not found in the input directory: {', '.join(not_found_samples)}")
+        print("Do you want to start the analysis anyway? (y/n)")
+        response = input()
+        if response.lower() == 'n':
+            print("Pipeline terminated.")
+            sys.exit(1)
+        elif response.lower() == 'y':
+            print("Continuing without the missing samples.")
+        else:
+            raise ValueError("Invalid response. Please enter 'y' or 'n'.")
 
     # Merge the metadata with the fastq file information
     metadata_columns = df.columns.tolist()

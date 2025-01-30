@@ -25,6 +25,9 @@ hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/hapmap_3.3.hg19.vcf"
 mills: "/mnt/omar/pipelines/icc/pipeline/ref/Mills_and_1000G_gold_standard.indels.hg19.vcf"
 
 # Tool-specific parameters
+fastp:
+  min_read_length: 35
+  window_size: 5
 gatk:
   AddOrReplaceReadGroups:
     RGID: "1"
@@ -44,3 +47,6 @@ gatk:
 vep:
   cache_dir: "/path/to/vep/cache"
   fasta: "/path/to/vep/fasta"
+
+# Seqera token
+token: "eyJ0aWQiOiAxMDgwOH0uOWM0ZjQ3ZTZiNTYzZTFmNWU4MjdlMzViZjI1OGVjOWY1MTI2MTUzMQ=="

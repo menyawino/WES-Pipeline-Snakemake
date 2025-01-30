@@ -40,8 +40,6 @@ rule index_gvcf:
         gvcf_index=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.idx"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_low"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_index_gvcf.log"
     benchmark:
@@ -63,8 +61,6 @@ rule variant_annotation:
         annotated_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.annotated.vcf"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"],
@@ -98,8 +94,6 @@ rule genotype_gvcfs:
         vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"],
@@ -132,8 +126,6 @@ rule vqsr_snp_recalibration:
         tranches_snp=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_SNP.tranches"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_high"]
     params:
         ref=config["reference_genome"],
         hapmap=config["hapmap"],
@@ -171,8 +163,6 @@ rule apply_vqsr_snp:
         recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.vcf"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_high"]
     params:
         ref=config["reference_genome"]
     log:
@@ -202,8 +192,6 @@ rule vqsr_indel_recalibration:
         tranches_indel=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_INDEL.tranches"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_high"]
     params:
         ref=config["reference_genome"],
         mills=config["mills"],
@@ -234,11 +222,9 @@ rule apply_vqsr_indel:
         recal_indel=rules.vqsr_indel_recalibration.output.recal_indel,
         tranches_indel=rules.vqsr_indel_recalibration.output.tranches_indel
     output:
-        recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.vcf"
+        recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.indel.vcf"  # Update output filename to avoid conflict
     conda:
         "icc_gatk"
-    threads:
-        config["threads_high"]
     params:
         ref=config["reference_genome"]
     log:
@@ -268,8 +254,6 @@ rule split_vcfs:
         indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_low"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_split_vcfs.log"
     benchmark:

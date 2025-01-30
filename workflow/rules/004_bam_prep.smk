@@ -60,6 +60,7 @@ rule mark_duplicates:
         -O {output.markdup_bam} \
         -M {output.metrics} \
         --spark-master local[{threads}] \
+        --VALIDATION_STRINGENCY LENIENT \
         > {log} 2>&1
         """
 
@@ -151,7 +152,7 @@ rule filter_bam_target:
     conda:
         "icc_gatk"
     threads:
-        config["threads_high"]
+        config["threads_low"]
     params:
         TargetFile=config["icc_panel"]
     log:
@@ -179,7 +180,7 @@ rule filter_bam_prot_coding:
     conda:
         "icc_gatk"
     threads:
-        config["threads_high"]
+        config["threads_low"]
     params:
         CDSFile=config["cds_panel"]
     log:
@@ -207,7 +208,7 @@ rule filter_bam_canon_tran:
     conda:
         "icc_gatk"
     threads:
-        config["threads_high"]
+        config["threads_low"]
     params:
         CanonTranFile=config["canontran_panel"]
     log:

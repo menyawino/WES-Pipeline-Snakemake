@@ -1,4 +1,3 @@
-#Skeleton_trial11forProf_4.10.Ref_files_to_Aswan.sh
 ##Analysis
 ###1.Run Skeleton script from (Analysis script) /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/NextSeq_Cvg(Platform)/Reads/181015_NB551088_0013_AHY7LFAFXX_Cvg(RunName)
 ##QC
@@ -8,47 +7,19 @@
 
 ##These parameters will modify by Master script
 RunDate=181015_NB551088_0013_AHY7LFAFXX_PandaQC_20AE07731_3
-
-
-
-date
-
-echo -e "RunDate: $RunDate"
 PoolName=ICCNexteraV4_169
 Platform=NextSeq
 mode=Live
-###############################################################################
 nt=15
 dcovg=1000
 memory="-Xmx25g"
 Skip_size_Check=1
-###############################################################################
-if [ -z "$RunDate" ]; then 
-	echo "ERROR : RunDate is not set !"
-	exit 1
-fi
-	
-if [ -z "$PoolName" ]; then 
-	echo "ERROR : PoolName is not set !"
-	exit 1
-fi
-
-if [ -z "$Platform" ]; then 
-	echo "ERROR : Platform is not set !"
-	exit 1
-fi
-
-echo -e " RunID : $RunDate "
-echo -e " PoolName : $PoolName "
-echo -e " Platform : $Platform "
-###############################################################################
-
 TopDir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/results/$Platform
 StoreDir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/Research
 
 # # # Testing
-echo -e "TopDir: $TopDir"
-echo -e "StoreDir: $StoreDir"
+# echo -e "TopDir: $TopDir"
+# echo -e "StoreDir: $StoreDir"
 ###############################################################################
 #Here I added two brackets instead of 1 of the original script
 #Don't forget to change the paths
@@ -66,92 +37,8 @@ TargetFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons_over
 CDSFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed
 ###Canonical Transcript 
 CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed
-# #Testing
-echo -e "TargetFile: $TargetFile"
-echo -e "CDSFile: $CDSFile"
-echo -e "CanonTranFile: $CanonTranFile"
-##############################################################################
-#Check if Target Files and Top Directory exists:
-if [ ! -f "$TargetFile" ]; then 
-	echo "ERROR : TargetFile [$TargetFile] does not exist !"
-	exit 1
-	
-elif [ ! -f "$CDSFile" ]; then 
-	echo "ERROR : CDSFile [$CDSFile] does not exist !"
-	exit 1
-	
-elif [ ! -f "$CanonTranFile" ]; then 
-	echo "ERROR : CanonTranFile [$CanonTranFile] does not exist !"
-	exit 1
-	
-elif [ ! -d "$TopDir" ]; then 
-	echo "ERROR : TopDir [$TopDir] directory does not exist !"
-	exit 1
-	
-elif [ ! -d "$TopDir/Reads" ]; then 
-	echo "ERROR : Reads [$TopDir/Reads] directory does not exist !"
-	exit 1
-	
-elif [ ! -d "$StoreDir" ]; then 
-	echo "ERROR : StoreDir [$StoreDir] directory does not exist !"
-	exit 1
-fi
-##############################################################################
-#Functions:
-Step_Check(){
-	exit_status=$1
-	file_name=$2
-	min=$3
-	
-	##My correction
-	#NegControl_names=`cat  ~/Imperial_bioinformatics_pipeline/data/Store/Scripts/NegControl.File.with.patterns.txt`
-	NegControl_names=`cat  /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Store/Scripts/NegControl.File.with.patterns.txt`
-	NegControl_names=`echo $NegControl_names | sed 's/ /|/g'`
-		
-	if [[ ! "$min" =~ ^[0-9]+$ ]]
-	then
-		echo -e "\n!!!\n!!! ERROR : Unable to Step_Check (min variable ($min) not valid)  : $file_name"
-		echo -e "!!! Exiting ... `date`\n!!!\n"
-		exit 1	
-		
-	elif [ $exit_status != 0 ]
-	then
-		echo -e "\n!!!\n!!! ERROR : Exit Code Error when creating : $file_name"
-		echo -e "!!! Exiting ... `date`\n!!!\n"
-		exit 1	
 
-	elif [[ $file_name == NoOutFile ]]
-	then 
-		:		
-	elif [ ! -f $file_name ]
-	then
-		echo -e "\n!!!\n!!! ERROR : File does not exist : $file_name"
-		echo -e "!!! Exiting ... `date`\n!!!\n"
-		exit 1
-		
-	elif [[ $file_name =~ $NegControl_names ]]
-	then 
-		:
-	elif [ $Skip_size_Check != 0 ]
-	then
-		:		
-	elif [[ $file_name == *vcf ]]
-	then
-		variants_num=`grep -Evc "^#" $file_name`
-		if (( $variants_num < $min ))
-		then
-			echo -e "\n!!!\n!!! ERROR : VCF File with less than $min variants: $file_name"
-			echo -e "!!! Exiting ... `date`\n!!!\n"
-			exit 1	
-		fi
-	elif (($(stat -c '%s' "$file_name") < ($min * 1000)))
-	then
-		echo -e "\n!!!\n!!! ERROR : Size of File is smaller than $min (KB) : $file_name"
-		echo -e "!!! Exiting ... `date`\n!!!\n"
-		exit 1
-		
-	fi
-}
+
 ##############################################################################
 mkdir -p $TopDir/$RunDate
 mkdir -p $TopDir/$RunDate/$PoolName
@@ -160,8 +47,8 @@ SampleDir=$TopDir/$RunDate
 runDir=$TopDir/Reads/$RunDate
 
 # # # #Testing
-echo -e "SampleDir: $SampleDir"
-echo -e "runDir: $runDir"
+# echo -e "SampleDir: $SampleDir"
+# echo -e "runDir: $runDir"
 
 ## create Output dir
 outdir="gatk_snp_indel"
@@ -169,21 +56,18 @@ mkdir -p $SampleDir/$PoolName/$outdir
 MyOutDir=$TopDir/$RunDate/$PoolName/$outdir
 
 # #Testing
-echo -e "MyOutDir: $MyOutDir"
+# echo -e "MyOutDir: $MyOutDir"
 ###############################################################################
 
 #The dict and fai files are also available in the same folder.
 #Therefore, I'll keep the code that creates them commented.
 Ref=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/UCSChg19/allchrom.Chr1ToChrM.validated.fa
 dbSNP=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/dbSNP138/hg19_dbSNP138.vcf
-
 omni=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_omni2.5.hg19.vcf
 TenK=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_phase1.snps.high_confidence.hg19.vcf
 hapmap=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/hapmap_3.3.hg19.vcf
 mills=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/Mills_and_1000G_gold_standard.indels.hg19.vcf
 TenKIndel=/mnt/imperial_data/Imperial_bioinformatics_pipeline/Ref_files_to_Aswan/GATK_bundle_2.8/1000G_phase1.indels.hg19.vcf
-
-
 snpeff=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/snpEff/
 group=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/filo2/bin/
 VEP=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/ensembl-tools-release-83/scripts/variant_effect_predictor/
@@ -191,60 +75,15 @@ LOFTEE=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/loftee-m
 			  
 PATH=$PATH ; export PATH
 
-# #Trial 1: Use the following command when the script is located in: ~/Imperial_bioinformatics_pipeline/data/results/Platform/Reads/Rundate
-for Lib in */
-do
-date
-#Testing
-echo "Lib: $Lib"
-
-
-	Lanes=`ls $runDir/$Lib | grep fastq | grep -v prinseq | grep -v fastqc  | awk 'BEGIN {FS="_";} {print $3}' |sort -u`
-	NumLanes=`ls $runDir/$Lib| grep fastq | grep -v prinseq | grep -v fastqc  | awk 'BEGIN {FS="_";} {print $3}' |sort -u |wc -l | awk 'NR==1' | awk '{print $1}'`
-	#Testing	
-	echo -e "Lanes: $Lanes"
-	echo -e "NumLanes: $NumLanes"
-	
-	for Lane in $Lanes
-	do
-	
-	SampleID=`ls $runDir/$Lib | grep _"$Lane"_ | grep R1_001.fastq.gz | grep -v prinseq | grep -v fastqc | tail -1 | awk 'BEGIN {FS="_";} {print $1}'`
-	LaneID=`ls $runDir/$Lib | grep _"$Lane"_ | grep R1_001.fastq.gz | grep -v prinseq | grep -v fastqc | tail -1 | awk 'BEGIN {FS="_";} {print $3}'`
-	# #Testing	
-	echo -e "SampleID: $SampleID"
-	echo -e "LaneID: $LaneID"
-		
-	Read1=`ls $runDir/$Lib | grep _"$Lane"_ | grep R1_001.fastq.gz | grep -v prinseq | grep -v fastqc | tail -1`
-	Read2=`ls $runDir/$Lib | grep _"$Lane"_ | grep R2_001.fastq.gz | grep -v prinseq | grep -v fastqc | tail -1`
-	ReadLen=`less $runDir/$Lib/$Read1 | head | awk 'NR==2' | wc -m`
-	# #Testing	
-	echo -e "Read1: $Read1"
-	echo -e "Read2: $Read2"
-	echo -e "ReadLen: $ReadLen"
-# ##############################################################################	
-	if [ ! -f "$runDir/$Lib/$Read1" ]; then 
-		echo "ERROR : Read1 [$runDir/$Lib/$Read1] does not exist !"
-	exit 1
-	
-	elif [ ! -f "$runDir/$Lib/$Read2" ]; then 
-		echo "ERROR : Read2 [$runDir/$Lib/$Read2] does not exist !"
-	exit 1
-	fi
-
-
-
-
-
-
 ###########################################################################
 ###########################################################################
 ## FastQC 
 ###########################################################################
 ###########################################################################
-	 echo -e "FastQC started"
+	echo -e "FastQC started"
 	$fastqc/fastqc $runDir/$Lib/$Read1
 	$fastqc/fastqc $runDir/$Lib/$Read2
-	 echo -e "FastQC ended"	
+	echo -e "FastQC ended"	
 #############################################################################
 ## Get Read name
 	echo -e "Get Read name started"
@@ -253,9 +92,9 @@ echo "Lib: $Lib"
 	#Test
 	ReadLenTR=`less $runDir/$Lib/$Read1aTR | head | awk 'NR==2' | wc -m`
 	# #Testing	
-	echo -e "Read1aTR: $Read1aTR"
-	echo -e "Read1bTR: $Read1bTR"
-	echo -e "ReadLenTR: $ReadLenTR"
+	# echo -e "Read1aTR: $Read1aTR"
+	# echo -e "Read1bTR: $Read1bTR"
+	# echo -e "ReadLenTR: $ReadLenTR"
 	echo -e "Get Read name ended"
 #############################################################################	
 # ## Unzip Reads
@@ -268,8 +107,8 @@ echo "Lib: $Lib"
 	echo -e "Get Unzipped read name started"
 	Read1aTRa=`ls $runDir/$Lib | grep _"$Lane"_ | grep R1_001 | grep -v prinseq | grep -v fastqc | awk 'NR==1'`
 	Read1bTRa=`ls $runDir/$Lib | grep _"$Lane"_ | grep R2_001 | grep -v prinseq | grep -v fastqc | awk 'NR==1'`
-	echo -e "Read1aTRa: $Read1aTRa"
-	echo -e "Read1bTRa: $Read1bTRa"
+	# echo -e "Read1aTRa: $Read1aTRa"
+	# echo -e "Read1bTRa: $Read1bTRa"
 	echo -e "Get Unzipped read ended"
 ##############################################################################
 ### Get Sample ID 
@@ -277,9 +116,9 @@ echo "Lib: $Lib"
 	SampleID=`ls $runDir/$Lib | grep _"$Lane"_ | grep R1_001 | grep -v prinseq | grep -v fastqc | awk 'NR==1'| awk 'BEGIN {FS="_";} {print $1}'`
 	Barcode=`ls $runDir/$Lib | grep _"$Lane"_ | grep R1_001 | grep -v prinseq | grep -v fastqc | awk 'NR==1' | awk 'BEGIN {FS="_";} {print $2}'`
 	#LaneID=`ls $runDir/$Lib | grep $Read1aTRa | grep -v prinseq | grep -v fastqc | awk 'BEGIN {FS="_";} {print $3}'`
-	echo -e "SampleID: $SampleID"
-	echo -e "Barcode: $Barcode"
-	echo -e "LaneID: $LaneID"
+	# echo -e "SampleID: $SampleID"
+	# echo -e "Barcode: $Barcode"
+	# echo -e "LaneID: $LaneID"
 	echo -e "Get Sample ID ended"
 ##############################################################################	
 
@@ -312,8 +151,8 @@ echo "Lib: $Lib"
 	# echo -e "Get read name after trimmed started"
 	Read1a=`ls $runDir/$Lib | grep _"$Lane"_ | grep Read_1 | grep -v fastqc | awk 'NR==1'`
 	Read1b=`ls $runDir/$Lib | grep _"$Lane"_ | grep Read_2 | grep -v fastqc | awk 'NR==1'`
-	echo -e "Read1a: $Read1a"
-	echo -e "Read1b: $Read1b"
+	# echo -e "Read1a: $Read1a"
+	# echo -e "Read1b: $Read1b"
 	echo -e "Get read name after trimmed ended"
 
 
@@ -324,34 +163,26 @@ echo "Lib: $Lib"
 # FastQC after trimmed
 ###########################################################################
 ###########################################################################
-	echo -e "FastQC after trimmed started"
+
 	$fastqc/fastqc $runDir/$Lib/$Read1a
 	$fastqc/fastqc $runDir/$Lib/$Read1b
-	echo -e "FastQC after trimmed ended"
+
 
 ## Zip trimmed read
-	echo -e "Zip trimmed read started"
 	gzip $runDir/$Lib/$Read1a
 	gzip $runDir/$Lib/$Read1b
-	echo -e "Zip trimmed read ended"
+
 
 # Zip orginal read
-	echo -e "Zip orginal read started"
+
 	gzip $runDir/$Lib/$Read1aTRa
 	gzip $runDir/$Lib/$Read1bTRa
-	echo -e "Zip orginal read ended"
+
 
 # ##Get Read name after trim&zip
 	# echo -e "Get Read name after trim&zip started"
 	Read1=`ls $runDir/$Lib | grep _"$Lane"_ | grep Read_1 | grep -v fastqc | awk 'NR==1'`
 	Read2=`ls $runDir/$Lib | grep _"$Lane"_ | grep Read_2 | grep -v fastqc | awk 'NR==1'`
-	echo -e "Read1: $Read1"
-	echo -e "Read2: $Read2"
-	echo -e "Get Read name after trim&zip ended"
-
-	echo -e "Lane : $LaneID"
-	echo -e "Read1 : $runDir/$Lib/$Read1"
-	echo -e "Read2 : $runDir/$Lib/$Read2"
 
 ## Create directory for sample
 	mkdir $MyOutDir/"$SampleID"
@@ -368,7 +199,7 @@ echo "Lib: $Lib"
 ## Get BWA version
 	$bwa 2> /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/bwa.txt
 	bwaver=`cat /mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/bwa.txt | grep Version | awk '{print $2}'`
-	echo -e "bwaver : $bwaver"
+	# echo -e "bwaver : $bwaver"
 
 	## -M	 Mark shorter split hits as secondary (for Picard compatibility). -t number of threads
 	echo -e "BWA mapping started"
@@ -387,9 +218,9 @@ echo "Lib: $Lib"
 	$samtools sort $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam $MyOutDir/"$SampleID"/"$SampleID"."$Lane"1
 	echo -e "samtools sort ended"
 	
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/"$SampleID"."$Lane"1.bam $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam
-	echo -e "mv ended"
+	# echo -e "mv ended"
 
 	echo -e "samtools index started"
 	$samtools index $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam
@@ -428,9 +259,9 @@ echo "Lib: $Lib"
 	Step_Check $? $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam.bam 50
 	echo -e "Step check Add RG tag ended"
 	
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam.bam $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	
 	echo -e "samtools index started"
 	$samtools index $MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam
@@ -450,7 +281,7 @@ echo "Lib: $Lib"
 ###########################################################################
 ###########################################################################
 	echo -e "mark duplicates started"
-	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp \
+	$Java7 -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp/ \
 	$memory -jar \
 	$picard/MarkDuplicates.jar \
 	INPUT=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".bam \
@@ -466,10 +297,10 @@ echo "Lib: $Lib"
 	Step_Check $? $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.bam.bai 100
 	echo -e "Step check samtools index ended"
 	
-	echo -e "markDup_bam_file assignment started"
+	# echo -e "markDup_bam_file assignment started"
 	markDup_bam_file=$MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.bam
-	echo -e "markDup_bam_file: $markDup_bam_file"
-	echo -e "markDup_bam_file assignment ended"
+	# echo -e "markDup_bam_file: $markDup_bam_file"
+	# echo -e "markDup_bam_file assignment ended"
 
 
 
@@ -479,11 +310,11 @@ echo "Lib: $Lib"
 	
 #############################################################################	
 # ## Get GATK version
-	echo -e "GATK version started"
+	# echo -e "GATK version started"
 	GATK=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/Install/GenomeAnalysisTK/GenomeAnalysisTK.jar
 	GATK_version=`$Java7 $memory -jar -Djava.io.tmpdir=/mnt/imperial_data/Imperial_bioinformatics_pipeline/data/tmp $GATK -version`
-	echo -e "GATK_version : $GATK_version"
-	echo -e "GATK version ended"
+	# echo -e "GATK_version : $GATK_version"
+	# echo -e "GATK version ended"
 ################################################################################
 	# # #DONT FORGET TO FIX THE EXTRAXTION OF THE GATK VERSION!!!!!!!!!!!!!!!!
 	echo -e "\nStarting Analysis for GATK_version:$GATK_version : $Lib"
@@ -493,9 +324,9 @@ echo "Lib: $Lib"
 	MyOutDir_default=$MyOutDir
 	GATKs_default=$GATKs
 	# # #Testing
-	 echo -e "SampleDir_default: $SampleDir_default"
-	 echo -e "MyOutDir_default: $MyOutDir_default"
-	 echo -e "GATKs_default: $GATKs_default"
+	# echo -e "SampleDir_default: $SampleDir_default"
+	# echo -e "MyOutDir_default: $MyOutDir_default"
+	# echo -e "GATKs_default: $GATKs_default"
 ##############################################################################
 
 
@@ -665,39 +496,11 @@ echo "Lib: $Lib"
 	Step_Check $? $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.Realigned.recalibrated.bam 50
 	echo -e "Step_Check TableRecalibration ended"
 	
-	echo -e "Cp started"
+	# echo -e "Cp started"
 	cp $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.Realigned.recalibrated.bai $MyOutDir/"$SampleID"/"$SampleID"."$Lane".markDup.Realigned.recalibrated.bam.bai
-	echo -e "Cp ended"
+	# echo -e "Cp ended"
 # # ###############################################################################	
 	done
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ###########################################################################
 ###########################################################################
@@ -757,21 +560,12 @@ echo "Lib: $Lib"
 	Step_Check $? $MyOutDir/"$SampleID"/"$SampleID".markDup.bam.bai 100
 	echo -e "Step_Check samtools index on merged ended"
 	
-	echo -e "markDup_bam_file assignment on merged started"
+	# echo -e "markDup_bam_file assignment on merged started"
 	markDup_bam_file=$MyOutDir/"$SampleID"/"$SampleID".markDup.bam
-	echo -e "markDup_bam_file : $markDup_bam_file"
-	echo -e "markDup_bam_file assignment on merged ended"
+	# echo -e "markDup_bam_file : $markDup_bam_file"
+	# echo -e "markDup_bam_file assignment on merged ended"
 	
 echo -e "\nStarting Analysis for $GATK_version : $Lib"
-
-
-
-
-
-
-
-
-
 
 ###########################################################################
 ###########################################################################
@@ -812,9 +606,9 @@ echo -e "\nStarting Analysis for $GATK_version : $Lib"
 	echo -e "Step_Check Indel Realigning on merged ended"
 	echo -e "\nDone Indel Realigning ($GATK_version) : $Lib"
 	
-	 echo -e "samtools index on merged started"
+	# echo -e "samtools index on merged started"
 	 $samtools index $MyOutDir/"$SampleID"/"$SampleID".markDup.Realigned.recalibrated.bam
-	 echo -e "samtools index on merged ended"
+	# echo -e "samtools index on merged ended"
 
 
 
@@ -837,10 +631,10 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	OnProtCodingTargetFile="$SampleID".markDup.Realigned.recalibrated.ProteinCoding.OnTarget.q8.bam
 	OnCanonTranFile="$SampleID".markDup.Realigned.recalibrated.CanonTranCoding.OnTarget.q8.bam
 	##Testing
-	echo -e "OrgFile: $OrgFile"
-	echo -e "OnTargetFile: $OnTargetFile"
-	echo -e "OnProtCodingTargetFile: $OnProtCodingTargetFile"
-	echo -e "OnCanonTranFile: $OnCanonTranFile"
+	# echo -e "OrgFile: $OrgFile"
+	# echo -e "OnTargetFile: $OnTargetFile"
+	# echo -e "OnProtCodingTargetFile: $OnProtCodingTargetFile"
+	# echo -e "OnCanonTranFile: $OnCanonTranFile"
 	
 	## Generate read on $Target MAP qual > 8
 	echo -e "samtools view OnTargetFile started"
@@ -934,18 +728,18 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "sort the CoverageBed, CoverageStats output by chr,position started"
 	sort -k 1,1 -k 2,2n $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats.sorted
 	echo -e "sort the CoverageBed, CoverageStats output by chr,position ended"
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats.sorted $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	echo -e "\nDone : Sorting of Protein coding OnTarget (Targets).CoverageStats completed ($GATK_version) : $Lib"
 	
 	## sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target)
 	echo -e "sort the CoverageBed,CoveragePerBase output by chr,position,coverage started"
 	sort -k 1,1 -k 2,2n -k 5,5n $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoveragePerBase  > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoveragePerBase.sorted
 	echo -e " sort the CoverageBed,CoveragePerBase output by chr,position,coverage ended"
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoveragePerBase.sorted $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoveragePerBase
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	echo -e "\nDone : Sorting of Protein coding OnTarget (Targets).CoveragePerBase completed ($GATK_version) : $Lib"
 
 
@@ -1005,22 +799,22 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 ###########################################################################
 ###########################################################################
 
-	echo -e "cat started"
+	# echo -e "cat started"
 	cat $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.DepthOfCvg.txt.sample_interval_summary | sed 's/chr16:997401/chr16:997401-997401/' | awk 'BEGIN {FS=":"} {OFS="\t"} {print $1,$2}'| awk 'BEGIN {FS="-"} {OFS="\t"} {print $1,$2}' |  awk 'BEGIN {FS=" "} {OFS="\t"} {print $1,$2-1,$3,$4,$5,$9}' | sed '1d'| $bedtools/sortBed -i stdin > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp.depth1.bed
-	echo -e "cat ended"
-	echo -e "cut started"
+	# echo -e "cat ended"
+	# echo -e "cut started"
 	cut -f4 $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats | awk 'BEGIN {FS="|";} {print $1}' > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp.depth2.bed 
-	echo -e "cut ended"
-	echo -e "paste started"
+	# echo -e "cut ended"
+	# echo -e "paste started"
 	paste <(cut -f1-3 $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp.depth1.bed) <(cut -f4 $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp.depth2.bed ) <(cut -f4- $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp.depth1.bed) | cut -f1-4,6 > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed 
-	echo -e "paste ended"
+	# echo -e "paste ended"
 	
-	echo -e "rm started"
+	# echo -e "rm started"
 	rm -rf $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.temp*
-	echo -e "rm ended"
-	echo -e "ln started"
+	# echo -e "rm ended"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed $SampleDir/"$Enrich_Report"/$SampleID/"$Exon"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 
 
 
@@ -1045,9 +839,9 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 
 ###############################################################################
 	## Generate Bases callable by target file
-	echo -e "awk started"
+	# echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable | $bedtools/intersectBed -a $CDSFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget
-	echo -e "awk ended"
+	# echo -e "awk ended"
 
 
 
@@ -1056,19 +850,19 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	### Perl script to generate this format 
 	#Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	#chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl script started"
+	# echo -e "perl script started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget.temp
-	echo -e "perl script ended"
-	echo -e "mv started"
+	# echo -e "perl script ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 
 
 
 
 # ###############################################################################
 # # Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
-	echo -e "Generate  soft links in Enrich_Report folder started"
+	# echo -e "Generate  soft links in Enrich_Report folder started"
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.byTarget $SampleDir/"$Enrich_Report"/$SampleID/"$Exon"/
 	ln -s $MyOutDir/"$SampleID"/$OrgFile.q8.flagstat $SampleDir/"$Enrich_Report"/$SampleID/
 	ln -s $MyOutDir/"$SampleID"/$OrgFile.flagstat $SampleDir/"$Enrich_Report"/$SampleID/
@@ -1081,7 +875,7 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.bases.callable.summary $SampleDir/"$Enrich_Report"/$SampleID/"$Exon"/
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.AlignSumMet.txt $SampleDir/"$Enrich_Report"/$SampleID/"$Exon"/
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.DepthOfCvg.txt.sample_interval_summary $SampleDir/"$Enrich_Report"/$SampleID/"$Exon"/
-	echo -e "Generate  soft links in Enrich_Report folder ended"
+	# echo -e "Generate  soft links in Enrich_Report folder ended"
 ##############################################################################
 ##  No of callable Bases by Exon --minDepth 30
 	echo -e "No of callable Bases by Exon --minDepth 30 started"
@@ -1099,25 +893,25 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "No of callable Bases by Exon --minDepth 30 ended"
 	echo -e " \n Done : CallableLoci  for ($GATK_version) : $Lib"
 # ##############################################################################
-	echo -e "awk started"
+	# echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable | $bedtools/intersectBed -a $CDSFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable.byTarget
-	echo -e "awk ended"
+	# echo -e "awk ended"
 # ##############################################################################
 	### Perl script to generate this format 
 	#Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	#chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl script started"
+	# echo -e "perl script started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable.byTarget.temp
-	echo -e "perl script ended"
-	echo -e "mv started"
+	# echo -e "perl script ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 # ###############################################################################	
 	# # Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$Exon30x/$OnProtCodingTargetFile.bases.callable.byTarget $SampleDir/"$Enrich_Report"/$SampleID/"$Exon30x"/
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats $SampleDir/"$Enrich_Report"/$SampleID/"$Exon30x"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 # ##############################################################################
 # ##  No of callable Bases by Exon --minDepth 20
 	echo -e "No of callable Bases by Exon --minDepth 20 started"
@@ -1135,25 +929,25 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "No of callable Bases by Exon --minDepth 20 ended"
 	echo -e " \n Done : CallableLoci  for ($GATK_version) : $Lib"
 # ##############################################################################
-	echo -e "awk started"
+	# echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable | $bedtools/intersectBed -a $CDSFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable.byTarget
-	echo -e "awk ended"
+	# echo -e "awk ended"
 # ##############################################################################
 	### Perl script to generate this format 
 	#Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	#chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl started"
+	# echo -e "perl started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable.byTarget.temp
-	echo -e "perl ended"
-	echo -e "mv started"
+	# echo -e "perl ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 # ###############################################################################
 # # Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$Exon20x/$OnProtCodingTargetFile.bases.callable.byTarget $SampleDir/"$Enrich_Report"/$SampleID/"$Exon20x"/
 	ln -s $MyOutDir/"$SampleID"/$Exon/$OnProtCodingTargetFile.CoverageStats $SampleDir/"$Enrich_Report"/$SampleID/"$Exon20x"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 ###############################################################################
 # ##End of ProteinCoding Target
 # ##############################################################################
@@ -1175,18 +969,18 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e "sort the CoverageBed, CoverageStats output by chr,position started"
 	sort -k 1,1 -k 2,2n $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats.sorted
 	echo -e "sort the CoverageBed, CoverageStats output by chr,position ended"
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats.sorted $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	echo -e "\nDone : Sorting of Canonical Transcript coding OnTarget (Targets).CoverageStats completed ($GATK_version) : $Lib"
 # # ##############################################################################
 	# ### sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target)
 	echo -e "sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target) started"
 	sort -k 1,1 -k 2,2n -k 5,5n $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoveragePerBase  > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoveragePerBase.sorted
 	echo -e "sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target) ended"
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoveragePerBase.sorted $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoveragePerBase
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	echo -e "\nDone : Sorting of Canonical Transcript coding OnTarget (Targets).CoveragePerBase completed ($GATK_version) : $Lib"
 # # ###############################################################################
 # ##  No of callable Bases by Exon --minDepth 10
@@ -1222,25 +1016,25 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e " \n Done : DepthOfCoverage for  ($GATK_version) : $Lib"
 # # ##############################################################################
 	# ## Getting mean coverage per Exon
-	echo -e "cat started"
+	# echo -e "cat started"
 	cat $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.DepthOfCvg.txt.sample_interval_summary | sed 's/chr8:19822821/chr8:19822820-19822821/' | awk 'BEGIN {FS=":"} {OFS="\t"} {print $1,$2}'| awk 'BEGIN {FS="-"} {OFS="\t"} {print $1,$2}' |  awk 'BEGIN {FS=" "} {OFS="\t"} {print $1,$2-1,$3,$4,$5,$9}' | sed '1d'| $bedtools/sortBed -i stdin > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.temp.depth1.bed
-	echo -e "cat ended"
+	# echo -e "cat ended"
 	
-	echo -e "cut started"
+	# echo -e "cut started"
 	cut -f4 $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats | awk 'BEGIN {FS="|";} {print $1}' > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.temp.depth2.bed 
-	echo -e "cut ended"
+	# echo -e "cut ended"
 	
-	echo -e "paste started"
+	# echo -e "paste started"
 	paste <(cut -f1-3 $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.temp.depth1.bed) <(cut -f4 $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.temp.depth2.bed ) <(cut -f4- $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.temp.depth1.bed) | cut -f1-4,6 > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed 
-	echo -e "paste ended"
+	# echo -e "paste ended"
 	
-	echo -e "rm started"
+	# echo -e "rm started"
 	rm -rf $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.temp*
-	echo -e "rm ended"
+	# echo -e "rm ended"
 	
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 
 # # # ##############################################################################	
 # ### CollectAlignmentSummaryMetrics in OnTarget.bam
@@ -1255,22 +1049,22 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	echo -e " \n Done : CollectAlignmentSummaryMetrics for  ($GATK_version) : $Lib"
 # # ##############################################################################
 	# ### Generate Bases callable by target file
-	echo -e "Generate Bases callable by target file started"
+	# echo -e "Generate Bases callable by target file started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable | $bedtools/intersectBed -a $CanonTranFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.byTarget
-	echo -e "Generate Bases callable by target file ended"
+	# echo -e "Generate Bases callable by target file ended"
 # # ##############################################################################
 	# #### Perl script to generate this format 
 	# ##Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	# ##chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl script started"
+	# echo -e "perl script started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.byTarget.temp
-	echo -e "perl script ended"
-	echo -e "mv started"
+	# echo -e "perl script ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 # # # ##############################################################################
 # ## Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.byTarget $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran"/
 	ln -s $MyOutDir/"$SampleID"/$OrgFile.q8.flagstat $SampleDir/"$Enrich_Report"/$SampleID/
 	ln -s $MyOutDir/"$SampleID"/$OrgFile.flagstat $SampleDir/"$Enrich_Report"/$SampleID/
@@ -1283,10 +1077,10 @@ CanonTranFile=$StoreDir/TargetFiles/ICC_169Genes_Nextera_V4_ProteinCoding_Canoni
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.bases.callable.summary $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran"/
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.AlignSumMet.txt $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran"/
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.DepthOfCvg.txt.sample_interval_summary $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 # # ##############################################################################
 # ###  No of callable Bases by Exon --minDepth 30
-echo -e "No of callable Bases by Exon --minDepth 30 started"
+# echo -e "No of callable Bases by Exon --minDepth 30 started"
 	$Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 			-R $Ref \
 			-T CallableLoci \
@@ -1301,28 +1095,28 @@ echo -e "No of callable Bases by Exon --minDepth 30 started"
 	echo -e "No of callable Bases by Exon --minDepth 30 ended"
 	echo -e " \n Done : CallableLoci  for ($GATK_version) : $Lib"
 # # ##############################################################################
-	echo -e "awk started"
+	# echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable | $bedtools/intersectBed -a $CanonTranFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable.byTarget
-	echo -e "awk ended"
+	# echo -e "awk ended"
 # # # ##############################################################################
 	# ### Perl script to generate this format 
 	# #Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	# #chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl started"
+	# echo -e "perl started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable.byTarget.temp
-	echo -e "perl ended"
-	echo -e "mv started"
+	# echo -e "perl ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 # # # ##############################################################################
 # ## Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$CanonTran30x/$OnCanonTranFile.bases.callable.byTarget $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran30x"/
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran30x"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 # # ##############################################################################
 # ##  No of callable Bases by Exon --minDepth 20
-	echo -e "No of callable Bases by Exon --minDepth 20 started"
+	# echo -e "No of callable Bases by Exon --minDepth 20 started"
 	$Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 			-R $Ref \
 			-T CallableLoci \
@@ -1337,25 +1131,25 @@ echo -e "No of callable Bases by Exon --minDepth 30 started"
 	echo -e "No of callable Bases by Exon --minDepth 20 ended"
 	echo -e " \n Done : CallableLoci  for ($GATK_version) : $Lib"
 # # # ##############################################################################
-	echo -e "awk started"
+	# echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable | $bedtools/intersectBed -a $CanonTranFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable.byTarget
-	echo -e "awk ended"
+	# echo -e "awk ended"
 # # # ##############################################################################
 	# ### Perl script to generate this format 
 	# #Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	# #chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl started"
+	# echo -e "perl started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable.byTarget.temp
-	echo -e "perl ended"
-	echo -e "mv started"
+	# echo -e "perl ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 # # # ##############################################################################
 # ### Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$CanonTran20x/$OnCanonTranFile.bases.callable.byTarget $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran20x"/
 	ln -s $MyOutDir/"$SampleID"/$CanonTran/$OnCanonTranFile.CoverageStats $SampleDir/"$Enrich_Report"/$SampleID/"$CanonTran20x"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 # # # ##############################################################################
 # # #End of Canonical Transcript
 # # ##############################################################################
@@ -1377,18 +1171,18 @@ echo -e "No of callable Bases by Exon --minDepth 30 started"
 	echo -e "sort the CoverageBed, CoverageStats output by chr,position started"
 	sort -k 1,1 -k 2,2n $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoverageStats > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoverageStats.sorted
 	echo -e "sort the CoverageBed, CoverageStats output by chr,position ended"
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoverageStats.sorted $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoverageStats
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	echo -e "\nDone : Sorting of Protein coding OnTarget (Targets).CoverageStats completed ($GATK_version) : $Lib"
 # # ##############################################################################
 	# ### sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target)
 	echo -e "sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target) started"
 	sort -k 1,1 -k 2,2n -k 5,5n $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoveragePerBase  > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoveragePerBase.sorted
 	echo -e "sort the CoverageBed,CoveragePerBase output by chr,position,coverage (Change colum 5 into 4 in Exome $Target) ended"
-	echo -e "mv started"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoveragePerBase.sorted $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoveragePerBase
-	echo -e "mv ended"
+	# echo -e "mv ended"
 	echo -e "\nDone : Sorting of Protein coding OnTarget (Targets).CoveragePerBase completed ($GATK_version) : $Lib"
 # # ##############################################################################
 # ##  No of callable Bases by Target
@@ -1424,25 +1218,25 @@ echo -e "No of callable Bases by Exon --minDepth 30 started"
 	echo -e " \n Done : DepthOfCoverage for ($GATK_version)  : $Lib"
 # # ###############################################################################
 	# # Getting mean coverage per Exon
-	echo -e "cat started"
+	# echo -e "cat started"
 	cat $MyOutDir/"$SampleID"/$Target/$OnTargetFile.DepthOfCvg.txt.sample_interval_summary | sed 's/chr16:997401/chr16:997401-997401/' | awk 'BEGIN {FS=":"} {OFS="\t"} {print $1,$2}'| awk 'BEGIN {FS="-"} {OFS="\t"} {print $1,$2}' |  awk 'BEGIN {FS=" "} {OFS="\t"} {print $1,$2-1,$3,$4,$5,$9}' | sed '1d'| $bedtools/sortBed -i stdin > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.temp.depth1.bed
-	echo -e "cat ended"
+	# echo -e "cat ended"
 	
-	echo -e "cut started"
+	# echo -e "cut started"
 	cut -f4 $MyOutDir/"$SampleID"/$Target/$OnTargetFile.CoverageStats | awk 'BEGIN {FS="|";} {print $1}' > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.temp.depth2.bed
-	echo -e "cut ended"
+	# echo -e "cut ended"
 	
-	echo -e "paste started"
+	# echo -e "paste started"
 	paste <(cut -f1-3 $MyOutDir/"$SampleID"/$Target/$OnTargetFile.temp.depth1.bed) <(cut -f4 $MyOutDir/"$SampleID"/$Target/$OnTargetFile.temp.depth2.bed ) <(cut -f4- $MyOutDir/"$SampleID"/$Target/$OnTargetFile.temp.depth1.bed) | cut -f1-4,6 > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed 
-	echo -e "paste ended"
+	# echo -e "paste ended"
 	
-	echo -e "rm started"
+	# echo -e "rm started"
 	rm -rf $MyOutDir/"$SampleID"/$Target/$OnTargetFile.temp*
-	echo -e "rm ended"
+	# echo -e "rm ended"
 	
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$Target/$OnTargetFile.DepthOfCvg.txt.sample_interval_summary.MeanCvg.bed $SampleDir/"$Enrich_Report"/$SampleID/"$Target"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 # # ###############################################################################
 # ## CollectAlignmentSummaryMetrics in OnTarget.bam
 	echo -e "CollectAlignmentSummaryMetrics in OnTarget.bam started"
@@ -1456,19 +1250,19 @@ echo -e "No of callable Bases by Exon --minDepth 30 started"
 	echo -e " \n Done : CollectAlignmentSummaryMetrics for  ($GATK_version) : $Lib"
 # # ###############################################################################
 # # ## Generate Bases callable by target file
-	echo -e "awk started"
+	# echo -e "awk started"
 	awk 'BEGIN{FS=" "; OFS="\t";} {print $1,$2,$3,$4}' $MyOutDir/"$SampleID"/$Target/$OnTargetFile.bases.callable | $bedtools/intersectBed -a $TargetFile -b stdin -wao | awk '{OFS="\t"; print $1,$2,$3,$4,$8"="$9}' | $group/groupBy -i stdin -grp 1,2,3,4 -c 5 -ops collapse > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.bases.callable.byTarget
-	echo -e "awk ended"
+	# echo -e "awk ended"
 # # ###############################################################################
 	# #### Perl script to generate this format
 	# ##Chr     Start   End     Gene    CALLABLE        LOW_COVERAGE    NO_COVERAGE
 	# ##chr1    237205822       237205869       RYR2|1|ENSG00000198626  47      0       0
-	echo -e "perl started"
+	# echo -e "perl started"
 	perl $StoreDir/CallableLoci_rearrage_Coverage.pl $MyOutDir/"$SampleID"/$Target/$OnTargetFile.bases.callable.byTarget > $MyOutDir/"$SampleID"/$Target/$OnTargetFile.bases.callable.byTarget.temp
-	echo -e "perl ended"
-	echo -e "mv started"
+	# echo -e "perl ended"
+	# echo -e "mv started"
 	mv $MyOutDir/"$SampleID"/$Target/$OnTargetFile.bases.callable.byTarget.temp $MyOutDir/"$SampleID"/$Target/$OnTargetFile.bases.callable.byTarget
-	echo -e "mv ended"
+	# echo -e "mv ended"
 # # ###############################################################################
 # # ### Generate  soft links in $TopDir/$RunDate/$Enrich_Report folder
 
@@ -1606,17 +1400,17 @@ mkdir $MyOutDir/$SampleID/$Target/"UnifiedGenotyper"
 	echo -e "\nDone : SNP filtering ($GATK_version) : $Lib"
 	echo -e "\nDone : GATK & SAMTools analysis were completed for ($GATK_version) : $Lib"
 # # ###############################################################################
-	echo -e "ln started"
+	# echo -e "ln started"
 	##Generating final filtered SNP VCF file
 	ln -s $MyOutDir/"$SampleID"/$Target/UnifiedGenotyper/$OnTargetFile.UnifiedGenotyper.snp.filtered.vcf $MyOutDir/"$SampleID"/$Target/UnifiedGenotyper/$OnTargetFile.final.UnifiedGenotyper.snp.vcf
 	##Generating final filtered Indel VCF file
 	ln -s $MyOutDir/"$SampleID"/$Target/UnifiedGenotyper/$OnTargetFile.UnifiedGenotyper.indel.filtered.vcf $MyOutDir/"$SampleID"/$Target/UnifiedGenotyper/$OnTargetFile.final.UnifiedGenotyper.indel.vcf
-	echo -e "ln ended"
+	# echo -e "ln ended"
 	
 	echo -e "\nDone : GATK UnifiedGenotyper analysis were completed for ($GATK_version) : $Lib"
 ###############################################################################
 ##Remove markDup, SAM, realigned BAM files
-	echo -e "rm1 started"
+	# echo -e "rm1 started"
 	rm -rf $MyOutDir/"$SampleID"/*.sam
 	rm -rf $MyOutDir/"$SampleID"/"$SampleID".markDup.bam
 	rm -rf $MyOutDir/"$SampleID"/"$SampleID".markDup.bam.bai
@@ -1635,22 +1429,22 @@ mkdir $MyOutDir/$SampleID/$Target/"UnifiedGenotyper"
 	rm -rf $MyOutDir/$SampleID/"$SampleID".markDup.Realigned.recalibrated.bai
 	# echo -e "rm1 ended"
 	
-	echo -e "rm2 started"
+	# echo -e "rm2 started"
 	rm -rf $MyOutDir/$SampleID/ProteinCodingTarget/"$SampleID".markDup.Realigned.recalibrated.ProteinCoding.OnTarget.q8.bam
 	rm -rf $MyOutDir/$SampleID/ProteinCodingTarget/"$SampleID".markDup.Realigned.recalibrated.ProteinCoding.OnTarget.q8.bam.bai
-	echo -e "rm2 ended"
+	# echo -e "rm2 ended"
 	
-	echo -e "rm3 started"
+	# echo -e "rm3 started"
 	rm -rf $MyOutDir/$SampleID/CanonTranCodingTarget/"$SampleID".markDup.Realigned.recalibrated.CanonTranCoding.OnTarget.q8.bam
 	rm -rf $MyOutDir/$SampleID/CanonTranCodingTarget/"$SampleID".markDup.Realigned.recalibrated.CanonTranCoding.OnTarget.q8.bam.bai
-	echo -e "rm3 ended"
+	# echo -e "rm3 ended"
 	
-	echo -e "rm4 started"
+	# echo -e "rm4 started"
 	rm -rf $MyOutDir/$SampleID/Target/UnifiedGenotyper/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.UnifiedGenotyper.indel.vcf
 	rm -rf $MyOutDir/$SampleID/Target/UnifiedGenotyper/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.UnifiedGenotyper.indel.vcf.idx
 	rm -rf $MyOutDir/$SampleID/Target/UnifiedGenotyper/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.UnifiedGenotyper.snp.vcf
 	rm -rf $MyOutDir/$SampleID/Target/UnifiedGenotyper/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.UnifiedGenotyper.snp.vcf.idx
-	echo -e "rm4 ended"
+	# echo -e "rm4 ended"
 # # ###############################################################################
 # #Ts/TV ratio for UnifiedGenotyer SNP
 	echo -e "Ts/TV ratio for UnifiedGenotyer SNP started"
@@ -1658,13 +1452,13 @@ mkdir $MyOutDir/$SampleID/$Target/"UnifiedGenotyper"
 	echo -e "Ts/TV ratio for UnifiedGenotyer SNP ended"
 # # ################################################################################	
 	# ## Symbolic link
-	echo -e "ln started"
+	# echo -e "ln started"
 	ln -s $MyOutDir/"$SampleID"/$Target/UnifiedGenotyper/$OnTargetFile.UnifiedGenotyper.snp.filtered.vcf.all.snp.TsTv.txt $SampleDir/"$Enrich_Report"/$SampleID/"$Target"/
-	echo -e "ln ended"
+	# echo -e "ln ended"
 # # ################################################################################
-	 echo -e "chmod started"
+	# echo -e "chmod started"
 	 chmod 775 -R $SampleDir
-	 echo -e "chmod ended"
+	# echo -e "chmod ended"
 # # ################################################################################	
 	#Exiting For Loop, reset variables to default 
 	SampleDir=$SampleDir_default
@@ -1702,9 +1496,9 @@ $Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 Step_Check $? $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.indel.vcf 1
 echo -e "Step_Check HaplotypeCaller ended"
 
-echo -e "mv started"
+# echo -e "mv started"
 mv $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.bai $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.bam.bai
-echo -e "mv ended"
+# echo -e "mv ended"
 # # ################################################################################
 # ## Variant Annotater for haplotypescore Allele Balance
 echo -e "Variant Annotater for haplotypescore Allele Balance started"
@@ -1810,14 +1604,11 @@ echo -e "Step_Check SNPs Filter ended"
 echo -e "\nDone :  HaplotypeCaller SNP filtering : $Lib"
 # # ################################################################################
 # ##Generating final filtered SNP VCF file
-echo -e "ln started"
 ln -s $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.filtered.vcf $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.final.HaplotypeCaller.snp.vcf
 ###Generating final filtered Indel VCF file
 ln -s $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.indel.filtered.vcf $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.final.HaplotypeCaller.indel.vcf
-echo -e "ln ended"
 # # ################################################################################
 # ## HaplotypeCaller -  generate genomic VCFs (gVCFS) 
-echo -e "HaplotypeCaller -  generate genomic VCFs (gVCFS) started"
 $Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 	-R $Ref \
 	-L $TargetFile \
@@ -1838,31 +1629,15 @@ $Java7 $memory -jar $GATKs/GenomeAnalysisTK.jar \
 	--variant_index_parameter 128000
 
 Step_Check $? $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.indel.GVCF.vcf 1
-echo -e "Step_Check HaplotypeCaller -  generate genomic VCFs (gVCFS) ended"
 
-echo -e "\nDone : GATK HaplotypeCaller analysis were completed for : $Lib"
 # # ################################################################################
-echo -e "rm started"
-rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.indel.vcf
-rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.indel.vcf.idx
-rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.snp.indel.varAnnotate.vcf
-rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.snp.indel.varAnnotate.vcf.idx
-##Repetition
-##rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.snp.indel.varAnnotate.vcf
-##
-rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.snp.vcf
-rm -rf $MyOutDir/$SampleID/Target/HaplotypeCaller/"$SampleID".markDup.Realigned.recalibrated.OnTarget.q8.bam.HaplotypeCaller.snp.vcf.idx
-echo -e "rm ended"
+
 # # ################################################################################
 # ##Ts/Tv ratio for HaplotyeCaller SNP
-echo -e "Ts/Tv ratio for HaplotyeCaller SNP started"
 $Java7 $memory -jar $snpeff/SnpSift.jar tstv any $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.filtered.vcf  > $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.filtered.vcf.all.snp.TsTv.txt
-echo -e "Ts/Tv ratio for HaplotyeCaller SNP ended"
 # # # ################################################################################
 # ##Symbolic link
-echo -e "ln started" 
 ln -s $MyOutDir/"$SampleID"/$Target/HaplotypeCaller/$OnTargetFile.HaplotypeCaller.snp.filtered.vcf.all.snp.TsTv.txt $SampleDir/"$Enrich_Report"/$SampleID/"$Target"/
-echo -e "ln ended" 
 
 # ##############################################################################
 
@@ -1873,31 +1648,29 @@ echo -e "ln ended"
      do
 	   for variantType in snp indel
 	    do
-	     echo -e "VEP file assignments started"
+	     # echo -e "VEP file assignments started"
 	     inVEP=$MyOutDir/"$SampleID"/$Target/$caller/$OnTargetFile.$caller.$variantType.filtered.vcf
 	     outVEP=$MyOutDir/"$SampleID"/$Target/VEP/$OnTargetFile.$caller.$variantType.VEP.vcf
-	     echo -e "VEP file assignments ended"
+	     # echo -e "VEP file assignments ended"
 	     ##Testing
-	     echo -e "inVEP: $inVEP"
-	     echo -e "outVEP: $outVEP"
+	     # echo -e "inVEP: $inVEP"
+	     # echo -e "outVEP: $outVEP"
 	
 
 	## Count lines that don't match '#' in $inVEP -> exclude metadata lines -> count variants
-	  echo -e "VariantCount started"
+	  # echo -e "VariantCount started"
 	  VariantCount=`grep -cv '#' $inVEP`
-	  echo -e "VariantCount ended"
+	  # echo -e "VariantCount ended"
 	##Testing
-	  echo -e "VariantCount: $VariantCount"
+	  # echo -e "VariantCount: $VariantCount"
 	
-	 echo -e "Check VariantCount started"
+	# echo -e "Check VariantCount started"
 	 if [ $VariantCount == 0 ]
 	  then
 		echo -e "\nERROR : No Variants in this VCF : $inVEP\n"
 		continue
 	 fi
-	 echo -e "Check VariantCount started"
 	
-	 echo -e "Variant effect predictor started"
 	 perl $VEP/variant_effect_predictor.pl \
 	  --dir_cache /home/ahcauc/.vep \
 	  --assembly GRCh37 \
@@ -1908,49 +1681,20 @@ echo -e "ln ended"
 	  --vcf --force_overwrite
 	
 	
-	 ##Testing
-	 echo -e "inVEP: $inVEP"
-	 echo -e "outVEP: $outVEP"
-	
-	
 	 Step_Check $? $outVEP 1
-	 echo -e "Step_Check Variant effect predictor ended"
+
 	
 	##Tablelise VEP Annotated VCFs
 	 out_tableize=$MyOutDir/"$SampleID"/$Target/VEP/$OnTargetFile.$caller.$variantType.VEP.txt
-	##Testing
-	 echo -e "out_tableize: $out_tableize"
-	
-	 echo -e "LOFTEE started"
+
 	 python $LOFTEE/tableize_vcf.py \
 	 --vcf $outVEP --out $out_tableize --split_by_transcript --all_csqs --do_not_minrep --include_id --info ABHet,ABHom,AC,AF,AN,DP,FS,HaplotypeScore,MLEAC,MLEAF,MQ,MQ0,QD \
 	 --vep_info Consequence,SYMBOL,SYMBOL_SOURCE,Gene,Feature,BIOTYPE,HGVSc,HGVSp,cDNA_position,CDS_position,Protein_position,Amino_acids,Codons,Existing_variation,STRAND,CANONICAL,CCDS,ENSP,SIFT,PolyPhen,ExAC_MAF,PUBMED \
 	 --mysql
-	
-	
-	 ##Testing
-	 echo -e "out_tableize: $out_tableize"
-	
-	
-	 Step_Check $? $out_tableize 1
-	 echo -e "Step_Check LOFTEE started"
-	
-	 echo -e "\nDone : tableize_vcf analysis were completed for $caller $variantType : $Lib"
-	
+
 	  done
    done
 # # ################################################################################
-# # chmod 775 -R $TopDir/$RunDate
-# # chmod 550 -R $TopDir/Reads/$RunDate/$SampleID/*
-# # date
 # # ################################################################################
 done
-date
-date
-date
-echo -e "End of script\nScript completed successfully"
-date
-date
-date 
-date
 # # ################################################################################

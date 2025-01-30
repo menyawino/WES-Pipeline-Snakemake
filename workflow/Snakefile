@@ -53,9 +53,9 @@ include: "rules/001_posttrim_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_alignment.smk"
 include: "rules/004_bam_prep.smk"
+include: "rules/005_bam_qc.smk"
 include: "rules/005_variant_calling.smk"
-
-# include: "rules/006_variant_filtering.smk"
+include: "rules/006_variant_filtering.smk"
 # include: "rules/007_annotation.smk"
 # include: "rules/008_summary.smk"
 
@@ -64,9 +64,33 @@ include: "rules/005_variant_calling.smk"
 ############################
 rule all:
     input:
-        expand(rules.genotype_gvcfs.output.vcf, sample=sample_filename, lane=lane),
+        expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, lane=lane, R=read),
+        expand(rules.posttrim_fastqc.output.html, sample=sample_filename, lane=lane, R=read),
+        expand(rules.bwa_mem.output.bam, sample=sample_filename, lane=lane),
+        expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
+        expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),
+        expand(rules.flagstat_prot_coding.output.flagstat_prot_coding, sample=sample_filename),
+        expand(rules.flagstat_canon_tran.output.flagstat_canon_tran, sample=sample_filename),
+        expand(rules.depth_of_coverage.output.depth_of_coverage, sample=sample_filename),
+        expand(rules.depth_of_coverage_target.output.depth_of_coverage_target, sample=sample_filename),
+        expand(rules.mean_coverage_per_exon.output.mean_coverage, sample=sample_filename),
+        expand(rules.mean_coverage_per_exon_target.output.mean_coverage_target, sample=sample_filename),
+        expand(rules.collect_alignment_summary_metrics.output.alignment_summary_metrics, sample=sample_filename),
+        expand(rules.collect_alignment_summary_metrics_target.output.alignment_summary_metrics_target, sample=sample_filename),
+        expand(rules.vqsr_snp_recalibration.output.recal_snp, sample=sample_filename),
+        expand(rules.vqsr_snp_recalibration.output.tranches_snp, sample=sample_filename),
+        expand(rules.apply_vqsr_snp.output.recal_vcf, sample=sample_filename),
+        expand(rules.vqsr_indel_recalibration.output.recal_indel, sample=sample_filename),
+        expand(rules.vqsr_indel_recalibration.output.tranches_indel, sample=sample_filename),
+        expand(rules.apply_vqsr_indel.output.recal_vcf, sample=sample_filename),
+        expand(rules.split_vcfs.output.snp_vcf, sample=sample_filename),
+        expand(rules.split_vcfs.output.indel_vcf, sample=sample_filename),
+        expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename),
+        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename)
+
+        
 
 # delete samples_data.csv with python
 # os.remove("sample_data.csv")
 
-# ./cidna.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88
+# ./cidna.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88 --printshellcmds --rerun-incomplete

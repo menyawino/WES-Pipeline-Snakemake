@@ -331,8 +331,6 @@ rule depth_of_coverage:
         depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_mid"]
     params:
         ref=config["reference_genome"],
         cds_file=config["cds_panel"]
@@ -359,8 +357,6 @@ rule depth_of_coverage_target:
         depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_mid"]
     params:
         ref=config["reference_genome"],
         cds_file=config["cds_panel"]
@@ -387,8 +383,6 @@ rule mean_coverage_per_exon:
         mean_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.mean_coverage.bed"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_mid"]
     params:
         cds_file=config["cds_panel"]
     log:
@@ -413,8 +407,6 @@ rule mean_coverage_per_exon_target:
         mean_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.mean_coverage.bed"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_mid"]
     params:
         cds_file=config["cds_panel"]
     log:
@@ -439,8 +431,6 @@ rule collect_alignment_summary_metrics:
         alignment_summary_metrics=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.align_sum_metrics.txt"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_mid"]
     params:
         ref=config["reference_genome"]
     log:
@@ -467,8 +457,6 @@ rule collect_alignment_summary_metrics_target:
         alignment_summary_metrics_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.align_sum_metrics.txt"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_mid"]
     params:
         ref=config["reference_genome"]
     log:

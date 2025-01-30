@@ -54,11 +54,14 @@ rule trimming_fp:
     output:
         fq1=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz",
         fq2=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz",
-        report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html"
+        report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html",
+        json=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.json"
     threads:
-        config["threads_mid"]
+        config["threads_low"]
     params:
-        path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}"
+        path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}",
+        min_length=config["fastp"]["min_read_length"],
+        window_size=config["fastp"]["window_size"]
     log:
         config["outdir"] + "/logs/002_trimming/{sample}/{sample}_{lane}.log"
     benchmark:
@@ -68,10 +71,13 @@ rule trimming_fp:
         fastp \
         -i {input.fq1} \
         -I {input.fq2} \
+        -j {output.json} \
         -o {output.fq1} \
         -O {output.fq2} \
         -h {output.report} \
         -w {threads} \
+        --length_required {params.min_length} \
+        --cut_window_size {params.window_size} \
         &> {log}
         """
 

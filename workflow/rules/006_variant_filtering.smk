@@ -9,8 +9,6 @@ rule filter_snps:
         filtered_snp_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.snp.vcf"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"]
@@ -47,8 +45,6 @@ rule filter_indels:
         filtered_indel_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.indel.vcf"
     conda:
         "icc_gatk"
-    threads:
-        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"]
