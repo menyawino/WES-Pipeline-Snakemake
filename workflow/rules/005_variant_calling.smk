@@ -1,5 +1,3 @@
-# A rule to call variants using GATK HaplotypeCaller and GenotypeGVCFs
-
 rule haplotypecaller:
     message:
         "Calling variants with HaplotypeCaller for sample {wildcards.sample}"
@@ -40,6 +38,8 @@ rule index_gvcf:
         gvcf_index=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.idx"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_low"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_index_gvcf.log"
     benchmark:
@@ -61,6 +61,8 @@ rule variant_annotation:
         annotated_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.annotated.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"],
@@ -94,6 +96,8 @@ rule genotype_gvcfs:
         vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_low"]
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"],
@@ -126,6 +130,8 @@ rule vqsr_snp_recalibration:
         tranches_snp=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_SNP.tranches"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_high"]
     params:
         ref=config["reference_genome"],
         hapmap=config["hapmap"],
@@ -151,7 +157,6 @@ rule vqsr_snp_recalibration:
         --tranches-file {output.tranches_snp} \
         &> {log}
         """
-
 rule apply_vqsr_snp:
     message:
         "Applying VQSR for SNPs for sample {wildcards.sample}"
@@ -160,9 +165,11 @@ rule apply_vqsr_snp:
         recal_snp=rules.vqsr_snp_recalibration.output.recal_snp,
         tranches_snp=rules.vqsr_snp_recalibration.output.tranches_snp
     output:
-        recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.vcf"
+        snp_recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated_snp.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_high"]
     params:
         ref=config["reference_genome"]
     log:
@@ -174,7 +181,7 @@ rule apply_vqsr_snp:
         gatk ApplyVQSR \
         -R {params.ref} \
         -V {input.vcf} \
-        -O {output.recal_vcf} \
+        -O {output.snp_recal_vcf} \
         --recal-file {input.recal_snp} \
         --tranches-file {input.tranches_snp} \
         -mode SNP \
@@ -186,12 +193,14 @@ rule vqsr_indel_recalibration:
     message:
         "Recalibrating Indels for sample {wildcards.sample}"
     input:
-        vcf=rules.apply_vqsr_snp.output.recal_vcf
+        vcf=rules.apply_vqsr_snp.output.snp_recal_vcf
     output:
         recal_indel=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_INDEL.recal",
         tranches_indel=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrate_INDEL.tranches"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_high"]
     params:
         ref=config["reference_genome"],
         mills=config["mills"],
@@ -218,13 +227,15 @@ rule apply_vqsr_indel:
     message:
         "Applying VQSR for Indels for sample {wildcards.sample}"
     input:
-        vcf=rules.apply_vqsr_snp.output.recal_vcf,
+        vcf=rules.apply_vqsr_snp.output.snp_recal_vcf,
         recal_indel=rules.vqsr_indel_recalibration.output.recal_indel,
         tranches_indel=rules.vqsr_indel_recalibration.output.tranches_indel
     output:
-        recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated.indel.vcf"  # Update output filename to avoid conflict
+        indel_recal_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.recalibrated_indel.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_high"]
     params:
         ref=config["reference_genome"]
     log:
@@ -236,7 +247,7 @@ rule apply_vqsr_indel:
         gatk ApplyVQSR \
         -R {params.ref} \
         -V {input.vcf} \
-        -O {output.recal_vcf} \
+        -O {output.indel_recal_vcf} \
         --recal-file {input.recal_indel} \
         --tranches-file {input.tranches_indel} \
         -mode INDEL \
@@ -248,12 +259,14 @@ rule split_vcfs:
     message:
         "Splitting VCFs into SNPs and Indels for sample {wildcards.sample}"
     input:
-        vcf=rules.apply_vqsr_indel.output.recal_vcf
+        vcf=rules.apply_vqsr_indel.output.indel_recal_vcf
     output:
         snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf",
         indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_low"]
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_split_vcfs.log"
     benchmark:

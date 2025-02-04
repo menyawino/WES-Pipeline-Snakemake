@@ -60,7 +60,7 @@ rule mark_duplicates:
         -O {output.markdup_bam} \
         -M {output.metrics} \
         --spark-master local[{threads}] \
-        --VALIDATION_STRINGENCY LENIENT \
+        --conf spark.ui.enabled=false \
         > {log} 2>&1
         """
 
@@ -110,6 +110,7 @@ rule base_recalibrator:
         -O {output.recal_table} \
         --known-sites {params.known_sites} \
         --spark-master local[{threads}] \
+        --conf spark.ui.enabled=false \
         > {log} 2>&1
         """
 
@@ -139,6 +140,7 @@ rule apply_bqsr:
         --bqsr-recal-file {input.recal_table} \
         -O {output.bqsr_bam} \
         --spark-master local[{threads}] \
+        --conf spark.ui.enabled=false \
         > {log} 2>&1
         """
 

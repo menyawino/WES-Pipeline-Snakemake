@@ -77,14 +77,6 @@ rule all:
         expand(rules.mean_coverage_per_exon_target.output.mean_coverage_target, sample=sample_filename),
         expand(rules.collect_alignment_summary_metrics.output.alignment_summary_metrics, sample=sample_filename),
         expand(rules.collect_alignment_summary_metrics_target.output.alignment_summary_metrics_target, sample=sample_filename),
-        expand(rules.vqsr_snp_recalibration.output.recal_snp, sample=sample_filename),
-        expand(rules.vqsr_snp_recalibration.output.tranches_snp, sample=sample_filename),
-        expand(rules.apply_vqsr_snp.output.recal_vcf, sample=sample_filename),
-        expand(rules.vqsr_indel_recalibration.output.recal_indel, sample=sample_filename),
-        expand(rules.vqsr_indel_recalibration.output.tranches_indel, sample=sample_filename),
-        expand(rules.apply_vqsr_indel.output.recal_vcf, sample=sample_filename),
-        expand(rules.split_vcfs.output.snp_vcf, sample=sample_filename),
-        expand(rules.split_vcfs.output.indel_vcf, sample=sample_filename),
         expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename),
         expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename)
 
