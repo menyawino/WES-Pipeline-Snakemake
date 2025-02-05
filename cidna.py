@@ -37,38 +37,42 @@ def track_resources(start_time, net_start, outdir, verbose=False):
     # Get the size of the files in Gb
     output_folder_size = get_folder_size(outdir) / (1024 ** 3)
 
-
-    # Print resource usage stats
-    print(f"""
+    report = f"""
     ╭─────────────────────────────────────────────────────────────╮
     │                                                             │
     │                 Pipeline Resource Usage Report              │
     │─────────────────────────────────────────────────────────────│
-    │   Runtime:                    {str(timedelta(seconds=elapsed_time))}                │
-    │   CPU Usage:                  {cpu_usage}%                          │
-    │   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           │
-    │   Network Sent:               {bytes_sent:.2f} MB                       │
-    │   Network Received:           {bytes_recv:.2f} MB                       │
-    │   Output Files Size:          {output_folder_size:.2f} GB                       │
+    │   Date and Time:         {time.ctime():<30}     │
+    │   Runtime:               {str(timedelta(seconds=elapsed_time)):>20}               │
+    │   CPU Usage:             {cpu_usage:>10.1f}%                        │
+    │   Memory Usage:          {memory_usage:>7.2f} GB /{total_memory:>7.2f} GB             │
+    │   Network Sent:          {bytes_sent:>10.2f} MB                      │
+    │   Network Received:      {bytes_recv:>10.2f} MB                      │
+    │   Output Files Size:     {output_folder_size:>10.2f} GB                      │
     ╰─────────────────────────────────────────────────────────────╯
-    """)
+    """
+    
+    print(report)
+
+
+    # # Print resource usage stats
+    # print(f"""
+    # ╭─────────────────────────────────────────────────────────────╮
+    # │                                                             │
+    # │                 Pipeline Resource Usage Report              │
+    # │─────────────────────────────────────────────────────────────│
+    # │   Runtime:                    {str(timedelta(seconds=elapsed_time))}                │
+    # │   CPU Usage:                  {cpu_usage}%                          │
+    # │   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           │
+    # │   Network Sent:               {bytes_sent:.2f} MB                       │
+    # │   Network Received:           {bytes_recv:.2f} MB                       │
+    # │   Output Files Size:          {output_folder_size:.2f} GB                       │
+    # ╰─────────────────────────────────────────────────────────────╯
+    # """)
     
     # output the resource usage to a file with date and time before runtime
     with open(os.path.join(outdir, 'benchmarks/resource_usage.txt'), 'w') as f:
-        f.write(f"""
-     ─────────────────────────────────────────────────────────────╮
-    │                                                             │
-    │                 Pipeline Resource Usage Report              │
-    │─────────────────────────────────────────────────────────────│
-    │   Date and Time:              {time.ctime()}                │
-    │   Runtime:                    {str(timedelta(seconds=elapsed_time))}                │
-    │   CPU Usage:                  {cpu_usage}%                          │
-    │   Memory Usage:               {memory_usage:.2f} GB / {total_memory:.2f} GB           │
-    │   Network Sent:               {bytes_sent:.2f} MB                       │
-    │   Network Received:           {bytes_recv:.2f} MB                      │
-    │   Output Files Size:          {output_folder_size:.2f} GB                      │
-    ╰─────────────────────────────────────────────────────────────╯
-    """)
+        f.write(report)
     
 
 #  get the size of a folder in bytes 
@@ -180,9 +184,10 @@ def run(configfile, inputdir, outdir, snakemake_args, verbose):
     
     return_code = run_snakemake(configfile, inputdir, outdir, verbose=verbose,
                                 extra_args=snakemake_args)
-    
-    if return_code == 0:
-        track_resources(start_time, net_start, outdir, verbose=verbose)
+
+    if return_code == 0 or return_code is None:
+        print("Pipeline completed successfully.")
+        # track_resources(start_time, net_start, outdir, verbose=verbose)
     else:
         print("Pipeline terminated early due to errors.")
 
@@ -218,7 +223,7 @@ def main():
 │   ██   ██ ██  ██ ██ ██   ██           ██ ██      ██    ██   │
 │   ██████  ██   ████ ██   ██      ███████ ███████  ██████▄   │
 │                                                             │
-│ {GRE}      DNAseq Analysis Toolkit for Cardiology Research{NC}       │
+│{GRE} DNAseq Analysis Toolkit for Cardiovascular Disease Research{NC} │
 │                    Author: {GRE}Omar Ahmed{NC}                       │
 ╰─────────────────────────────────────────────────────────────╯
 """)
