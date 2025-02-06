@@ -79,7 +79,14 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
     snakefile = os.path.join(thisdir, '../Snakefile')  # Updated path
 
     # Basic Snakemake command
-    cmd = ["snakemake", "-s", snakefile, "--use-conda", "-k", "--benchmark-extended", "--printshellcmds", "--rerun-incomplete"]
+    cmd = ["snakemake", 
+           "-s", 
+           snakefile, 
+           "--use-conda", 
+           "-k", 
+           "--benchmark-extended", 
+           "--printshellcmds", 
+           "--rerun-incomplete"]
 
     # Add additional Snakemake arguments
     cmd += list(extra_args)
@@ -143,5 +150,10 @@ def get_snakemake_report(configfile):
     thisdir = os.path.dirname(__file__)
     snakefile = os.path.join(thisdir, '../Snakefile')  # Updated path
     
-    os.system("snakemake -s " + snakefile + " --use-conda --report " + 
-              "--configfile " + configfile + " --quiet")
+    os.system("snakemake -s " 
+              + snakefile 
+              + " --use-conda"
+              + " --report" 
+              + " --configfile" 
+              + configfile 
+              + " --quiet")

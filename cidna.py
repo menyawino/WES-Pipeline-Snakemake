@@ -17,10 +17,7 @@ def cli():
 def run(configfile, inputdir, outdir, snakemake_args, verbose):
     """Execute workflow (using Snakemake underneath)."""
     build_folders(outdir)
-    
-    start_time = time.time()
-    net_start = psutil.net_io_counters()
-    
+
     return_code = run_snakemake(configfile, inputdir, outdir, verbose=verbose,
                                 extra_args=snakemake_args)
 
