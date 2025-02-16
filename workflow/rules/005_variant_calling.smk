@@ -280,3 +280,4 @@ rule split_vcfs:
         STRICT=false \
         &> {log}
         """
+
