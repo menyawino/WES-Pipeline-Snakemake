@@ -8,21 +8,23 @@ benchmark: 1
 inputdir: "../input/180705_NB551088_0005_AHTLH3AFXX"
 outdir: "../output"
 
-# Reference file
-reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/allchrom.Chr1ToChrM.validated.fa"
+Genome: &genome "grch38"
 
-# Target files
-icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
-canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+# GRCh37 Reference file
+reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/allchrom.Chr1ToChrM.validated.fa"
 
-# Known variants
-dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/hg19_dbSNP138.vcf"
-omni: "/mnt/omar/pipelines/icc/pipeline/ref/1000G_omni2.5.hg19.vcf"
-tenk: "/mnt/omar/pipelines/icc/pipeline/ref/1000G_phase1.snps.high_confidence.hg19.vcf"
-tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/1000G_phase1.indels.hg19.vcf"
-hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/hapmap_3.3.hg19.vcf"
-mills: "/mnt/omar/pipelines/icc/pipeline/ref/Mills_and_1000G_gold_standard.indels.hg19.vcf"
+# GRCh37 Target files
+icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+
+# GRCh37 Known variants
+dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/hg19_dbSNP138.vcf"
+omni: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/1000G_omni2.5.hg19.vcf"
+tenk: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/1000G_phase1.snps.high_confidence.hg19.vcf"
+tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/1000G_phase1.indels.hg19.vcf"
+hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/hapmap_3.3.hg19.vcf"
+mills: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/Mills_and_1000G_gold_standard.indels.hg19.vcf"
 
 # Tool-specific parameters
 fastp:
@@ -46,7 +48,7 @@ gatk:
 # VEP parameters
 vep:
   cache_dir: "/path/to/vep/cache"
-  fasta: "/path/to/vep/fasta"
+  fasta: "/mnt/omar/pipelines/icc/pipeline/ref/*genome/allchrom.Chr1ToChrM.validated.fa"
 
 # Seqera token
 token: "eyJ0aWQiOiAxMDgwOH0uOWM0ZjQ3ZTZiNTYzZTFmNWU4MjdlMzViZjI1OGVjOWY1MTI2MTUzMQ=="

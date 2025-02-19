@@ -154,6 +154,6 @@ def get_snakemake_report(configfile):
               + snakefile 
               + " --use-conda"
               + " --report" 
-              + " --configfile" 
+              + " --configfile " 
               + configfile 
               + " --quiet")
