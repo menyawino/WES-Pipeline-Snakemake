@@ -14,8 +14,8 @@ Genome: &genome "grch38"
 reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/genome/GRCh38.primary_assembly.genome.fa.gz"
 
 # GRCh38 Target files
-icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_38_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_38_Nextera_V4_ProteinCodingExons.mergeBed.bed"
 canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
 
 # GRCh38 Known variants
@@ -27,20 +27,20 @@ hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/hapmap/hapmap_3.3.hg38.vcf.
 mills: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/indels/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
 
 # GRCh37 Reference file
-# reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/genome/GRCh38.primary_assembly.genome.fa.gz"
+# reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/genome/GRCh38.primary_assembly.genome.fa.gz"
 
 # GRCh37 Target files
-# icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-# cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
-# canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+# icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+# cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+# canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
 
 # GRCh37 Known variants
-# dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/hg19_dbSNP138.vcf"
-# omni: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/1000G_omni2.5.hg19.vcf"
-# tenk: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/1000G_phase1.snps.high_confidence.hg19.vcf"
-# tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/1000G_phase1.indels.hg19.vcf"
-# hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/hapmap_3.3.hg19.vcf"
-# mills: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/Mills_and_1000G_gold_standard.indels.hg19.vcf"
+# dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/hg19_dbSNP138.vcf"
+# omni: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/1000G_omni2.5.hg19.vcf"
+# tenk: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/1000G_phase1.snps.high_confidence.hg19.vcf"
+# tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/1000G_phase1.indels.hg19.vcf"
+# hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/hapmap_3.3.hg19.vcf"
+# mills: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/Mills_and_1000G_gold_standard.indels.hg19.vcf"
 
 # Tool-specific parameters
 fastp:
