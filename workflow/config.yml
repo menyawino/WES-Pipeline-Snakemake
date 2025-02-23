@@ -11,7 +11,7 @@ outdir: "../output_38"
 Genome: &genome "grch38"
 
 # GRCh38 Reference file
-reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/genome/GRCh38.primary_assembly.genome.fa.gz"
+reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/genome/GRCh38.primary_assembly.genome.fa"
 
 # GRCh38 Target files
 icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_38_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
