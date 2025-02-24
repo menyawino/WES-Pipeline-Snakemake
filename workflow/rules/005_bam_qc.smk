@@ -473,3 +473,24 @@ rule collect_alignment_summary_metrics_target:
         VALIDATION_STRINGENCY=SILENT \
         &> {log}
         """
+
+rule qc_report:
+    input:
+        flagstat_original = rules.flagstat_original.output.flagstat_original,
+        flagstat_target = rules.flagstat_target.output.flagstat_target,
+        coverage_stats = rules.coverage_stats.output.coverage_stats,
+        coverage_stats_target = rules.coverage_stats_target.output.coverage_stats_target,
+        coverage_hist = rules.coverage_hist.output.coverage_hist,
+        coverage_hist_target = rules.coverage_hist_target.output.coverage_hist_target,
+        depth_of_coverage = rules.depth_of_coverage.output.depth_of_coverage,
+        depth_of_coverage_target = rules.depth_of_coverage_target.output.depth_of_coverage_target,
+        mean_coverage = rules.mean_coverage_per_exon.output.mean_coverage,
+        mean_coverage_target = rules.mean_coverage_per_exon_target.output.mean_coverage_target,
+        alignment_summary_metrics = rules.collect_alignment_summary_metrics.output.alignment_summary_metrics,
+        alignment_summary_metrics_target = rules.collect_alignment_summary_metrics_target.output.alignment_summary_metrics_target
+    output:
+        qc_metrics = config["outdir"] + "/analysis/004_bam_qc/{sample}.qc_metrics.tsv"
+    conda:
+        "icc_gatk"
+    script:
+        "workflow/scripts/qc_report.py"
