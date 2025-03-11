@@ -1,5 +1,4 @@
 # A rule to align the trimmed reads to the reference genome using bwa and convert to BAM using sambamba view
-
 rule bwa_mem:
     message:
         "Aligning and converting to BAM for sample {wildcards.sample}_{lane}"

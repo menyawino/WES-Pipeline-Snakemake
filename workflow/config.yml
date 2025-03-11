@@ -14,9 +14,9 @@ Genome: &genome "grch38"
 reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/genome/GRCh38.primary_assembly.genome.fa"
 
 # GRCh38 Target files
-icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_38_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_38_Nextera_V4_ProteinCodingExons.mergeBed.bed"
-canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/targets/ICC_169Genes_38_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/targets/ICC_169Genes_38_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/targets/ICC_169Genes_38_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
 
 # GRCh38 Known variants
 dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/dbsnp/Homo_sapiens_assembly38.dbsnp138.vcf"

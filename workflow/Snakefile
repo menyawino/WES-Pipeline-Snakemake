@@ -22,8 +22,6 @@ sample_mrn = samples_data['sample'].unique().tolist()
 sample_mrn = [x.split('_')[0] for x in sample_mrn]
 lane = samples_data['lane'].unique().tolist()
 read = samples_data['read'].unique().tolist()
-
-
 sample_filename = samples_data['sample'].unique().tolist()
 
 # concatenate the sample and sample_filename lists such that each element is a string of {sample}/{sample_filename}
@@ -78,11 +76,9 @@ rule all:
         expand(rules.collect_alignment_summary_metrics.output.alignment_summary_metrics, sample=sample_filename),
         expand(rules.collect_alignment_summary_metrics_target.output.alignment_summary_metrics_target, sample=sample_filename),
         expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename),
-        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename)
-
-        
+        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename)     
 
 # delete samples_data.csv with python
-# os.remove("sample_data.csv")
+os.remove("sample_data.csv")
 
 # ./cidna.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88 --printshellcmds --rerun-incomplete
