@@ -86,7 +86,8 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
            "-k", 
            "--benchmark-extended", 
            "--printshellcmds", 
-           "--rerun-incomplete"]
+           "--rerun-incomplete",
+           "–report-after-run"]
 
     # Add additional Snakemake arguments
     cmd += list(extra_args)
