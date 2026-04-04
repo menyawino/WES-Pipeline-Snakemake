@@ -4,9 +4,31 @@ threads_mid: 4
 threads_low: 1
 benchmark: 1
 
+# Sample processing configuration
+sample_processing:
+  lanes: [1, 2, 3, 4]  # Lane numbers to expect
+  reads: [1, 2]        # Paired-end reads (1=R1, 2=R2)
+  fail_on_missing: false  # Continue if some files are missing
+
 # Directories
 inputdir: "../input/180705_NB551088_0005_AHTLH3AFXX"
 outdir: "../output_38"
+
+# Output path templates for consistency across rules
+output_dirs:
+  qc_pretrim: "{outdir}/analysis/001_qc/pretrim"
+  trimming: "{outdir}/analysis/002_trimming"
+  qc_posttrim: "{outdir}/analysis/003_qc/posttrim"
+  alignment: "{outdir}/analysis/004_alignment"
+  bam_prep: "{outdir}/analysis/005_bam_prep"
+  qc_bam: "{outdir}/analysis/006_qc/bam"
+  variant_calling: "{outdir}/analysis/007_variant_calling"
+  variant_filtering: "{outdir}/analysis/008_variant_filtering"
+  annotation: "{outdir}/analysis/009_annotation"
+  summary: "{outdir}/analysis/010_summary"
+  logs: "{outdir}/logs"
+  benchmarks: "{outdir}/benchmarks"
+  results: "{outdir}/results"
 
 Genome: &genome "grch38"
 
@@ -65,6 +87,16 @@ gatk:
 vep:
   cache_dir: "/path/to/vep/cache"
   fasta: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/allchrom.Chr1ToChrM.validated.fa"
+
+# Snakemake execution options
+snakemake:
+  use_conda: true
+  keep_going: true
+  benchmark_extended: true
+  print_shell_commands: true
+  rerun_incomplete: true
+  generate_report: true
+  cores: 8  # Default core allocation, can be overridden via CLI
 
 # Seqera token
 token: "eyJ0aWQiOiAxMDgwOH0uOWM0ZjQ3ZTZiNTYzZTFmNWU4MjdlMzViZjI1OGVjOWY1MTI2MTUzMQ=="

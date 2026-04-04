@@ -5,6 +5,7 @@ import click
 import time
 import psutil
 from datetime import timedelta
+import yaml
 
 # ANSI color codes
 GRE = '\033[92m'  # Green color
@@ -76,18 +77,35 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
 
     # Find the Snakefile relative to the package path
     thisdir = os.path.dirname(__file__)
-    snakefile = os.path.join(thisdir, '../Snakefile')  # Updated path
+    snakefile = os.path.join(thisdir, '../Snakefile')
 
-    # Basic Snakemake command
-    cmd = ["snakemake", 
-           "-s", 
-           snakefile, 
-           "--use-conda", 
-           "-k", 
-           "--benchmark-extended", 
-           "--printshellcmds", 
-           "--rerun-incomplete",
-           "–report-after-run"]
+    # Load snakemake settings from config if available
+    snakemake_opts = {}
+    if configfile and os.path.exists(configfile):
+        try:
+            with open(configfile, 'r') as f:
+                config = yaml.safe_load(f)
+                snakemake_opts = config.get('snakemake', {})
+        except Exception as e:
+            if verbose:
+                print(f"Warning: Could not load snakemake options from config: {e}")
+
+    # Build Snakemake command with configurable options
+    cmd = ["snakemake", "-s", snakefile]
+    
+    # Add configurable flags (with sane defaults)
+    if snakemake_opts.get('use_conda', True):
+        cmd.append("--use-conda")
+    if snakemake_opts.get('keep_going', True):
+        cmd.append("-k")
+    if snakemake_opts.get('benchmark_extended', True):
+        cmd.append("--benchmark-extended")
+    if snakemake_opts.get('print_shell_commands', True):
+        cmd.append("--printshellcmds")
+    if snakemake_opts.get('rerun_incomplete', True):
+        cmd.append("--rerun-incomplete")
+    if snakemake_opts.get('generate_report', True):
+        cmd.append("--report=results/snakemake_report.html")
 
     # Add additional Snakemake arguments
     cmd += list(extra_args)
@@ -107,24 +125,30 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
     start_time = time.time()
     net_start = psutil.net_io_counters()  # Capture network usage at start
 
-    # run snakemake plan to preview the pipeline
-    # run_snakemake_plan(configfile)
-    
     # run Snakemake
+    return_code = 0
     try:
         subprocess.check_call(cmd)
     except subprocess.CalledProcessError as e:
         print(f'Error in Snakemake invocation: {e}', file=sys.stderr)
-        return e.returncode
+        return_code = e.returncode
     except FileNotFoundError as e:
         print(f'Snakemake not found: {e}', file=sys.stderr)
-        return 1 
+        return_code = 1
 
-    # generate snakemake report for the pipeline
-    get_snakemake_report(configfile)
-
-    # display resource usage
-    track_resources(start_time, net_start, outdir, verbose=verbose)
+    if return_code == 0:
+        # Aggregate benchmarks and logs on success
+        try:
+            from aggregate import create_execution_report
+            create_execution_report(outdir)
+        except Exception as e:
+            if verbose:
+                print(f"Warning: Could not generate execution report: {e}")
+        
+        # display resource usage
+        track_resources(start_time, net_start, outdir, verbose=verbose)
+    
+    return return_code
 
 
 # run snakemake plan to preview the pipeline

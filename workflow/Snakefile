@@ -47,15 +47,15 @@ configfile: "workflow/config.yml"
 ############################
 
 include: "rules/001_qc.smk"
-include: "rules/001_posttrim_qc.smk"
 include: "rules/002_trimming.smk"
-include: "rules/003_alignment.smk"
-include: "rules/004_bam_prep.smk"
-include: "rules/005_bam_qc.smk"
-include: "rules/005_variant_calling.smk"
-include: "rules/006_variant_filtering.smk"
-# include: "rules/007_annotation.smk"
-# include: "rules/008_summary.smk"
+include: "rules/003_posttrim_qc.smk"
+include: "rules/004_alignment.smk"
+include: "rules/005_bam_prep.smk"
+include: "rules/006_bam_qc.smk"
+include: "rules/007_variant_calling.smk"
+include: "rules/008_variant_filtering.smk"
+# include: "rules/009_annotation.smk"
+# include: "rules/010_summary.smk"
 
 ############################
 ######### Workflow #########

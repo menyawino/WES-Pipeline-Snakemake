@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from workflow.scripts.utils import *
+from workflow.scripts.validate import validate_pipeline_config
 
 @click.group()
 def cli():
@@ -12,10 +13,18 @@ def cli():
 @click.option('-i', '--inputdir', required=True, help="Input directory.")
 @click.option('-o', '--outdir', required=True, help="Output directory.")
 @click.option('--verbose', is_flag=True, help="Enable verbose output.")
+@click.option('--skip-validation', is_flag=True, help="Skip pre-flight validation checks.")
 @click.argument('snakemake_args', nargs=-1)
 
-def run(configfile, inputdir, outdir, snakemake_args, verbose):
+def run(configfile, inputdir, outdir, verbose, skip_validation, snakemake_args):
     """Execute workflow (using Snakemake underneath)."""
+    
+    if not skip_validation:
+        if not validate_pipeline_config(configfile, inputdir, outdir):
+            print("\nPipeline validation failed. Use --skip-validation to bypass checks (not recommended).")
+            sys.exit(1)
+        print()
+    
     build_folders(outdir)
 
     return_code = run_snakemake(configfile, inputdir, outdir, verbose=verbose,

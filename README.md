@@ -1,19 +1,15 @@
-# ICC Pipeline
+# ICC Pipeline - WES Analysis
 
-This pipeline is designed for DNA sequencing analysis, specifically tailored for cardiology research. It leverages Snakemake for workflow management and Conda for environment management.
+DNAseq Analysis Toolkit for Cardiovascular Disease Research. This pipeline is designed for Whole Exome Sequencing (WES) analysis with standardized quality control, alignment, and variant calling workflows.
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Workflow Overview](#workflow-overview)
-- [Rules](#rules)
-  - [Quality Control](#quality-control)
-  - [Trimming](#trimming)
-  - [Alignment](#alignment)
-  - [Variant Calling](#variant-calling)
-  - [Variant Filtering](#variant-filtering)
-  - [Annotation](#annotation)
+- [Pipeline Architecture](#pipeline-architecture)
+- [Workflow Steps](#workflow-steps)
+- [Configuration](#configuration)
+- [Output Structure](#output-structure)
 - [Resource Tracking](#resource-tracking)
 
 ## Installation
@@ -24,90 +20,141 @@ This pipeline is designed for DNA sequencing analysis, specifically tailored for
     cd icc-pipeline
     ```
 
-2. **Install Conda environments:**
-    ```sh
-    conda env create -f environment.yml
-    ```
-
-3. **Activate the environment:**
-    ```sh
-    conda activate icc_pipeline
-    ```
+2. **Configure reference data:**
+    Update `workflow/config.yml` with appropriate paths to:
+    - Reference genome (GRCh38 or GRCh37)
+    - Target regions (gene panels)
+    - Known variant databases (dbSNP, 1000G, etc.)
 
 ## Usage
 
-To run the pipeline, use the `cidna.py` script with the required arguments:
+Run the pipeline using the `cidna.py` wrapper script:
 
 ```sh
-./cidna.py run workflow/config.yml -i /path/to/input -o /path/to/output -- -c88 --printshellcmds --rerun-incomplete
+./cidna.py run workflow/config.yml -i /path/to/input -o /path/to/output -- --cores 8
 ```
 
-## Workflow Overview
+**Optional flags:**
+- `-i, --inputdir`: Input directory with FASTQ files (required)
+- `-o, --outdir`: Output directory for results (required)
+- `--verbose`: Enable verbose output
+- Additional Snakemake arguments after `--`
 
-The pipeline consists of several steps, each managed by Snakemake rules. The main steps include:
+## Pipeline Architecture
 
-1. **Quality Control:** Initial quality checks on raw sequencing data.
-2. **Trimming:** Removing adapters and low-quality bases.
-3. **Alignment:** Aligning reads to the reference genome.
-4. **Variant Calling:** Identifying variants from the aligned reads.
-5. **Variant Filtering:** Filtering the identified variants.
-6. **Annotation:** Annotating the filtered variants.
+The pipeline follows a modular sequential design:
+1. **Raw Data QC** → Extract sequencing metrics
+2. **Adapter Trimming** → Remove low-quality bases
+3. **Trimmed QC** → Verify trimming quality
+4. **Read Alignment** → Map to reference genome
+5. **BAM Processing** → Coordinate sorting, deduplication
+6. **BAM QC** → Coverage metrics and flagstat
+7. **Variant Calling** → Identify variants with HaplotypeCaller
+8. **Variant Filtering** → Apply quality filters
+9. **Annotation** → VEP/SnpEff annotation (optional)
+10. **Summary** → Generate final report (optional)
 
-## Rules
+## Workflow Steps
 
-### Quality Control
+| Step | Rule File | Tool | Input | Output |
+|------|-----------|------|-------|--------|
+| 01 | `001_qc.smk` | FastQC | FASTQ files | HTML/ZIP reports |
+| 02 | `002_trimming.smk` | fastp | Raw FASTQ | Trimmed FASTQ |
+| 03 | `003_posttrim_qc.smk` | FastQC | Trimmed FASTQ | HTML/ZIP reports |
+| 04 | `004_alignment.smk` | BWA-MEM2 + Sambamba | Trimmed FASTQ | Sorted BAM |
+| 05 | `005_bam_prep.smk` | Sambamba + GATK | BAM | Processed BAM |
+| 06 | `006_bam_qc.smk` | Samtools/GATK | BAM | Coverage/Flagstat |
+| 07 | `007_variant_calling.smk` | GATK HaplotypeCaller | BAM | gVCF / VCF |
+| 08 | `008_variant_filtering.smk` | GATK VariantFiltration | VCF | Filtered VCF |
+| 09 | `009_annotation.smk` | VEP | VCF | Annotated VCF |
+| 10 | `010_summary.smk` | Custom scripts | All outputs | Summary report |
 
-- **Rule:** `raw_fastqc`
-- **Description:** Runs FastQC on raw sequencing data.
-- **Input:** Raw FASTQ files.
-- **Output:** FastQC reports.
+## Configuration
 
-### Trimming
+Edit `workflow/config.yml` to customize:
 
-- **Rule:** `trimming`
-- **Description:** Trims adapters and low-quality bases using Prinseq.
-- **Input:** Raw FASTQ files.
-- **Output:** Trimmed FASTQ files.
+**Thread allocation:**
+```yaml
+threads_high: 11
+threads_mid: 4
+threads_low: 1
+```
 
-### Alignment
+**Reference genomes (GRCh38 or GRCh37):**
+```yaml
+reference_genome: "/path/to/grch38.fa"
+icc_panel: "/path/to/target_regions.bed"
+```
 
-- **Rule:** `bwa_alignment`
-- **Description:** Aligns trimmed reads to the reference genome using BWA.
-- **Input:** Trimmed FASTQ files.
-- **Output:** BAM files.
+**Tool parameters:**
+```yaml
+fastp:
+  min_read_length: 35
+  window_size: 5
+gatk:
+  HaplotypeCaller:
+    dcovg: 1000
+```
 
-### Variant Calling
+## Output Structure
 
-- **Rule:** `haplotypecaller`
-- **Description:** Calls variants using GATK HaplotypeCaller.
-- **Input:** Realigned BAM files.
-- **Output:** VCF files.
-
-### Variant Filtering
-
-- **Rule:** `filter_variants`
-- **Description:** Filters variants using GATK VariantFiltration.
-- **Input:** VCF files.
-- **Output:** Filtered VCF files.
-
-### Annotation
-
-- **Rule:** `annotate_variants`
-- **Description:** Annotates variants using VEP.
-- **Input:** Filtered VCF files.
-- **Output:** Annotated VCF files.
+```
+output_dir/
+├── analysis/
+│   ├── 001_qc/pretrim/          # Pre-trimming FastQC reports
+│   ├── 002_trimming/            # Trimmed FASTQ files
+│   ├── 003_qc/posttrim/         # Post-trimming FastQC reports
+│   ├── 004_alignment/           # Aligned BAM files
+│   ├── 005_bam_prep/            # Processed BAM files
+│   ├── 006_qc/bam/              # BAM QC metrics
+│   ├── 007_variant_calling/     # gVCF/VCF files
+│   ├── 008_variant_filtering/   # Filtered VCF files
+│   ├── 009_annotation/          # Annotated variants
+│   └── 010_summary/             # Final reports
+├── logs/                        # Execution logs per rule
+├── benchmarks/                  # Resource usage per rule
+└── results/                     # Final outputs
+```
 
 ## Resource Tracking
 
-The pipeline tracks resource usage, including CPU, memory, and network usage. A detailed report is generated at the end of the pipeline run.
+Pipeline execution generates a resource usage report including:
+- Runtime duration
+- CPU and memory usage
+- Network I/O statistics
+- Output file sizes
 
+Reports are saved to `benchmarks/resource_usage.txt`
 
-## Inhouse vs new pipeline changelog
+## Implementation Notes
 
-- Removed IndelRealigner and RealignerTargetCreator because gatk4 HaplotypeCaller realigns the reads on the fly.
-- Removed samtools and used sambamba with the same filters as the original command
-- Removed gatk CallableLoci and kept gatk DepthOfCoverage. Both are coverage-based and can be addressed in one step with the right configuration. (the below args need to be added though)
-            --omitDepthOutputAtEachBase false \
-            --includeDeletions true
+### GATK Changes from InHouse Pipeline
+- Removed `IndelRealigner` and `RealignerTargetCreator`: HaplotypeCaller in GATK4 performs realignment on-the-fly
+- Replaced `samtools` with `sambamba`: Equivalent filtering with improved performance
+- Kept `DepthOfCoverage`: Provides comprehensive coverage metrics
+
+### Sample Naming Convention
+- Input: `SAMPLE_ID_SX_LYYYY_RZ_NNN.fastq.gz`
+  - X = sample number
+  - Y = lane number  
+  - Z = read direction (1/2)
+  - N = chunk number
+- Output: Organized by sample ID with lane tracking
+
+## Troubleshooting
+
+**Pipeline fails during sample discovery:**
+- Verify FASTQ file naming matches expected pattern
+- Check `samplesfile` in Snakefile points to correct CSV
+
+**Dry-run before execution:**
+```sh
+./cidna.py run workflow/config.yml -i input/ -o output/ -- --dry-run
+```
+
+**View DAG visualization:**
+```sh
+snakemake -s workflow/Snakefile --dag | dot -Tpng > dag.png
+```
 
 

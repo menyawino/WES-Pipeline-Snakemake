@@ -1,25 +1,36 @@
 #!/usr/bin/env python
 
-'''A function to get the sample data needed for the pipeline.'''
+'''Functions to process and validate sample data for the pipeline.'''
 
 import pandas as pd
 import glob
 import os
 import re
 import sys
+import logging
 
-def get_sample_data(csv_file, input_dir):
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
+def get_sample_data(csv_file, input_dir, lanes=[1, 2, 3, 4], fail_on_missing=False):
     """
-    A function to get the sample data needed for the pipeline.
+    Get the sample data needed for the pipeline.
+    
+    Args:
+        csv_file: Path to sample metadata CSV
+        input_dir: Path to input directory containing FASTQ files
+        lanes: List of lane numbers to expect (default: [1,2,3,4])
+        fail_on_missing: If True, exit on missing files; if False, continue with warning
+    
+    Returns:
+        DataFrame with sample metadata and file paths
     """
     df = pd.read_csv(csv_file)
-
-    # Assuming the sample names are in a column named 'sample'
     sample_names = df['sample'].astype(str).tolist()
 
-    # Dictionary to hold the fastq file paths for each sample
     sample_fastq_files = {}
-    all_samples_in_dir = set(os.listdir(input_dir))  # Get all samples present in the input directory
+    all_samples_in_dir = set(os.listdir(input_dir))
 
     missing_files = []
     not_found_samples = []
@@ -28,9 +39,11 @@ def get_sample_data(csv_file, input_dir):
         if sample not in all_samples_in_dir:
             not_found_samples.append(sample)
             continue
+        
         sample_fastq_files[sample] = []
-        for lane in range(1, 5):  # Loop through lanes 1 to 4 (1, 5), for deployment change to (1, 2)
-            # Update the pattern to include sample directories
+        
+        for lane in lanes:
+            # Build glob patterns for R1 and R2 files
             r1_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R1_*.fastq.gz".format(sample, lane))
             r2_pattern = os.path.join(input_dir, sample, "{}_S*_L00{}_R2_*.fastq.gz".format(sample, lane))
             
@@ -38,83 +51,77 @@ def get_sample_data(csv_file, input_dir):
             r2_files = glob.glob(r2_pattern)
 
             if not r1_files:
-                missing_files.append("Missing R1 file for sample {}, lane {}".format(sample, lane))
+                missing_files.append(f"Missing R1 file for sample {sample}, lane {lane}")
             if not r2_files:
-                missing_files.append("Missing R2 file for sample {}, lane {}".format(sample, lane))
+                missing_files.append(f"Missing R2 file for sample {sample}, lane {lane}")
 
             for file in r1_files:
                 match = re.search(r'_S(\d+)_L00(\d)_R1_', file)
                 if match:
                     sample_number = match.group(1)
-                    matched_lane = match.group(2)  # Use a different variable name for the matched lane
-                    sample_fastq_files[sample].append((sample_number, 'L00{}'.format(matched_lane), 'R1', file))
+                    matched_lane = match.group(2)
+                    sample_fastq_files[sample].append((sample_number, f'L00{matched_lane}', 'R1', file))
             
             for file in r2_files:
                 match = re.search(r'_S(\d+)_L00(\d)_R2_', file)
                 if match:
                     sample_number = match.group(1)
-                    matched_lane = match.group(2)  # Use a different variable name for the matched lane
-                    sample_fastq_files[sample].append((sample_number, 'L00{}'.format(matched_lane), 'R2', file))
+                    matched_lane = match.group(2)
+                    sample_fastq_files[sample].append((sample_number, f'L00{matched_lane}', 'R2', file))
 
-    # Check for missing files
-    if missing_files:
-        for missing_file in missing_files:
-            print(missing_file)
-            
-        # give option to continue without the missing files: Do you want to continue without the missing files? (y/n)
-        print("Do you want to continue without the missing files? (y/n)")
-        response = input()
-        if response.lower() == 'n':
-            print("Pipeline terminated.")
-            sys.exit(1)
-        elif response.lower() == 'y':
-            print("Continuing without the missing files.")
-        else:
-            raise ValueError("Invalid response. Please enter 'y' or 'n'.")
-        
-    # Print the number of found samples and samples not mentioned in the input list but present in the input directory
-    found_samples = len(sample_fastq_files)
+    # Log validation results
+    logger.info(f"Found {len(sample_fastq_files)} samples with FASTQ files.")
+    
     extra_samples = all_samples_in_dir - set(sample_names)
-    print(f"Found {found_samples} samples.")
-    print(f"{len(extra_samples)} samples are not mentioned in the input list but present in the input directory: {', '.join(extra_samples)}")
+    if extra_samples:
+        logger.warning(f"{len(extra_samples)} extra samples in directory not in sample list: {', '.join(extra_samples)}")
 
-    # Check for samples in the input list but not found in the input directory
     if not_found_samples:
-        print(f"{len(not_found_samples)} samples are mentioned in the input list but not found in the input directory: {', '.join(not_found_samples)}")
-        print("Do you want to start the analysis anyway? (y/n)")
-        response = input()
-        if response.lower() == 'n':
-            print("Pipeline terminated.")
+        msg = f"{len(not_found_samples)} samples not found: {', '.join(not_found_samples)}"
+        if fail_on_missing:
+            logger.error(msg)
             sys.exit(1)
-        elif response.lower() == 'y':
-            print("Continuing without the missing samples.")
         else:
-            raise ValueError("Invalid response. Please enter 'y' or 'n'.")
+            logger.warning(msg)
 
-    # Merge the metadata with the fastq file information
+    if missing_files:
+        msg = f"{len(missing_files)} missing files detected"
+        if fail_on_missing:
+            for f in missing_files[:5]:  # Show first 5
+                logger.error(f)
+            if len(missing_files) > 5:
+                logger.error(f"... and {len(missing_files) - 5} more")
+            sys.exit(1)
+        else:
+            logger.warning(msg)
+            for f in missing_files[:5]:  # Show first 5
+                logger.warning(f)
+            if len(missing_files) > 5:
+                logger.warning(f"... and {len(missing_files) - 5} more")
+
+    # Merge metadata with fastq file information
     metadata_columns = df.columns.tolist()
-    metadata_columns.remove('sample')
+    if 'sample' in metadata_columns:
+        metadata_columns.remove('sample')
 
     output_rows = []
-
     for index, row in df.iterrows():
         sample = str(row['sample'])
-        metadata = [row[col] for col in metadata_columns]
+        if sample not in sample_fastq_files:
+            continue
         
+        metadata = [row[col] for col in metadata_columns]
         for sample_number, lane, read, file in sample_fastq_files[sample]:
-            merged_sample = "{}_S{}".format(sample, sample_number)
+            merged_sample = f"{sample}_S{sample_number}"
             output_rows.append([merged_sample, lane, read, file] + metadata)
 
-    # Save the results to a CSV file
+    # Save results to CSV
     output_file = 'sample_data.csv'
     with open(output_file, 'w') as f:
         header = ['sample', 'lane', 'read', 'file'] + metadata_columns
         f.write(','.join(header) + '\n')
-        
         for row in output_rows:
             f.write(','.join(map(str, row)) + '\n')
     
-    # print("Results have been saved to {}".format(output_file))
-    
-    # Return the CSV file as a dataframe
+    logger.info(f"Sample data saved to {output_file}")
     return pd.read_csv(output_file)
