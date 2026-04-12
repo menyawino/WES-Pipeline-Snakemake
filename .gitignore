@@ -1,3 +1,10 @@
 .snakemake/*
 ref/*
 workflow/scripts/__pycache__/utils.cpython-312.pyc
+workflow/scripts/make_performance_figure.py
+workflow/scripts/make_resource_figure.py
+.performance_metrics.md
+sample_data.csv
+.venv_plot/
+pipeline_performance_comparison.png
+pipeline_resource_comparison.png
