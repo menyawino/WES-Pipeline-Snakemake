@@ -138,6 +138,7 @@ The workflow now includes a local, ClawBio-inspired reporting layer after varian
   - `cohort_variant_report.md`
   - `cohort_variant_summary.tsv`
   - `cohort_variant_summary.json`
+  - `cohort_variant_dashboard.html`
 
 These summaries are generated from the filtered SNP and indel VCFs and include:
 
@@ -147,6 +148,13 @@ These summaries are generated from the filtered SNP and indel VCFs and include:
 - transition/transversion summary for SNPs
 - chromosome-level burden table
 - top PASS variants ranked by QUAL
+
+When `analysis/009_annotation/<sample>.annotated.vcf` is present, the summary layer also picks up annotation-aware fields without making VEP a hard dependency. The dashboard and markdown reports then include:
+
+- gene-level burden summaries
+- impact tiers such as `HIGH` and `MODERATE`
+- consequence labels from VEP/SnpEff-style annotations
+- clinical significance tags when present in the annotated VCF
 
 ## Implementation Notes
 

@@ -14,7 +14,10 @@ rule summarize_variants:
         "envs/010_summary.yml"
     params:
         top_variants=config.get("variant_summary", {}).get("top_variants", 10),
-        top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10)
+        top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10),
+        annotated_vcf=lambda wildcards: config.get("variant_summary", {}).get(
+            "annotated_vcf_pattern", ""
+        ).format(outdir=config["outdir"], sample=wildcards.sample)
     log:
         config["outdir"] + "/logs/010_summary/{sample}_variant_summary.log"
     benchmark:
@@ -25,6 +28,7 @@ rule summarize_variants:
         --sample-name "{wildcards.sample}" \
         --snp-vcf {input.snp_vcf} \
         --indel-vcf {input.indel_vcf} \
+        --annotated-vcf "{params.annotated_vcf}" \
         --report-md {output.report_md} \
         --summary-tsv {output.summary_tsv} \
         --summary-json {output.summary_json} \
@@ -42,7 +46,8 @@ rule aggregate_variant_summaries:
     output:
         cohort_report=config["outdir"] + "/analysis/010_summary/cohort_variant_report.md",
         cohort_table=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.tsv",
-        cohort_json=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.json"
+        cohort_json=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.json",
+        cohort_dashboard=config["outdir"] + "/analysis/010_summary/cohort_variant_dashboard.html"
     conda:
         "envs/010_summary.yml"
     log:
@@ -56,5 +61,6 @@ rule aggregate_variant_summaries:
         --report-md {output.cohort_report} \
         --summary-tsv {output.cohort_table} \
         --summary-json {output.cohort_json} \
+        --dashboard-html {output.cohort_dashboard} \
         > {log} 2>&1
         """

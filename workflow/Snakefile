@@ -82,7 +82,8 @@ rule all:
         expand(rules.summarize_variants.output.summary_json, sample=sample_filename),
         rules.aggregate_variant_summaries.output.cohort_report,
         rules.aggregate_variant_summaries.output.cohort_table,
-        rules.aggregate_variant_summaries.output.cohort_json
+        rules.aggregate_variant_summaries.output.cohort_json,
+        rules.aggregate_variant_summaries.output.cohort_dashboard
 
 # delete samples_data.csv with python
 os.remove("sample_data.csv")

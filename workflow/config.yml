@@ -92,6 +92,7 @@ vep:
 variant_summary:
   top_variants: 10
   top_chromosomes: 10
+  annotated_vcf_pattern: "{outdir}/analysis/009_annotation/{sample}.annotated.vcf"
 
 # Snakemake execution options
 snakemake:
