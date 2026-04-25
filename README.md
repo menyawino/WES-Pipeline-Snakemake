@@ -52,7 +52,7 @@ The pipeline follows a modular sequential design:
 7. **Variant Calling** → Identify variants with HaplotypeCaller
 8. **Variant Filtering** → Apply quality filters
 9. **Annotation** → VEP/SnpEff annotation (optional)
-10. **Summary** → Generate final report (optional)
+10. **Summary** → Generate per-sample and cohort variant reports
 
 ## Workflow Steps
 
@@ -67,7 +67,7 @@ The pipeline follows a modular sequential design:
 | 07 | `007_variant_calling.smk` | GATK HaplotypeCaller | BAM | gVCF / VCF |
 | 08 | `008_variant_filtering.smk` | GATK VariantFiltration | VCF | Filtered VCF |
 | 09 | `009_annotation.smk` | VEP | VCF | Annotated VCF |
-| 10 | `010_summary.smk` | Custom scripts | All outputs | Summary report |
+| 10 | `010_summary.smk` | Custom scripts | Filtered VCFs | Sample/cohort variant reports |
 
 ## Configuration
 
@@ -110,7 +110,7 @@ output_dir/
 │   ├── 007_variant_calling/     # gVCF/VCF files
 │   ├── 008_variant_filtering/   # Filtered VCF files
 │   ├── 009_annotation/          # Annotated variants
-│   └── 010_summary/             # Final reports
+│   └── 010_summary/             # Sample and cohort variant reports
 ├── logs/                        # Execution logs per rule
 ├── benchmarks/                  # Resource usage per rule
 └── results/                     # Final outputs
@@ -125,6 +125,28 @@ Pipeline execution generates a resource usage report including:
 - Output file sizes
 
 Reports are saved to `benchmarks/resource_usage.txt`
+
+## Variant Reporting
+
+The workflow now includes a local, ClawBio-inspired reporting layer after variant filtering.
+
+- Per-sample outputs in `analysis/010_summary/<sample>/`:
+  - `variant_summary.md`
+  - `variant_summary.tsv`
+  - `variant_summary.json`
+- Cohort outputs in `analysis/010_summary/`:
+  - `cohort_variant_report.md`
+  - `cohort_variant_summary.tsv`
+  - `cohort_variant_summary.json`
+
+These summaries are generated from the filtered SNP and indel VCFs and include:
+
+- total and PASS variant counts
+- SNP/indel breakdown
+- genotype zygosity counts when sample genotypes are present
+- transition/transversion summary for SNPs
+- chromosome-level burden table
+- top PASS variants ranked by QUAL
 
 ## Implementation Notes
 

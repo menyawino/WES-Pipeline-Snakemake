@@ -88,6 +88,11 @@ vep:
   cache_dir: "/path/to/vep/cache"
   fasta: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/allchrom.Chr1ToChrM.validated.fa"
 
+# Local variant-reporting parameters inspired by ClawBio annotation workflows
+variant_summary:
+  top_variants: 10
+  top_chromosomes: 10
+
 # Snakemake execution options
 snakemake:
   use_conda: true

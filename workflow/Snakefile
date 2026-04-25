@@ -55,7 +55,7 @@ include: "rules/006_bam_qc.smk"
 include: "rules/007_variant_calling.smk"
 include: "rules/008_variant_filtering.smk"
 # include: "rules/009_annotation.smk"
-# include: "rules/010_summary.smk"
+include: "rules/010_summary.smk"
 
 ############################
 ######### Workflow #########
@@ -76,7 +76,13 @@ rule all:
         expand(rules.collect_alignment_summary_metrics.output.alignment_summary_metrics, sample=sample_filename),
         expand(rules.collect_alignment_summary_metrics_target.output.alignment_summary_metrics_target, sample=sample_filename),
         expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename),
-        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename)     
+        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename),
+        expand(rules.summarize_variants.output.report_md, sample=sample_filename),
+        expand(rules.summarize_variants.output.summary_tsv, sample=sample_filename),
+        expand(rules.summarize_variants.output.summary_json, sample=sample_filename),
+        rules.aggregate_variant_summaries.output.cohort_report,
+        rules.aggregate_variant_summaries.output.cohort_table,
+        rules.aggregate_variant_summaries.output.cohort_json
 
 # delete samples_data.csv with python
 os.remove("sample_data.csv")
