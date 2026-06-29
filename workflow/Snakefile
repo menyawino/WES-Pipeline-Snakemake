@@ -6,15 +6,24 @@
 from scripts.sample_processing import get_sample_data
 import os
 
-# add sample file here
-samplesfile = "/mnt/omar/pipelines/icc/pipeline/samples.csv"
+# Resolve sample metadata locally unless explicitly overridden.
+samplesfile = config.get(
+    "samplesfile",
+    os.path.abspath(os.path.join(workflow.basedir, "..", "samples.csv")),
+)
 
 # get input directory
 configfile: "workflow/config.yml"
 inputdir = config["inputdir"]
 
 # get sample data
-samples_data = get_sample_data(samplesfile, inputdir)
+sample_processing_cfg = config.get("sample_processing", {})
+samples_data = get_sample_data(
+    samplesfile,
+    inputdir,
+    lanes=sample_processing_cfg.get("lanes", [1, 2, 3, 4]),
+    fail_on_missing=sample_processing_cfg.get("fail_on_missing", False),
+)
 
 # make lists for needed data
 # get sample mrn without the _S17 in for example 20AD07372_S17_L001_R1_001.fastq.gz
@@ -85,7 +94,8 @@ rule all:
         rules.aggregate_variant_summaries.output.cohort_json,
         rules.aggregate_variant_summaries.output.cohort_dashboard
 
-# delete samples_data.csv with python
-os.remove("sample_data.csv")
+# delete sample_data.csv if present
+if os.path.exists("sample_data.csv"):
+    os.remove("sample_data.csv")
 
 # ./cidna.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88 --printshellcmds --rerun-incomplete

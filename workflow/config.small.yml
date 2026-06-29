@@ -1,0 +1,77 @@
+threads_high: 4
+threads_mid: 2
+threads_low: 1
+benchmark: 1
+
+sample_processing:
+  lanes: [1]
+  reads: [1, 2]
+  fail_on_missing: true
+
+samplesfile: "/Users/menyawino/Playground/WES-Pipeline-Snakemake/samples.small.csv"
+inputdir: "/Users/menyawino/Playground/WES-Pipeline-Snakemake/input_small"
+outdir: "/Users/menyawino/Playground/WES-Pipeline-Snakemake/output_small"
+
+output_dirs:
+  qc_pretrim: "{outdir}/analysis/001_qc/pretrim"
+  trimming: "{outdir}/analysis/002_trimming"
+  qc_posttrim: "{outdir}/analysis/003_qc/posttrim"
+  alignment: "{outdir}/analysis/004_alignment"
+  bam_prep: "{outdir}/analysis/005_bam_prep"
+  qc_bam: "{outdir}/analysis/006_qc/bam"
+  variant_calling: "{outdir}/analysis/007_variant_calling"
+  variant_filtering: "{outdir}/analysis/008_variant_filtering"
+  annotation: "{outdir}/analysis/009_annotation"
+  summary: "{outdir}/analysis/010_summary"
+  logs: "{outdir}/logs"
+  benchmarks: "{outdir}/benchmarks"
+  results: "{outdir}/results"
+
+# These are placeholders for later full runs; raw_fastqc does not consume them.
+reference_genome: "/tmp/placeholder.fa"
+icc_panel: "/tmp/placeholder.bed"
+cds_panel: "/tmp/placeholder.bed"
+canontran_panel: "/tmp/placeholder.bed"
+dbsnp: "/tmp/placeholder.vcf"
+omni: "/tmp/placeholder.vcf.gz"
+tenk: "/tmp/placeholder.vcf"
+tenk_indel: "/tmp/placeholder.vcf.gz"
+hapmap: "/tmp/placeholder.vcf.gz"
+mills: "/tmp/placeholder.vcf.gz"
+
+fastp:
+  min_read_length: 35
+  window_size: 5
+
+gatk:
+  AddOrReplaceReadGroups:
+    RGID: "1"
+    RGLB: "lib1"
+    RGPL: "illumina"
+    RGPU: "unit1"
+    RGSM: "TESTSMOKE"
+    RGCN: "local"
+    RGDS: "smoke"
+    validation_stringency: "SILENT"
+  MarkDuplicates:
+    validation_stringency: "LENIENT"
+  HaplotypeCaller:
+    dcovg: 1000
+
+vep:
+  cache_dir: "/tmp/vep-cache"
+  fasta: "/tmp/placeholder.fa"
+
+variant_summary:
+  top_variants: 10
+  top_chromosomes: 10
+  annotated_vcf_pattern: "{outdir}/analysis/009_annotation/{sample}.annotated.vcf"
+
+snakemake:
+  use_conda: true
+  keep_going: true
+  benchmark_extended: true
+  print_shell_commands: true
+  rerun_incomplete: true
+  generate_report: false
+  cores: 1

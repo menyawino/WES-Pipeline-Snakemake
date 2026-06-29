@@ -4,7 +4,7 @@ rule raw_fastqc:
     message: 
         "Running FastQC on sample {lane}_{wildcards.R}"
     conda: 
-        "fastqc_env"
+        "../envs/001_qc.yml"
     input:
         config["inputdir"] + "/{sample_filename}_{lane}_{R}_001.fastq.gz"
     output:
