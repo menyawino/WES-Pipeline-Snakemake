@@ -2,6 +2,9 @@
 threads_high: 11
 threads_mid: 4
 threads_low: 1
+mem_high: 32768
+mem_mid: 16384
+mem_low: 4096
 benchmark: 1
 
 # Sample processing configuration

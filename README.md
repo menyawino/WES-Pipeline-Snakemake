@@ -28,16 +28,23 @@ DNAseq Analysis Toolkit for Cardiovascular Disease Research. This pipeline is de
 
 ## Usage
 
-Run the pipeline using the `cidna.py` wrapper script:
+Run the pipeline using the `wes_pipeline.py` CLI wrapper:
 
 ```sh
-./cidna.py run workflow/config.yml -i /path/to/input -o /path/to/output -- --cores 8
+./wes_pipeline.py run workflow/config.yml -i /path/to/input -o /path/to/output -- --cores 8
 ```
 
-**Optional flags:**
-- `-i, --inputdir`: Input directory with FASTQ files (required)
-- `-o, --outdir`: Output directory for results (required)
-- `--verbose`: Enable verbose output
+**Available CLI subcommands:**
+- `run`: Execute the full WES pipeline (includes pre-flight validation by default).
+- `plan`: Preview execution plan and render high-resolution DAG/rulegraph diagrams (`results/dag.png`, `results/rulegraph.png`).
+- `validate`: Perform standalone pre-flight configuration and resource checks.
+- `report`: Generate a Snakemake HTML execution report.
+
+**Options for `run`:**
+- `-i, --inputdir`: Input directory containing sample FASTQ files (required)
+- `-o, --outdir`: Target output directory for pipeline results (required)
+- `--skip-validation`: Bypass pre-flight configuration and resource checks
+- `--verbose`: Enable detailed verbose logging
 - Additional Snakemake arguments after `--`
 
 ## Pipeline Architecture
@@ -179,12 +186,12 @@ When `analysis/009_annotation/<sample>.annotated.vcf` is present, the summary la
 
 **Dry-run before execution:**
 ```sh
-./cidna.py run workflow/config.yml -i input/ -o output/ -- --dry-run
+./wes_pipeline.py run workflow/config.yml -i input/ -o output/ -- --dry-run
 ```
 
-**View DAG visualization:**
+**Generate DAG & Rulegraph visualization:**
 ```sh
-snakemake -s workflow/Snakefile --dag | dot -Tpng > dag.png
+./wes_pipeline.py plan workflow/config.yml -i input/
 ```
 
 

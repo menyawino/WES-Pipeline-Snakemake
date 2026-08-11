@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import re
 import click
 import time
 import psutil
@@ -62,12 +63,16 @@ def track_resources(start_time, net_start, outdir, verbose=False):
 
 #  get the size of a folder in bytes 
 def get_folder_size(folder):
-    """Return the size of a folder in bytes."""
+    """Return the size of a folder in bytes using os.scandir for fast traversal."""
     total_size = 0
-    for dirpath, dirnames, filenames in os.walk(folder):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
+    try:
+        for entry in os.scandir(folder):
+            if entry.is_file(follow_symlinks=False):
+                total_size += entry.stat().st_size
+            elif entry.is_dir(follow_symlinks=False):
+                total_size += get_folder_size(entry.path)
+    except (PermissionError, FileNotFoundError):
+        pass
     return total_size
 
 
@@ -151,20 +156,159 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
     return return_code
 
 
+def stylize_dot(dot_text, title="WES Pipeline Workflow"):
+    """Transform raw Snakemake DOT output into a modern, publication-ready Graphviz graph."""
+    if not dot_text or "digraph" not in dot_text:
+        return dot_text
+
+    start_idx = dot_text.find("digraph")
+    end_idx = dot_text.rfind("}")
+    if start_idx != -1 and end_idx != -1:
+        dot_text = dot_text[start_idx:end_idx + 1]
+
+    category_styles = {
+        "qc": {"fill": "#F0F9FF", "color": "#0284C7", "text": "#0369A1"},
+        "trim": {"fill": "#F0FDF4", "color": "#16A34A", "text": "#15803D"},
+        "align": {"fill": "#EEF2FF", "color": "#4F46E5", "text": "#3730A3"},
+        "bam_prep": {"fill": "#FAF5FF", "color": "#9333EA", "text": "#6B21A8"},
+        "bam_qc": {"fill": "#FDF2F8", "color": "#DB2777", "text": "#9D174D"},
+        "variant": {"fill": "#FFFBEB", "color": "#D97706", "text": "#92400E"},
+        "annot": {"fill": "#FFEDD5", "color": "#EA580C", "text": "#9A3412"},
+        "summary": {"fill": "#F8FAFC", "color": "#475569", "text": "#0F172A"},
+    }
+
+    def get_style(label):
+        lbl = label.lower()
+        if "fastqc" in lbl or "qc_report" in lbl:
+            return category_styles["qc"]
+        if "trim" in lbl or "fastp" in lbl:
+            return category_styles["trim"]
+        if "bwa" in lbl or "align" in lbl or "merge" in lbl:
+            return category_styles["align"]
+        if "markdup" in lbl or "bqsr" in lbl or "recal" in lbl or "filter_bam" in lbl:
+            return category_styles["bam_prep"]
+        if "flagstat" in lbl or "coverage" in lbl or "depth" in lbl or "metrics" in lbl:
+            return category_styles["bam_qc"]
+        if "haplotype" in lbl or "genotype" in lbl or "split_vcf" in lbl or "filter_snp" in lbl or "filter_indel" in lbl:
+            return category_styles["variant"]
+        if "annot" in lbl or "vep" in lbl:
+            return category_styles["annot"]
+        return category_styles["summary"]
+
+    graph_attrs = f"""
+    graph [
+        rankdir=LR,
+        bgcolor="#FFFFFF",
+        pad="0.5",
+        nodesep="0.45",
+        ranksep="0.65",
+        fontname="Inter, Helvetica, Arial, sans-serif",
+        dpi=300,
+        label="{title}\\n ",
+        labelloc="t",
+        fontsize=14,
+        fontcolor="#1E293B",
+        compound=true,
+        splines=ortho
+    ];
+    node [
+        shape=box,
+        style="filled,rounded",
+        fontname="Inter, Helvetica, Arial, sans-serif",
+        fontsize=10,
+        penwidth=1.5,
+        margin="0.2,0.12"
+    ];
+    edge [
+        penwidth=1.5,
+        color="#94A3B8",
+        arrowsize=0.85,
+        fontname="Inter, Helvetica, Arial, sans-serif",
+        fontsize=9,
+        fontcolor="#64748B"
+    ];
+    """
+
+    lines = dot_text.splitlines()
+    new_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("digraph"):
+            new_lines.append(line)
+            new_lines.append(graph_attrs)
+            continue
+        if stripped.startswith("graph[") or stripped.startswith("node[") or stripped.startswith("edge["):
+            continue
+
+        if "label =" in stripped:
+            label_match = re.search(r'label\s*=\s*"([^"]+)"', stripped)
+            if label_match:
+                label_val = label_match.group(1)
+                st = get_style(label_val)
+                line = re.sub(
+                    r'color\s*=\s*"[^"]+"',
+                    f'fillcolor="{st["fill"]}", color="{st["color"]}", fontcolor="{st["text"]}"',
+                    line
+                )
+                if 'fillcolor=' not in line:
+                    line = line.replace(']', f', fillcolor="{st["fill"]}", color="{st["color"]}", fontcolor="{st["text"]}"]')
+        new_lines.append(line)
+
+    return "\n".join(new_lines)
+
+
+def render_graph_png(cmd, output_png, title):
+    """Execute Snakemake graph command, apply modern DOT styling, and render high-res PNG."""
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        raw_dot = res.stdout
+        styled_dot = stylize_dot(raw_dot, title=title)
+        
+        os.makedirs(os.path.dirname(os.path.abspath(output_png)), exist_ok=True)
+        
+        # Try running dot from environment or system path
+        dot_bin = "dot"
+        sm_dot = "/home/omar/Downloads/miniconda3/envs/sm/bin/dot"
+        if os.path.exists(sm_dot):
+            dot_bin = sm_dot
+            
+        dot_res = subprocess.run(
+            [dot_bin, "-Tpng", "-o", output_png],
+            input=styled_dot,
+            capture_output=True,
+            text=True
+        )
+        if dot_res.returncode == 0:
+            print(f"✓ Rendered aesthetic graph: {output_png}")
+        else:
+            print(f"Warning: dot rendering returned error: {dot_res.stderr}", file=sys.stderr)
+    except Exception as e:
+        print(f"Warning: Could not render graph {output_png}: {e}", file=sys.stderr)
+
+
 # run snakemake plan to preview the pipeline
-def run_snakemake_plan(configfile):
+def run_snakemake_plan(configfile, inputdir=None):
     """Preview the Snakemake plan before running the pipeline."""
-    
-    # Find the Snakefile relative to the package path
     thisdir = os.path.dirname(__file__)
-    snakefile = os.path.join(thisdir, '../Snakefile')  # Updated path
-    
-    os.system("snakemake -s " + snakefile + " --use-conda --dag \
-        --configfile " + configfile + " --quiet \
-        │ dot -Tpng > results/dag.png")
-    os.system("snakemake -s " + snakefile + " --use-conda --rulegraph \
-        --configfile " + configfile + " --quiet \
-        │ dot -Tpng > results/rulegraph.png")
+    snakefile = os.path.abspath(os.path.join(thisdir, '../Snakefile'))
+
+    snakemake_bin = "snakemake"
+    sm_bin = "/home/omar/Downloads/miniconda3/envs/sm/bin/snakemake"
+    if os.path.exists(sm_bin):
+        snakemake_bin = sm_bin
+
+    extra_config = []
+    if inputdir:
+        extra_config = ["--config", f"inputdir={inputdir}"]
+
+    # Generate DAG
+    dag_cmd = [snakemake_bin, "-s", snakefile, "--dag", "--configfile", configfile, "--quiet"] + extra_config
+    render_graph_png(dag_cmd, "results/dag.png", "Snakemake Rule & Sample Execution DAG")
+
+    # Generate Rulegraph
+    rule_cmd = [snakemake_bin, "-s", snakefile, "--rulegraph", "--configfile", configfile, "--quiet"] + extra_config
+    render_graph_png(rule_cmd, "results/rulegraph.png", "WES Snakemake Rule Graph Topology")
 
 
 # generate snakemake report for the pipeline

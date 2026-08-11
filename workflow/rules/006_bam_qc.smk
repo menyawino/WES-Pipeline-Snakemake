@@ -218,9 +218,10 @@ rule coverage_stats_per_base:
         | bedtools coverage \
         -abam stdin \
         -b {params.cds_file} \
-        -d \
+        -d 2> {log} \
+        | gzip -c \
         > {output.coverage_stats_per_base} \
-        2> {log}
+        2>> {log}
         """
         
 rule coverage_stats_per_base_target:
@@ -395,7 +396,8 @@ rule mean_coverage_per_exon:
         -a {params.cds_file} \
         -b {input.bam_prot_coding} \
         -mean \
-        > {output.mean_coverage}
+        > {output.mean_coverage} \
+        2> {log}
         """
 
 rule mean_coverage_per_exon_target:
@@ -419,7 +421,8 @@ rule mean_coverage_per_exon_target:
         -a {params.cds_file} \
         -b {input.bam_target} \
         -mean \
-        > {output.mean_coverage_target}
+        > {output.mean_coverage_target} \
+        2> {log}
         """
 
 rule collect_alignment_summary_metrics:

@@ -26,21 +26,25 @@ samples_data = get_sample_data(
 )
 
 # make lists for needed data
-# get sample mrn without the _S17 in for example 20AD07372_S17_L001_R1_001.fastq.gz
-sample_mrn = samples_data['sample'].unique().tolist()
-sample_mrn = [x.split('_')[0] for x in sample_mrn]
-lane = samples_data['lane'].unique().tolist()
-read = samples_data['read'].unique().tolist()
-sample_filename = samples_data['sample'].unique().tolist()
+# get sample mrn without the _S17 (e.g., 20AD07372_S17 -> 20AD07372)
+raw_samples = samples_data['sample'].unique().tolist() if not samples_data.empty else []
+sample_mrn = [x.rsplit('_S', 1)[0] for x in raw_samples]
+lane = samples_data['lane'].unique().tolist() if not samples_data.empty else []
+read = samples_data['read'].unique().tolist() if not samples_data.empty else []
 
 # concatenate the sample and sample_filename lists such that each element is a string of {sample}/{sample_filename}
-sample_filename = [f"{x}/{y}" for x, y in zip(sample_mrn, sample_filename)]
+sample_filename = [f"{x}/{y}" for x, y in zip(sample_mrn, raw_samples)]
+
+pattern_mrn = '|'.join([re.escape(x) for x in sample_mrn]) if sample_mrn else r".*"
+pattern_lane = '|'.join([re.escape(x) for x in lane]) if lane else r".*"
+pattern_read = '|'.join([re.escape(x) for x in read]) if read else r".*"
+pattern_sf = '|'.join([re.escape(x) for x in sample_filename]) if sample_filename else r".*"
 
 wildcard_constraints:
-    sample_mrn= '|'.join([re.escape(x) for x in sample_mrn]),
-    lane= '|'.join([re.escape(x) for x in lane]),
-    read= '|'.join([re.escape(x) for x in read]),
-    sample_filename= '|'.join([re.escape(x) for x in sample_filename])
+    sample_mrn=pattern_mrn,
+    lane=pattern_lane,
+    read=pattern_read,
+    sample_filename=pattern_sf
 
 ############################
 ####### Configuration ######
@@ -94,8 +98,4 @@ rule all:
         rules.aggregate_variant_summaries.output.cohort_json,
         rules.aggregate_variant_summaries.output.cohort_dashboard
 
-# delete sample_data.csv if present
-if os.path.exists("sample_data.csv"):
-    os.remove("sample_data.csv")
-
-# ./cidna.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88 --printshellcmds --rerun-incomplete
+# ./wes_pipeline.py run workflow/config.yml -i ../input/180705_NB551088_0005_AHTLH3AFXX -o ../output -- -c88 --printshellcmds --rerun-incomplete

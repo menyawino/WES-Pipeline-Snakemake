@@ -8,9 +8,9 @@ sample_processing:
   reads: [1, 2]
   fail_on_missing: true
 
-samplesfile: "/Users/menyawino/Playground/WES-Pipeline-Snakemake/samples.small.csv"
-inputdir: "/Users/menyawino/Playground/WES-Pipeline-Snakemake/input_small"
-outdir: "/Users/menyawino/Playground/WES-Pipeline-Snakemake/output_small"
+samplesfile: "samples.small.csv"
+inputdir: "../input_small"
+outdir: "../output_small"
 
 output_dirs:
   qc_pretrim: "{outdir}/analysis/001_qc/pretrim"

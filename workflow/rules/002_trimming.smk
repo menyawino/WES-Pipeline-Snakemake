@@ -57,7 +57,7 @@ rule trimming_fp:
         report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html",
         json=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.json"
     threads:
-        config["threads_low"]
+        config["threads_mid"]
     params:
         path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}",
         min_length=config["fastp"]["min_read_length"],

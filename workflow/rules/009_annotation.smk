@@ -10,7 +10,7 @@ rule annotate_variants:
     conda:
         "icc_07_annotation"
     threads:
-        config["threads"]
+        config["threads_mid"]
     params:
         cache_dir=config["vep"]["cache_dir"],
         fasta=config["vep"]["fasta"]

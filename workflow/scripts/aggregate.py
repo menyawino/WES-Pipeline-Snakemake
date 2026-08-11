@@ -114,18 +114,23 @@ def aggregate_logs(log_dir, output_file='log_summary.txt'):
     
     for log_file in log_files:
         try:
+            has_error = False
+            has_warning = False
             with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read().lower()
-                
+                for line in f:
+                    lower_line = line.lower()
+                    if not has_error and any(x in lower_line for x in ('error', 'exception', 'failed', 'fatal')):
+                        has_error = True
+                    if not has_warning and 'warning' in lower_line:
+                        has_warning = True
+                    if has_error and has_warning:
+                        break
+                        
             rule_name = os.path.relpath(log_file, log_dir)
-            
-            # Search for error patterns
-            if any(x in content for x in ['error', 'exception', 'failed', 'fatal']):
+            if has_error:
                 summary['logs_with_errors'] += 1
                 summary['errors'].append(rule_name)
-            
-            # Search for warning patterns
-            if 'warning' in content:
+            if has_warning:
                 summary['logs_with_warnings'] += 1
                 summary['warnings'].append(rule_name)
         

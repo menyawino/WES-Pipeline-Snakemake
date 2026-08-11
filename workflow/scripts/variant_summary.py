@@ -216,32 +216,44 @@ def read_variants(path: str, source: str) -> list[dict]:
                 continue
             chrom, pos, variant_id, ref, alt_field, qual, filt, info_field = fields[:8]
             sample_field = fields[9] if len(fields) > 9 else ""
-            info_map = parse_info_field(info_field)
+            gt_class = parse_gt(sample_field)
+            
+            rs_id = None
+            if variant_id == ".":
+                info_map = parse_info_field(info_field)
+                rs_id = info_map.get("RS") or ""
+            else:
+                rs_id = variant_id
+                
+            qual_value = None
+            if qual not in {".", ""}:
+                try:
+                    qual_value = float(qual)
+                except ValueError:
+                    qual_value = None
+
+            is_pass = filt in {"PASS", "."}
+            pos_int = int(pos)
+
             for alt in alt_field.split(","):
                 alt = alt.strip()
                 if not alt:
                     continue
                 kind = variant_kind(ref, alt)
                 transition = transition_class(ref, alt) if kind == "snp" else None
-                qual_value = None
-                if qual not in {".", ""}:
-                    try:
-                        qual_value = float(qual)
-                    except ValueError:
-                        qual_value = None
                 records.append(
                     {
                         "source": source,
                         "chrom": chrom,
-                        "pos": int(pos),
-                        "id": variant_id if variant_id != "." else info_map.get("RS") or "",
+                        "pos": pos_int,
+                        "id": rs_id,
                         "ref": ref,
                         "alt": alt,
                         "qual": qual_value,
                         "filter": filt,
-                        "pass": filt in {"PASS", "."},
+                        "pass": is_pass,
                         "type": kind,
-                        "gt_class": parse_gt(sample_field),
+                        "gt_class": gt_class,
                         "transition_class": transition,
                         "variant_key": f"{chrom}:{pos}:{ref}>{alt}",
                         "length_delta": abs(len(ref) - len(alt)),

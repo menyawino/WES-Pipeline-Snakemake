@@ -11,7 +11,7 @@ rule raw_fastqc:
         html=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}_{lane}_{R}_pretrim_fastqc.html",
         zip=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}_{lane}_{R}_pretrim_fastqc.zip"
     threads: 
-        config["threads_low"]
+        config["threads_mid"]
     params: 
         path=config["outdir"] + "/analysis/001_QC/pretrim/{sample_filename}",
     log:

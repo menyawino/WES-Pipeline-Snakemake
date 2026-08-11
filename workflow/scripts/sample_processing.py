@@ -115,13 +115,7 @@ def get_sample_data(csv_file, input_dir, lanes=[1, 2, 3, 4], fail_on_missing=Fal
             merged_sample = f"{sample}_S{sample_number}"
             output_rows.append([merged_sample, lane, read, file] + metadata)
 
-    # Save results to CSV
-    output_file = 'sample_data.csv'
-    with open(output_file, 'w') as f:
-        header = ['sample', 'lane', 'read', 'file'] + metadata_columns
-        f.write(','.join(header) + '\n')
-        for row in output_rows:
-            f.write(','.join(map(str, row)) + '\n')
-    
-    logger.info(f"Sample data saved to {output_file}")
-    return pd.read_csv(output_file)
+    header = ['sample', 'lane', 'read', 'file'] + metadata_columns
+    result_df = pd.DataFrame(output_rows, columns=header)
+    logger.info(f"Processed {len(result_df)} sample FASTQ records.")
+    return result_df
