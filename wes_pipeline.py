@@ -105,6 +105,34 @@ def validate(configfile, inputdir, outdir):
 
 @cli.command()
 @click.argument('configfile', default='workflow/config.yml')
+@click.option('--force', is_flag=True, help="Force re-download even if target file exists.")
+def download_ref(configfile, force):
+    """Download and index GRCh38 reference genome."""
+    import yaml
+    from workflow.scripts.download_ref import download_reference_genome
+    
+    print(f"{GRE}[INFO] Downloading GRCh38 reference genome data...{NC}")
+    target_path = "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
+    genome = "grch38"
+    
+    if os.path.exists(configfile):
+        try:
+            with open(configfile, 'r') as f:
+                cfg = yaml.safe_load(f) or {}
+                target_path = cfg.get('reference_genome', target_path)
+                genome = cfg.get('Genome', genome)
+        except Exception as e:
+            print(f"Warning: Could not parse config file: {e}")
+
+    success = download_reference_genome(target_path=target_path, genome=genome, force=force)
+    if success:
+        print(f"\n{GRE}[SUCCESS] Reference genome GRCh38 downloaded and indexed successfully!{NC}")
+    else:
+        print("\n\033[91m[ERROR] Failed to download or index GRCh38 reference genome.{NC}")
+        sys.exit(1)
+
+@cli.command()
+@click.argument('configfile', default='workflow/config.yml')
 def report(configfile):
     """Generate a Snakemake HTML execution report."""
     print(f"{GRE}[INFO] Generating HTML execution report...{NC}")

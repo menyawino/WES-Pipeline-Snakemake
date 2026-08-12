@@ -52,12 +52,14 @@ rule trimming_fp:
         fq1=config["inputdir"] + "/{sample}_{lane}_R1_001.fastq.gz",
         fq2=config["inputdir"] + "/{sample}_{lane}_R2_001.fastq.gz",
     output:
-        fq1=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz",
-        fq2=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz",
+        fq1=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz"),
+        fq2=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz"),
         report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html",
         json=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.json"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384)
     params:
         path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}",
         min_length=config["fastp"]["min_read_length"],

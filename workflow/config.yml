@@ -36,36 +36,36 @@ output_dirs:
 Genome: &genome "grch38"
 
 # GRCh38 Reference file
-reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/genome/GRCh38.primary_assembly.genome.fa"
+reference_genome: "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
 
 # GRCh38 Target files
-icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/targets/ICC_169Genes_38_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/targets/ICC_169Genes_38_Nextera_V4_ProteinCodingExons.mergeBed.bed"
-canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/targets/ICC_169Genes_38_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+icc_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
+cds_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
+canontran_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
 
 # GRCh38 Known variants
-dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/dbsnp/Homo_sapiens_assembly38.dbsnp138.vcf"
-omni: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/1000G/1000G_omni2.5.hg38.vcf.gz"
-tenk: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/1000G/1000G.phase3.integrated.sites_only.no_MATCHED_REV.hg38.vcf"
-tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/indels/Homo_sapiens_assembly38.known_indels.vcf.gz"
-hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/hapmap/hapmap_3.3.hg38.vcf.gz"
-mills: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/indels/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
+dbsnp: "resources/ref/grch38/dbsnp/Homo_sapiens_assembly38.dbsnp138.vcf"
+omni: "resources/ref/grch38/1000G/1000G_omni2.5.hg38.vcf.gz"
+tenk: "resources/ref/grch38/1000G/1000G.phase3.integrated.sites_only.no_MATCHED_REV.hg38.vcf"
+tenk_indel: "resources/ref/grch38/indels/Homo_sapiens_assembly38.known_indels.vcf.gz"
+hapmap: "resources/ref/grch38/hapmap/hapmap_3.3.hg38.vcf.gz"
+mills: "resources/ref/grch38/indels/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
 
 # GRCh37 Reference file
-# reference_genome: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/genome/GRCh38.primary_assembly.genome.fa.gz"
+# reference_genome: "resources/ref/grch37/genome/GRCh37.primary_assembly.genome.fa"
 
 # GRCh37 Target files
-# icc_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
-# cds_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
-# canontran_panel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
+# icc_panel: "resources/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.mergeBed.bed"
+# cds_panel: "resources/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCodingExons.mergeBed.bed"
+# canontran_panel: "resources/ref/grch37/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.mergeBed.bed"
 
 # GRCh37 Known variants
-# dbsnp: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/hg19_dbSNP138.vcf"
-# omni: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/1000G_omni2.5.hg19.vcf"
-# tenk: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/1000G_phase1.snps.high_confidence.hg19.vcf"
-# tenk_indel: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/1000G_phase1.indels.hg19.vcf"
-# hapmap: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/hapmap_3.3.hg19.vcf"
-# mills: "/mnt/omar/pipelines/icc/pipeline/ref/grch37/Mills_and_1000G_gold_standard.indels.hg19.vcf"
+# dbsnp: "resources/ref/grch37/hg19_dbSNP138.vcf"
+# omni: "resources/ref/grch37/1000G_omni2.5.hg19.vcf"
+# tenk: "resources/ref/grch37/1000G_phase1.snps.high_confidence.hg19.vcf"
+# tenk_indel: "resources/ref/grch37/1000G_phase1.indels.hg19.vcf"
+# hapmap: "resources/ref/grch37/hapmap_3.3.hg19.vcf"
+# mills: "resources/ref/grch37/Mills_and_1000G_gold_standard.indels.hg19.vcf"
 
 # Tool-specific parameters
 fastp:
@@ -89,7 +89,7 @@ gatk:
 # VEP parameters
 vep:
   cache_dir: "/path/to/vep/cache"
-  fasta: "/mnt/omar/pipelines/icc/pipeline/ref/grch38/allchrom.Chr1ToChrM.validated.fa"
+  fasta: "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
 
 # Local variant-reporting parameters inspired by ClawBio annotation workflows
 variant_summary:

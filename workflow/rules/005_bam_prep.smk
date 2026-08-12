@@ -4,24 +4,26 @@ rule mark_duplicates:
     input:
         bam=rules.merge_bams.output.merged_bam
     output:
-        markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam",
+        markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam"),
         metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
         "icc_gatk"
     threads:
         config["threads_mid"]
     resources:
-        mem_mb=config.get("mem_mid", 16384)
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     log:
         config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_markdup.log"
     benchmark:
         config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_markdup.txt"
     shell:
         """
-        gatk --java-options "-Xmx{resources.mem_mb}m" MarkDuplicatesSpark \
+        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" MarkDuplicatesSpark \
         -I {input.bam} \
         -O {output.markdup_bam} \
         -M {output.metrics} \
+        --tmp-dir {resources.tmpdir} \
         --spark-master local[{threads}] \
         --conf spark.ui.enabled=false \
         > {log} 2>&1
@@ -33,7 +35,7 @@ rule index_markdup_bam:
     input:
         markdup_bam=rules.mark_duplicates.output.markdup_bam
     output:
-        indexed_markdup_bam=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai"
+        indexed_markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai")
     conda:
         "icc_gatk"
     threads:
@@ -61,7 +63,8 @@ rule base_recalibrator:
     threads:
         config["threads_mid"]
     resources:
-        mem_mb=config.get("mem_mid", 16384)
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
         known_sites=config["dbsnp"]
@@ -71,11 +74,12 @@ rule base_recalibrator:
         config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_base_recalibrator.txt"
     shell:
         """
-        gatk --java-options "-Xmx{resources.mem_mb}m" BaseRecalibratorSpark \
+        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" BaseRecalibratorSpark \
         -I {input.bam} \
         -R {params.ref} \
         -O {output.recal_table} \
         --known-sites {params.known_sites} \
+        --tmp-dir {resources.tmpdir} \
         --spark-master local[{threads}] \
         --conf spark.ui.enabled=false \
         > {log} 2>&1
@@ -88,13 +92,14 @@ rule apply_bqsr:
         bam=rules.mark_duplicates.output.markdup_bam,
         recal_table=rules.base_recalibrator.output.recal_table
     output:
-        bqsr_bam=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bam"
+        bqsr_bam=temp(config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bam")
     conda:
         "icc_gatk"
     threads:
         config["threads_mid"]
     resources:
-        mem_mb=config.get("mem_mid", 16384)
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"]
     log:
@@ -103,11 +108,12 @@ rule apply_bqsr:
         config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_apply_bqsr.txt"
     shell:
         """
-        gatk --java-options "-Xmx{resources.mem_mb}m" ApplyBQSRSpark  \
+        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" ApplyBQSRSpark  \
         -R {params.ref} \
         -I {input.bam} \
         --bqsr-recal-file {input.recal_table} \
         -O {output.bqsr_bam} \
+        --tmp-dir {resources.tmpdir} \
         --spark-master local[{threads}] \
         --conf spark.ui.enabled=false \
         > {log} 2>&1

@@ -9,6 +9,11 @@ rule filter_snps:
         filtered_snp_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.snp.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"]
@@ -18,7 +23,7 @@ rule filter_snps:
         config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filter_snps.txt"
     shell:
         """
-        gatk VariantFiltration \
+        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" VariantFiltration \
         -R {params.ref} \
         -V {input.snp_vcf} \
         -O {output.filtered_snp_vcf} \
@@ -33,6 +38,8 @@ rule filter_snps:
         --filter-name "MQRankSumFilter" \
         --filter-name "ReadPosFilter" \
         --intervals {params.target} \
+        --create-output-variant-index true \
+        --tmp-dir {resources.tmpdir} \
         &> {log}
         """
 
@@ -45,6 +52,11 @@ rule filter_indels:
         filtered_indel_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.indel.vcf"
     conda:
         "icc_gatk"
+    threads:
+        config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
         target=config["icc_panel"]
@@ -54,7 +66,7 @@ rule filter_indels:
         config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filter_indels.txt"
     shell:
         """
-        gatk VariantFiltration \
+        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" VariantFiltration \
         -R {params.ref} \
         -V {input.indel_vcf} \
         -O {output.filtered_indel_vcf} \
@@ -65,5 +77,7 @@ rule filter_indels:
         --filter-name "ReadPosFilter" \
         --filter-name "FSFilter" \
         --intervals {params.target} \
+        --create-output-variant-index true \
+        --tmp-dir {resources.tmpdir} \
         &> {log}
         """

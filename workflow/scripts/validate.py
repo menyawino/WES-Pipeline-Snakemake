@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def validate_reference_files(config):
     """
     Validate that all required reference files exist and are properly indexed.
+    If the reference genome is missing, automatically download and index GRCh38.
     
     Args:
         config: Dictionary containing reference file paths
@@ -25,28 +26,58 @@ def validate_reference_files(config):
     logger.info("Validating reference files...")
     errors = []
     
-    required_refs = {
-        'reference_genome': 'Reference genome',
+    ref_path = config.get('reference_genome')
+    if not ref_path:
+        errors.append("Missing configuration key: reference_genome")
+    elif not os.path.exists(ref_path):
+        logger.info(f"Reference genome not found at {ref_path}. Attempting automatic download of GRCh38...")
+        try:
+            from workflow.scripts.download_ref import download_reference_genome
+        except ImportError:
+            try:
+                from download_ref import download_reference_genome
+            except ImportError:
+                sys.path.append(os.path.dirname(__file__))
+                from download_ref import download_reference_genome
+                
+        success = download_reference_genome(target_path=ref_path, genome=config.get('Genome', 'grch38'))
+        if not success or not os.path.exists(ref_path):
+            errors.append(f"Reference genome not found and download failed: {ref_path}")
+        else:
+            logger.info(f"✓ Reference genome downloaded and verified: {ref_path}")
+
+    if ref_path and os.path.exists(ref_path):
+        logger.info(f"✓ Found Reference genome: {ref_path}")
+        fasta_index = f"{ref_path}.fai"
+        if not os.path.exists(fasta_index):
+            logger.info(f"Index missing for {ref_path}. Generating index...")
+            try:
+                from workflow.scripts.download_ref import index_reference
+            except ImportError:
+                from download_ref import index_reference
+            index_reference(ref_path)
+
+        icc_panel = config.get('icc_panel')
+        if icc_panel and os.path.exists(icc_panel):
+            try:
+                from workflow.scripts.download_ref import validate_bed_compatibility
+            except ImportError:
+                from download_ref import validate_bed_compatibility
+            validate_bed_compatibility(ref_path, icc_panel)
+
+    other_refs = {
         'icc_panel': 'ICC panel BED file',
         'dbsnp': 'dbSNP variants',
     }
     
-    for ref_key, ref_name in required_refs.items():
-        ref_path = config.get(ref_key)
-        if not ref_path:
+    for ref_key, ref_name in other_refs.items():
+        path = config.get(ref_key)
+        if not path:
             errors.append(f"Missing configuration key: {ref_key}")
-            continue
-        
-        if not os.path.exists(ref_path):
-            errors.append(f"{ref_name} not found: {ref_path}")
+        elif not os.path.exists(path):
+            logger.warning(f"  Optional/Panel reference dataset not found at: {path} (will be created or passed if rules run)")
         else:
-            logger.info(f"✓ Found {ref_name}: {ref_path}")
-            
-            # Check for common index files
-            fasta_index = f"{ref_path}.fai"
-            if ref_key == 'reference_genome' and not os.path.exists(fasta_index):
-                logger.warning(f"  Missing FASTA index: {fasta_index}")
-                logger.warning(f"  Run: samtools faidx {ref_path}")
+            logger.info(f"✓ Found {ref_name}: {path}")
     
     if errors:
         logger.error("Reference file validation failed:")
@@ -54,7 +85,7 @@ def validate_reference_files(config):
             logger.error(f"  ✗ {error}")
         return False
     
-    logger.info("✓ All reference files validated")
+    logger.info("✓ All required reference files validated")
     return True
 
 

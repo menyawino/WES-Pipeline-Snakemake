@@ -37,7 +37,8 @@ Run the pipeline using the `wes_pipeline.py` CLI wrapper:
 **Available CLI subcommands:**
 - `run`: Execute the full WES pipeline (includes pre-flight validation by default).
 - `plan`: Preview execution plan and render high-resolution DAG/rulegraph diagrams (`results/dag.png`, `results/rulegraph.png`).
-- `validate`: Perform standalone pre-flight configuration and resource checks.
+- `validate`: Perform standalone pre-flight configuration and resource checks (automatically downloads GRCh38 if missing).
+- `download-ref`: Download and index the GRCh38 reference genome (`resources/ref/grch38/GRCh38.primary_assembly.genome.fa`).
 - `report`: Generate a Snakemake HTML execution report.
 
 **Options for `run`:**

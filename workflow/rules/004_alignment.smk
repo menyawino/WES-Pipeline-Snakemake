@@ -5,13 +5,15 @@ rule bwa_mem:
         fq1=rules.trimming_fp.output.fq1,
         fq2=rules.trimming_fp.output.fq2
     output:
-        bam=config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam"
+        bam=temp(config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam")
     conda:
         "icc_04_alignment"
     threads:
         config["threads_high"]
     resources:
         mem_mb=config.get("mem_high", 32768)
+    shadow:
+        "shallow"
     params: 
         ref=config["reference_genome"]
     log:
@@ -50,7 +52,7 @@ rule merge_bams:
     input:
         bams=lambda wildcards: expand(rules.bwa_mem.output.bam, sample=wildcards.sample, lane=lane)
     output:
-        merged_bam=config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam"
+        merged_bam=temp(config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam")
     conda:
         "icc_04_alignment"
     threads:

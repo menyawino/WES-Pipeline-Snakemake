@@ -5,6 +5,7 @@
 # import necessary modules to process sample data
 from scripts.sample_processing import get_sample_data
 import os
+import re
 
 # Resolve sample metadata locally unless explicitly overridden.
 samplesfile = config.get(
@@ -59,6 +60,7 @@ configfile: "workflow/config.yml"
 ####### Include rules ######
 ############################
 
+include: "rules/000_ref.smk"
 include: "rules/001_qc.smk"
 include: "rules/002_trimming.smk"
 include: "rules/003_posttrim_qc.smk"
