@@ -49,8 +49,8 @@ rule trimming_fp:
     conda: 
         "icc_02_trimming"
     input:
-        fq1=config["inputdir"] + "/{sample}_{lane}_R1_001.fastq.gz",
-        fq2=config["inputdir"] + "/{sample}_{lane}_R2_001.fastq.gz",
+        fq1=get_trimming_r1,
+        fq2=get_trimming_r2
     output:
         fq1=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz"),
         fq2=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz"),
@@ -71,16 +71,18 @@ rule trimming_fp:
     shell:
         """
         fastp \
-        -i {input.fq1} \
-        -I {input.fq2} \
-        -j {output.json} \
-        -o {output.fq1} \
-        -O {output.fq2} \
-        -h {output.report} \
+        -i "{input.fq1}" \
+        -I "{input.fq2}" \
+        -j "{output.json}" \
+        -o "{output.fq1}" \
+        -O "{output.fq2}" \
+        -h "{output.report}" \
         -w {threads} \
+        --detect_adapter_for_pe \
+        --trim_poly_g \
         --length_required {params.min_length} \
         --cut_window_size {params.window_size} \
-        &> {log}
+        &> "{log}"
         """
 
 

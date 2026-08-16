@@ -1,11 +1,17 @@
-# Global variables
-threads_high: 11
-threads_mid: 4
-threads_low: 1
-mem_high: 32768
-mem_mid: 16384
-mem_low: 4096
+# Global variables optimized for 88-vCPU / 228GB RAM system
+threads_high: 22
+threads_mid: 8
+threads_low: 4
+mem_high: 65536
+mem_mid: 32768
+mem_low: 8192
 benchmark: 1
+
+# Temporary directory in high-speed RAM disk (>50 GB/s bandwidth)
+tmpdir: "/dev/shm/wes_pipeline_tmp"
+
+# Interval scatter count for HaplotypeCaller parallelization
+intervals_scatter_count: 20
 
 # Sample processing configuration
 sample_processing:

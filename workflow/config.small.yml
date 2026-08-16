@@ -3,14 +3,17 @@ threads_mid: 2
 threads_low: 1
 benchmark: 1
 
+tmpdir: "/dev/shm/wes_pipeline_tmp"
+intervals_scatter_count: 3
+
 sample_processing:
   lanes: [1]
   reads: [1, 2]
   fail_on_missing: true
 
 samplesfile: "samples.small.csv"
-inputdir: "../input_small"
-outdir: "../output_small"
+inputdir: "tests/input_small"
+outdir: "tests/output_small"
 
 output_dirs:
   qc_pretrim: "{outdir}/analysis/001_qc/pretrim"

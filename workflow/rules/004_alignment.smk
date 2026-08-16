@@ -11,39 +11,35 @@ rule bwa_mem:
     threads:
         config["threads_high"]
     resources:
-        mem_mb=config.get("mem_high", 32768)
-    shadow:
-        "shallow"
+        mem_mb=config.get("mem_high", 32768),
+        tmpdir=config.get("tmpdir", "/tmp")
     params: 
         ref=config["reference_genome"]
     log:
         bwa=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_bwa.log",
-        sambamba_view=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sambamba_view.log",
-        sambamba_sort=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sambamba_sort.log"
+        sort=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sort.log"
     benchmark:
         config["outdir"] + "/benchmarks/003_alignment/01_bwa/{sample}_{lane}_alignment.txt"
     shell:
         """
+        mkdir -p {resources.tmpdir}
         sample_name=$(basename {wildcards.sample})
-        rg_header="@RG\\tID:${sample_name}_{wildcards.lane}\\tSM:${sample_name}\\tLB:lib1\\tPL:illumina\\tPU:unit1"
+        rg_header="@RG\\tID:${{sample_name}}_{wildcards.lane}\\tSM:${{sample_name}}\\tLB:lib1\\tPL:illumina\\tPU:unit1"
+        
         bwa-mem2 mem \
         -t {threads} \
         -R "$rg_header" \
-        {params.ref} \
-        {input.fq1} \
-        {input.fq2} \
-        2> {log.bwa} \
-        | sambamba view \
-        -S -f bam \
-        -t {threads} \
-        -l 0 \
-        /dev/stdin \
-        2> {log.sambamba_view} |
-        sambamba sort \
-        -t {threads} \
-        -o {output.bam} \
-        /dev/stdin \
-        2> {log.sambamba_sort}
+        "{params.ref}" \
+        "{input.fq1}" \
+        "{input.fq2}" \
+        2> "{log.bwa}" \
+        | samtools sort \
+        -@ {threads} \
+        -m 2G \
+        -T "{resources.tmpdir}/sort_${{sample_name}}_{wildcards.lane}" \
+        -o "{output.bam}" \
+        - \
+        2> "{log.sort}"
         """
 
 rule merge_bams:
@@ -69,9 +65,9 @@ rule merge_bams:
         if [ "$bam_count" -eq 1 ]; then
             cp {input.bams} {output.merged_bam}
         else
-            sambamba merge \
-            -t {threads} \
-            {output.merged_bam} \
+            samtools merge \
+            -@ {threads} \
+            -f {output.merged_bam} \
             {input.bams} \
             > {log} 2>&1
         fi

@@ -11,7 +11,7 @@ rule summarize_variants:
         summary_tsv=config["outdir"] + "/analysis/010_summary/{sample}/variant_summary.tsv",
         summary_json=config["outdir"] + "/analysis/010_summary/{sample}/variant_summary.json"
     conda:
-        "envs/010_summary.yml"
+        "icc_gatk"
     params:
         top_variants=config.get("variant_summary", {}).get("top_variants", 10),
         top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10),
@@ -49,7 +49,7 @@ rule aggregate_variant_summaries:
         cohort_json=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.json",
         cohort_dashboard=config["outdir"] + "/analysis/010_summary/cohort_variant_dashboard.html"
     conda:
-        "envs/010_summary.yml"
+        "icc_gatk"
     log:
         config["outdir"] + "/logs/010_summary/cohort_variant_summary.log"
     benchmark:

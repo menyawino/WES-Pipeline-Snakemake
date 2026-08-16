@@ -15,18 +15,11 @@ rule flagstat_original:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_original.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not secondary_alignment" \
-        -f bam \
-        -l 0 \
-        {input.bam} \
-        2> {log} \
-        | sambamba flagstat \
-        -t {threads} \
-        /dev/stdin \
-        > {output.flagstat_original} \
-        2> {log}
+        samtools flagstat \
+        -@ {threads} \
+        "{input.bam}" \
+        > "{output.flagstat_original}" \
+        2> "{log}"
         """
 
 rule flagstat_target:
@@ -46,18 +39,11 @@ rule flagstat_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_target.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not secondary_alignment" \
-        -f bam \
-        -l 0 \
-        {input.bam_target} \
-        2> {log} \
-        | sambamba flagstat \
-        -t {threads} \
-        /dev/stdin \
-        > {output.flagstat_target} \
-        2> {log}
+        samtools flagstat \
+        -@ {threads} \
+        "{input.bam_target}" \
+        > "{output.flagstat_target}" \
+        2> "{log}"
         """
 
 rule flagstat_prot_coding:
@@ -77,18 +63,11 @@ rule flagstat_prot_coding:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_prot_coding.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not secondary_alignment" \
-        -f bam \
-        -l 0 \
-        {input.bam_prot_coding} \
-        2> {log} \
-        | sambamba flagstat \
-        -t {threads} \
-        /dev/stdin \
-        > {output.flagstat_prot_coding} \
-        2> {log}
+        samtools flagstat \
+        -@ {threads} \
+        "{input.bam_prot_coding}" \
+        > "{output.flagstat_prot_coding}" \
+        2> "{log}"
         """
 
 rule flagstat_canon_tran:
@@ -108,18 +87,11 @@ rule flagstat_canon_tran:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_flagstat_canon_tran.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not secondary_alignment" \
-        -f bam \
-        -l 0 \
-        {input.bam_canon_tran} \
-        2> {log} \
-        | sambamba flagstat \
-        -t {threads} \
-        /dev/stdin \
-        > {output.flagstat_canon_tran} \
-        2> {log}
+        samtools flagstat \
+        -@ {threads} \
+        "{input.bam_canon_tran}" \
+        > "{output.flagstat_canon_tran}" \
+        2> "{log}"
         """
 
 rule coverage_stats:
@@ -141,19 +113,13 @@ rule coverage_stats:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not duplicate" \
-        -f bam \
-        {input.bam_prot_coding} \
-        2> {log} \
-        | bedtools coverage \
-        -abam /dev/stdin \
-        -b {params.cds_file} \
-        2> {log} \
+        bedtools coverage \
+        -abam "{input.bam_prot_coding}" \
+        -b "{params.cds_file}" \
+        2> "{log}" \
         | sort -k 1,1 -k 2,2n \
-        > {output.coverage_stats} \
-        2> {log}
+        > "{output.coverage_stats}" \
+        2>> "{log}"
         """
 
 rule coverage_stats_target:
@@ -175,19 +141,13 @@ rule coverage_stats_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats_target.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not duplicate" \
-        -f bam \
-        {input.bam_target} \
-        2> {log} \
-        | bedtools coverage \
-        -abam /dev/stdin \
-        -b {params.cds_file} \
-        2> {log} \
+        bedtools coverage \
+        -abam "{input.bam_target}" \
+        -b "{params.cds_file}" \
+        2> "{log}" \
         | sort -k 1,1 -k 2,2n \
-        > {output.coverage_stats_target} \
-        2> {log}
+        > "{output.coverage_stats_target}" \
+        2>> "{log}"
         """
 
 rule coverage_stats_per_base:
@@ -209,19 +169,13 @@ rule coverage_stats_per_base:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats_per_base.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not duplicate" \
-        -f bam \
-        {input.bam_prot_coding} \
-        2> {log} \
-        | bedtools coverage \
-        -abam stdin \
-        -b {params.cds_file} \
-        -d 2> {log} \
+        bedtools coverage \
+        -abam "{input.bam_prot_coding}" \
+        -b "{params.cds_file}" \
+        -d 2> "{log}" \
         | gzip -c \
-        > {output.coverage_stats_per_base} \
-        2>> {log}
+        > "{output.coverage_stats_per_base}" \
+        2>> "{log}"
         """
         
 rule coverage_stats_per_base_target:
@@ -243,18 +197,12 @@ rule coverage_stats_per_base_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats_per_base_target.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not duplicate" \
-        -f bam \
-        {input.bam_target} \
-        2> {log} \
-        | bedtools coverage \
-        -abam stdin \
-        -b {params.cds_file} \
+        bedtools coverage \
+        -abam "{input.bam_target}" \
+        -b "{params.cds_file}" \
         -d \
-        > {output.coverage_stats_per_base_target} \
-        2> {log}
+        > "{output.coverage_stats_per_base_target}" \
+        2> "{log}"
         """
 
 rule coverage_hist:
@@ -276,18 +224,12 @@ rule coverage_hist:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_hist.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not duplicate" \
-        -f bam \
-        {input.bam_prot_coding} \
-        2> {log} \
-        | bedtools coverage \
-        -abam stdin \
-        -b {params.cds_file} \
+        bedtools coverage \
+        -abam "{input.bam_prot_coding}" \
+        -b "{params.cds_file}" \
         -hist \
-        > {output.coverage_hist} \
-        2> {log}
+        > "{output.coverage_hist}" \
+        2> "{log}"
         """
 
 rule coverage_hist_target:
@@ -309,29 +251,27 @@ rule coverage_hist_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_hist_target.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -F "not duplicate" \
-        -f bam \
-        {input.bam_target} \
-        2> {log} \
-        | bedtools coverage \
-        -abam stdin \
-        -b {params.cds_file} \
+        bedtools coverage \
+        -abam "{input.bam_target}" \
+        -b "{params.cds_file}" \
         -hist \
-        > {output.coverage_hist_target} \
-        2> {log}
+        > "{output.coverage_hist_target}" \
+        2> "{log}"
         """
 
 rule depth_of_coverage:
     message:
         "Calculating depth of coverage for sample {wildcards.sample}"
     input:
-        bam_prot_coding=rules.filter_bam_prot_coding.output.bam_prot_coding
+        bam_prot_coding=rules.filter_bam_prot_coding.output.bam_prot_coding,
+        bai_prot_coding=rules.filter_bam_prot_coding.output.bai_prot_coding
     output:
         depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage"
     conda:
         "icc_gatk"
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
         cds_file=config["cds_panel"]
@@ -341,23 +281,31 @@ rule depth_of_coverage:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_depth_of_coverage.txt"
     shell:
         """
-        gatk DepthOfCoverage \
-        -R {params.ref} \
-        -I {input.bam_prot_coding} \
-        -O {output.depth_of_coverage} \
-        -L {params.cds_file} \
-        &> {log}
+        mkdir -p "{resources.tmpdir}"
+        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" DepthOfCoverage \
+        -R "{params.ref}" \
+        -I "{input.bam_prot_coding}" \
+        -O "{output.depth_of_coverage}" \
+        -L "{params.cds_file}" \
+        --omit-depth-output-at-each-base true \
+        --omit-locus-table true \
+        --tmp-dir "{resources.tmpdir}" \
+        &> "{log}"
         """
 
 rule depth_of_coverage_target:
     message:
         "Calculating depth of coverage for target BAM for sample {wildcards.sample}"
     input:
-        bam_target=rules.filter_bam_target.output.bam_target
+        bam_target=rules.filter_bam_target.output.bam_target,
+        bai_target=rules.filter_bam_target.output.bai_target
     output:
         depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage"
     conda:
         "icc_gatk"
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
         cds_file=config["cds_panel"]
@@ -367,12 +315,16 @@ rule depth_of_coverage_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_depth_of_coverage_target.txt"
     shell:
         """
-        gatk DepthOfCoverage \
-        -R {params.ref} \
-        -I {input.bam_target} \
-        -O {output.depth_of_coverage_target} \
-        -L {params.cds_file} \
-        &> {log}
+        mkdir -p "{resources.tmpdir}"
+        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" DepthOfCoverage \
+        -R "{params.ref}" \
+        -I "{input.bam_target}" \
+        -O "{output.depth_of_coverage_target}" \
+        -L "{params.cds_file}" \
+        --omit-depth-output-at-each-base true \
+        --omit-locus-table true \
+        --tmp-dir "{resources.tmpdir}" \
+        &> "{log}"
         """
 
 rule mean_coverage_per_exon:
@@ -393,11 +345,11 @@ rule mean_coverage_per_exon:
     shell:
         """
         bedtools coverage \
-        -a {params.cds_file} \
-        -b {input.bam_prot_coding} \
+        -a "{params.cds_file}" \
+        -b "{input.bam_prot_coding}" \
         -mean \
-        > {output.mean_coverage} \
-        2> {log}
+        > "{output.mean_coverage}" \
+        2> "{log}"
         """
 
 rule mean_coverage_per_exon_target:
@@ -418,11 +370,11 @@ rule mean_coverage_per_exon_target:
     shell:
         """
         bedtools coverage \
-        -a {params.cds_file} \
-        -b {input.bam_target} \
+        -a "{params.cds_file}" \
+        -b "{input.bam_target}" \
         -mean \
-        > {output.mean_coverage_target} \
-        2> {log}
+        > "{output.mean_coverage_target}" \
+        2> "{log}"
         """
 
 rule collect_alignment_summary_metrics:
@@ -434,6 +386,9 @@ rule collect_alignment_summary_metrics:
         alignment_summary_metrics=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.align_sum_metrics.txt"
     conda:
         "icc_gatk"
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"]
     log:
@@ -442,13 +397,15 @@ rule collect_alignment_summary_metrics:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_collect_alignment_summary_metrics.txt"
     shell:
         """
-        gatk CollectAlignmentSummaryMetrics \
-        INPUT={input.bam_prot_coding} \
-        OUTPUT={output.alignment_summary_metrics} \
-        REFERENCE_SEQUENCE={params.ref} \
-        ASSUME_SORTED=true \
-        VALIDATION_STRINGENCY=SILENT \
-        &> {log}
+        mkdir -p "{resources.tmpdir}"
+        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" CollectAlignmentSummaryMetrics \
+        -I "{input.bam_prot_coding}" \
+        -O "{output.alignment_summary_metrics}" \
+        -R "{params.ref}" \
+        --ASSUME_SORTED true \
+        --VALIDATION_STRINGENCY SILENT \
+        --TMP_DIR "{resources.tmpdir}" \
+        &> "{log}"
         """
 
 rule collect_alignment_summary_metrics_target:
@@ -460,6 +417,9 @@ rule collect_alignment_summary_metrics_target:
         alignment_summary_metrics_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.align_sum_metrics.txt"
     conda:
         "icc_gatk"
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"]
     log:
@@ -468,13 +428,15 @@ rule collect_alignment_summary_metrics_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_collect_alignment_summary_metrics_target.txt"
     shell:
         """
-        gatk CollectAlignmentSummaryMetrics \
-        INPUT={input.bam_target} \
-        OUTPUT={output.alignment_summary_metrics_target} \
-        REFERENCE_SEQUENCE={params.ref} \
-        ASSUME_SORTED=true \
-        VALIDATION_STRINGENCY=SILENT \
-        &> {log}
+        mkdir -p "{resources.tmpdir}"
+        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" CollectAlignmentSummaryMetrics \
+        -I "{input.bam_target}" \
+        -O "{output.alignment_summary_metrics_target}" \
+        -R "{params.ref}" \
+        --ASSUME_SORTED true \
+        --VALIDATION_STRINGENCY SILENT \
+        --TMP_DIR "{resources.tmpdir}" \
+        &> "{log}"
         """
 
 rule qc_report:
@@ -496,4 +458,4 @@ rule qc_report:
     conda:
         "icc_gatk"
     script:
-        "workflow/scripts/qc_report.py"
+        "../scripts/qc_report.py"

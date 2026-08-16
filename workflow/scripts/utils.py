@@ -95,8 +95,22 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
             if verbose:
                 print(f"Warning: Could not load snakemake options from config: {e}")
 
+    # Resolve Snakemake executable
+    import shutil
+    snakemake_bin = "snakemake"
+    sm_bin = "/home/omar/Downloads/miniconda3/envs/sm/bin/snakemake"
+    if not shutil.which("snakemake") and os.path.exists(sm_bin):
+        snakemake_bin = sm_bin
+
+    # Initialize RAM disk tmp directory if configured
+    tmp_dir = snakemake_opts.get('tmpdir', '/dev/shm/wes_pipeline_tmp')
+    try:
+        os.makedirs(tmp_dir, exist_ok=True)
+    except Exception:
+        pass
+
     # Build Snakemake command with configurable options
-    cmd = ["snakemake", "-s", snakefile]
+    cmd = [snakemake_bin, "-s", snakefile]
     
     # Add configurable flags (with sane defaults)
     if snakemake_opts.get('use_conda', True):
@@ -109,8 +123,6 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
         cmd.append("--printshellcmds")
     if snakemake_opts.get('rerun_incomplete', True):
         cmd.append("--rerun-incomplete")
-    if snakemake_opts.get('generate_report', True):
-        cmd.append("--report=results/snakemake_report.html")
 
     # Add additional Snakemake arguments
     cmd += list(extra_args)
@@ -119,9 +131,8 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
         # Only add the specified config file without defaults and system confs
         cmd += ["--configfile", configfile]
 
-    # Add input and output directories to the command
-    cmd += ["--directory", outdir]
-    cmd += ["--config", f"inputdir={inputdir}"]
+    # Pass inputdir and outdir to Snakemake configuration
+    cmd += ["--config", f"inputdir={inputdir}", f"outdir={outdir}"]
 
     # Print the final command if verbose with cmd list as a string
     if verbose:

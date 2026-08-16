@@ -36,6 +36,42 @@ read = samples_data['read'].unique().tolist() if not samples_data.empty else []
 # concatenate the sample and sample_filename lists such that each element is a string of {sample}/{sample_filename}
 sample_filename = [f"{x}/{y}" for x, y in zip(sample_mrn, raw_samples)]
 
+fastq_lookup = {}
+if not samples_data.empty:
+    for _, row in samples_data.iterrows():
+        s_raw = str(row['sample'])
+        s_mrn = s_raw.rsplit('_S', 1)[0]
+        s_lane = str(row['lane'])
+        s_read = str(row['read'])
+        f_path = str(row['file'])
+        fastq_lookup[(s_mrn, s_lane, s_read)] = f_path
+        fastq_lookup[(s_raw, s_lane, s_read)] = f_path
+        fastq_lookup[(f"{s_mrn}/{s_raw}", s_lane, s_read)] = f_path
+
+def get_raw_fastqc_input(wildcards):
+    key = (wildcards.sample_filename, wildcards.lane, wildcards.R)
+    if key in fastq_lookup:
+        return fastq_lookup[key]
+    return f"{config['inputdir']}/{wildcards.sample_filename}_{wildcards.lane}_{wildcards.R}_001.fastq.gz"
+
+def get_trimming_r1(wildcards):
+    key = (wildcards.sample, wildcards.lane, "R1")
+    if key in fastq_lookup:
+        return fastq_lookup[key]
+    s_raw = wildcards.sample.split('/')[-1] if '/' in wildcards.sample else wildcards.sample
+    if (s_raw, wildcards.lane, "R1") in fastq_lookup:
+        return fastq_lookup[(s_raw, wildcards.lane, "R1")]
+    return f"{config['inputdir']}/{wildcards.sample}_{wildcards.lane}_R1_001.fastq.gz"
+
+def get_trimming_r2(wildcards):
+    key = (wildcards.sample, wildcards.lane, "R2")
+    if key in fastq_lookup:
+        return fastq_lookup[key]
+    s_raw = wildcards.sample.split('/')[-1] if '/' in wildcards.sample else wildcards.sample
+    if (s_raw, wildcards.lane, "R2") in fastq_lookup:
+        return fastq_lookup[(s_raw, wildcards.lane, "R2")]
+    return f"{config['inputdir']}/{wildcards.sample}_{wildcards.lane}_R2_001.fastq.gz"
+
 pattern_mrn = '|'.join([re.escape(x) for x in sample_mrn]) if sample_mrn else r".*"
 pattern_lane = '|'.join([re.escape(x) for x in lane]) if lane else r".*"
 pattern_read = '|'.join([re.escape(x) for x in read]) if read else r".*"
@@ -55,6 +91,11 @@ wildcard_constraints:
 # set automatically by the python wrapper script
 
 configfile: "workflow/config.yml"
+
+# Normalize reference and resource paths to absolute paths
+for k in ["reference_genome", "icc_panel", "dbsnp", "canonical_transcripts", "protein_coding"]:
+    if k in config and config[k] and not os.path.isabs(config[k]):
+        config[k] = os.path.abspath(os.path.join(workflow.basedir, "..", config[k]))
 
 ############################
 ####### Include rules ######

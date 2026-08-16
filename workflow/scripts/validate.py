@@ -131,41 +131,35 @@ def validate_directories(inputdir, outdir):
     return True
 
 
-def validate_sample_file(sample_file):
+def validate_sample_file(sample_file, inputdir=None):
     """
-    Validate sample metadata CSV file.
-    
-    Args:
-        sample_file: Path to sample CSV file
-    
-    Returns:
-        bool: True if sample file is valid
+    Validate sample metadata CSV file or auto-discovered samples from inputdir.
     """
-    logger.info("Validating sample file...")
+    logger.info("Validating sample file / input samples...")
     
-    if not os.path.exists(sample_file):
-        logger.error(f"Sample file not found: {sample_file}")
-        return False
-    
-    try:
-        df = pd.read_csv(sample_file)
-        
-        if 'sample' not in df.columns:
-            logger.error("Sample CSV must have 'sample' column")
-            return False
-        
-        if df.empty:
-            logger.error("Sample CSV is empty")
-            return False
-        
-        logger.info(f"✓ Sample file contains {len(df)} samples")
-        logger.info(f"✓ Columns: {', '.join(df.columns)}")
-        
-        return True
-    
-    except Exception as e:
-        logger.error(f"Error reading sample file: {e}")
-        return False
+    if os.path.exists(sample_file):
+        try:
+            df = pd.read_csv(sample_file)
+            if 'sample' in df.columns and not df.empty:
+                logger.info(f"✓ Sample file contains {len(df)} samples")
+                return True
+        except Exception as e:
+            logger.warning(f"Warning reading sample file: {e}")
+            
+    # Fallback to auto-discovery if inputdir is provided
+    if inputdir and os.path.isdir(inputdir):
+        try:
+            from workflow.scripts.sample_processing import get_sample_data
+            df_disc = get_sample_data(None, inputdir)
+            if not df_disc.empty:
+                unique_samples = df_disc['sample'].unique()
+                logger.info(f"✓ Auto-discovered {len(unique_samples)} samples directly from input directory")
+                return True
+        except Exception as e:
+            logger.warning(f"Auto-discovery check encountered: {e}")
+
+    logger.error(f"No valid sample metadata CSV ({sample_file}) or discoverable FASTQs in input directory")
+    return False
 
 
 def validate_fastq_files(inputdir, sample_df, lanes=[1, 2, 3, 4]):
@@ -246,7 +240,7 @@ def validate_pipeline_config(configfile, inputdir, outdir):
     checks = [
         ("Reference files", lambda: validate_reference_files(config)),
         ("Directories", lambda: validate_directories(inputdir, outdir)),
-        ("Sample file", lambda: validate_sample_file(config.get('samplesfile', 'samples.csv'))),
+        ("Sample file", lambda: validate_sample_file(config.get('samplesfile', 'samples.csv'), inputdir=inputdir)),
     ]
     
     results = []

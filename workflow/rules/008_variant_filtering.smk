@@ -23,24 +23,20 @@ rule filter_snps:
         config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filter_snps.txt"
     shell:
         """
-        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" VariantFiltration \
-        -R {params.ref} \
-        -V {input.snp_vcf} \
-        -O {output.filtered_snp_vcf} \
-        --filter-expression "QD < 2.0" \
-        --filter-expression "FS > 60.0" \
-        --filter-expression "MQ < 40.0" \
-        --filter-expression "MQRankSum < -12.5" \
-        --filter-expression "ReadPosRankSum < -8.0" \
-        --filter-name "QDFilter" \
-        --filter-name "FSFilter" \
-        --filter-name "MQFilter" \
-        --filter-name "MQRankSumFilter" \
-        --filter-name "ReadPosFilter" \
-        --intervals {params.target} \
+        mkdir -p "{resources.tmpdir}"
+        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" VariantFiltration \
+        -R "{params.ref}" \
+        -V "{input.snp_vcf}" \
+        -O "{output.filtered_snp_vcf}" \
+        --filter-name "QDFilter" --filter-expression "QD < 2.0" \
+        --filter-name "FSFilter" --filter-expression "FS > 60.0" \
+        --filter-name "MQFilter" --filter-expression "MQ < 40.0" \
+        --filter-name "MQRankSumFilter" --filter-expression "MQRankSum < -12.5" \
+        --filter-name "ReadPosFilter" --filter-expression "ReadPosRankSum < -8.0" \
+        --intervals "{params.target}" \
         --create-output-variant-index true \
-        --tmp-dir {resources.tmpdir} \
-        &> {log}
+        --tmp-dir "{resources.tmpdir}" \
+        &> "{log}"
         """
 
 rule filter_indels:
@@ -66,18 +62,16 @@ rule filter_indels:
         config["outdir"] + "/benchmarks/006_variant_filtering/{sample}_filter_indels.txt"
     shell:
         """
-        gatk --java-options "-Xms512m -Xmx{resources.mem_mb}m -XX:+UseG1GC" VariantFiltration \
-        -R {params.ref} \
-        -V {input.indel_vcf} \
-        -O {output.filtered_indel_vcf} \
-        --filter-expression "QD < 2.0" \
-        --filter-expression "ReadPosRankSum < -20.0" \
-        --filter-expression "FS > 200.0" \
-        --filter-name "QDFilter" \
-        --filter-name "ReadPosFilter" \
-        --filter-name "FSFilter" \
-        --intervals {params.target} \
+        mkdir -p "{resources.tmpdir}"
+        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" VariantFiltration \
+        -R "{params.ref}" \
+        -V "{input.indel_vcf}" \
+        -O "{output.filtered_indel_vcf}" \
+        --filter-name "QDFilter" --filter-expression "QD < 2.0" \
+        --filter-name "ReadPosFilter" --filter-expression "ReadPosRankSum < -20.0" \
+        --filter-name "FSFilter" --filter-expression "FS > 200.0" \
+        --intervals "{params.target}" \
         --create-output-variant-index true \
-        --tmp-dir {resources.tmpdir} \
-        &> {log}
+        --tmp-dir "{resources.tmpdir}" \
+        &> "{log}"
         """
