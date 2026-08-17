@@ -266,7 +266,7 @@ rule depth_of_coverage:
         bam_prot_coding=rules.filter_bam_prot_coding.output.bam_prot_coding,
         bai_prot_coding=rules.filter_bam_prot_coding.output.bai_prot_coding
     output:
-        depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage"
+        depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage.sample_summary"
     conda:
         "icc_gatk"
     resources:
@@ -274,7 +274,8 @@ rule depth_of_coverage:
         tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
-        cds_file=config["cds_panel"]
+        cds_file=config["cds_panel"],
+        out_prefix=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage"
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_depth_of_coverage.log"
     benchmark:
@@ -285,7 +286,7 @@ rule depth_of_coverage:
         gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" DepthOfCoverage \
         -R "{params.ref}" \
         -I "{input.bam_prot_coding}" \
-        -O "{output.depth_of_coverage}" \
+        -O "{params.out_prefix}" \
         -L "{params.cds_file}" \
         --omit-depth-output-at-each-base true \
         --omit-locus-table true \
@@ -300,7 +301,7 @@ rule depth_of_coverage_target:
         bam_target=rules.filter_bam_target.output.bam_target,
         bai_target=rules.filter_bam_target.output.bai_target
     output:
-        depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage"
+        depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage.sample_summary"
     conda:
         "icc_gatk"
     resources:
@@ -308,7 +309,8 @@ rule depth_of_coverage_target:
         tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
-        cds_file=config["cds_panel"]
+        cds_file=config["cds_panel"],
+        out_prefix=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage"
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_depth_of_coverage_target.log"
     benchmark:
@@ -319,7 +321,7 @@ rule depth_of_coverage_target:
         gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" DepthOfCoverage \
         -R "{params.ref}" \
         -I "{input.bam_target}" \
-        -O "{output.depth_of_coverage_target}" \
+        -O "{params.out_prefix}" \
         -L "{params.cds_file}" \
         --omit-depth-output-at-each-base true \
         --omit-locus-table true \

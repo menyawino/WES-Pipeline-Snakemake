@@ -1,88 +1,61 @@
-# A rule to annotate variants using VEP
+# ACMG/AMP 2015 Variant Annotation & Clinical Classification Rules
 
-rule annotate_variants:
+rule acmg_annotate_variants:
     message:
-        "Annotating variants for sample {wildcards.sample}"
+        "Classifying and annotating variants with ACMG/AMP 2015 guidelines for sample {wildcards.sample}"
     input:
-        vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.vcf"
+        snp_vcf=rules.filter_snps.output.filtered_snp_vcf,
+        indel_vcf=rules.filter_indels.output.filtered_indel_vcf
     output:
-        annotated_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.annotated.vcf"
+        acmg_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_annotated.vcf",
+        acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv",
+        acmg_html=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_report.html"
     conda:
-        "icc_07_annotation"
+        "icc_gatk"
     threads:
-        config["threads_mid"]
+        config.get("threads_mid", 8)
     params:
-        cache_dir=config["vep"]["cache_dir"],
-        fasta=config["vep"]["fasta"]
+        bed=config.get("icc_panel", "")
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_annotation.log"
+        config["outdir"] + "/logs/007_annotation/{sample}_acmg_annotation.log"
     benchmark:
-        config["outdir"] + "/benchmarks/007_annotation/{sample}_annotation.txt"
+        config["outdir"] + "/benchmarks/007_annotation/{sample}_acmg_annotation.txt"
     shell:
         """
-        vep \
-        --dir_cache {params.cache_dir} \
-        --fasta {params.fasta} \
-        --input_file {input.vcf} \
-        --output_file {output.annotated_vcf} \
-        --vcf \
-        --fork {threads} \
-        --everything \
-        > {log} 2>&1
+        python3 workflow/scripts/acmg_annotator.py \
+        --snp-vcf "{input.snp_vcf}" \
+        --indel-vcf "{input.indel_vcf}" \
+        --bed "{params.bed}" \
+        --sample-name "{wildcards.sample}" \
+        --output-vcf "{output.acmg_vcf}" \
+        --output-tsv "{output.acmg_tsv}" \
+        --output-html "{output.acmg_html}" \
+        > "{log}" 2>&1
         """
 
-rule extract_on_target_reads:
+rule aggregate_acmg_annotations:
     message:
-        "Extracting on-target reads for sample {wildcards.sample}"
+        "Aggregating cohort-wide ACMG/AMP clinical variant classifications"
     input:
-        recal_bam=config["outdir"] + "/analysis/006_variant_filtering/{sample}.recal.bam"
+        tsvs=expand(config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv", sample=sample_filename)
     output:
-        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}.on_target.bam"
+        cohort_report=config["outdir"] + "/analysis/007_annotation/cohort_acmg_report.md",
+        cohort_table=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.tsv",
+        cohort_json=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.json",
+        cohort_dashboard=config["outdir"] + "/analysis/007_annotation/cohort_acmg_dashboard.html"
     conda:
-        "icc_07_annotation"
-    params:
-        target=config["target_file"]
+        "icc_gatk"
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_extract_on_target_reads.log"
+        config["outdir"] + "/logs/007_annotation/cohort_acmg_summary.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/007_annotation/cohort_acmg_summary.txt"
     shell:
         """
-        bedtools intersect -abam {input.recal_bam} -b {params.target} > {output.on_target_bam} 2> {log}
-        """
-
-rule flagstat_report:
-    message:
-        "Generating flagstat report for sample {wildcards.sample}"
-    input:
-        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}.on_target.bam"
-    output:
-        flagstat=config["outdir"] + "/analysis/007_annotation/{sample}.flagstat.txt"
-    conda:
-        "icc_07_annotation"
-    log:
-        config["outdir"] + "/logs/007_annotation/{sample}_flagstat.log"
-    shell:
-        """
-        samtools flagstat {input.on_target_bam} > {output.flagstat} 2> {log}
-        """
-
-rule coverage_analysis:
-    message:
-        "Performing coverage analysis for sample {wildcards.sample}"
-    input:
-        on_target_bam=config["outdir"] + "/analysis/007_annotation/{sample}.on_target.bam"
-    output:
-        coverage_stats=config["outdir"] + "/analysis/007_annotation/{sample}.coverage_stats.txt",
-        coverage_per_base=config["outdir"] + "/analysis/007_annotation/{sample}.coverage_per_base.txt",
-        coverage_histogram=config["outdir"] + "/analysis/007_annotation/{sample}.coverage_histogram.txt"
-    conda:
-        "icc_07_annotation"
-    params:
-        target=config["target_file"]
-    log:
-        config["outdir"] + "/logs/007_annotation/{sample}_coverage_analysis.log"
-    shell:
-        """
-        bedtools coverage -abam {input.on_target_bam} -b {params.target} > {output.coverage_stats} 2> {log}
-        bedtools coverage -abam {input.on_target_bam} -b {params.target} -d > {output.coverage_per_base} 2>> {log}
-        bedtools coverage -abam {input.on_target_bam} -b {params.target} -hist > {output.coverage_histogram} 2>> {log}
+        python3 workflow/scripts/aggregate_acmg.py \
+        --inputs {input.tsvs} \
+        --report-md "{output.cohort_report}" \
+        --summary-tsv "{output.cohort_table}" \
+        --summary-json "{output.cohort_json}" \
+        --dashboard-html "{output.cohort_dashboard}" \
+        > "{log}" 2>&1
         """

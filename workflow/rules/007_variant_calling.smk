@@ -84,7 +84,6 @@ rule gather_gvcfs:
         done
         gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" GatherVcfs \
         $inputs_args \
-        --REORDER_INPUT_BY_FIRST_VARIANT true \
         -O "{output.gvcf}" \
         --TMP_DIR "{resources.tmpdir}" \
         > "{log}" 2>&1
@@ -123,14 +122,6 @@ rule genotype_gvcfs:
         -V "{input.gvcf}" \
         -O "{output.vcf}" \
         -G StandardAnnotation \
-        -A DepthPerAlleleBySample \
-        -A Coverage \
-        -A InbreedingCoeff \
-        -A QualByDepth \
-        -A FS \
-        -A SOR \
-        -A ReadPosRankSum \
-        -A MQRankSum \
         --intervals "{params.target}" \
         --interval-padding 100 \
         --create-output-variant-index true \
