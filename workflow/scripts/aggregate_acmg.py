@@ -176,7 +176,7 @@ def write_cohort_dashboard(df_summary, pathogenic_variants, out_html):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Cohort ACMG Aggregator")
-    parser.add_argument("--inputs", nargs="+", required=True, help="Input sample TSVs")
+    parser.add_argument("--inputs", nargs="*", default=[], help="Input sample TSVs")
     parser.add_argument("--report-md", required=True, help="Output markdown report")
     parser.add_argument("--summary-tsv", required=True, help="Output summary TSV")
     parser.add_argument("--summary-json", required=True, help="Output summary JSON")

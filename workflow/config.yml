@@ -94,14 +94,15 @@ gatk:
 
 # VEP parameters
 vep:
-  cache_dir: "/path/to/vep/cache"
-  fasta: "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
+  mode: "online" # Uses Ensembl VEP REST API for accurate, lightweight online annotation
+  species: "homo_sapiens"
+  assembly: "GRCh38"
 
-# Local variant-reporting parameters inspired by ClawBio annotation workflows
+# Local variant-reporting parameters
 variant_summary:
   top_variants: 10
   top_chromosomes: 10
-  annotated_vcf_pattern: "{outdir}/analysis/009_annotation/{sample}.annotated.vcf"
+  annotated_vcf_pattern: "{outdir}/analysis/007_annotation/{sample}.vep_annotated.vcf"
 
 # Snakemake execution options
 snakemake:
@@ -112,6 +113,20 @@ snakemake:
   rerun_incomplete: true
   generate_report: true
   cores: 8  # Default core allocation, can be overridden via CLI
+
+# Email notification settings (Snakemake onsuccess/onerror hooks)
+email:
+  enabled: false               # Set to true to enable email notifications
+  to: "user@example.com"       # Recipient email address(es), comma-separated
+  from: "wes-pipeline@localhost" # Sender email address
+  smtp_host: "localhost"       # SMTP server host (e.g. smtp.gmail.com)
+  smtp_port: 25                # SMTP port (25, 587 for STARTTLS, 465 for SSL)
+  use_tls: false               # Enable STARTTLS encryption (recommended for port 587)
+  use_ssl: false               # Enable SSL encryption (recommended for port 465)
+  username: ""                 # SMTP username (if authentication is required)
+  password: ""                 # SMTP password or application-specific token
+  notify_on_success: true      # Send email on successful workflow completion
+  notify_on_error: true        # Send email on workflow failure
 
 # Seqera token
 token: "eyJ0aWQiOiAxMDgwOH0uOWM0ZjQ3ZTZiNTYzZTFmNWU4MjdlMzViZjI1OGVjOWY1MTI2MTUzMQ=="

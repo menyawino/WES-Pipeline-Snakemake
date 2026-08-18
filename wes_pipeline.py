@@ -52,10 +52,11 @@ def cli():
 @click.argument('configfile', default='workflow/config.yml')
 @click.option('-i', '--inputdir', required=True, help="Path to raw FASTQ input directory.")
 @click.option('-o', '--outdir', required=True, help="Path to pipeline output directory.")
+@click.option('--email', default=None, help="Recipient email address(es) for completion/failure notifications.")
 @click.option('--verbose', is_flag=True, help="Enable verbose output logging.")
 @click.option('--skip-validation', is_flag=True, help="Skip pre-flight configuration and resource validation checks.")
 @click.argument('snakemake_args', nargs=-1)
-def run(configfile, inputdir, outdir, verbose, skip_validation, snakemake_args):
+def run(configfile, inputdir, outdir, email, verbose, skip_validation, snakemake_args):
     """Execute the WES analysis pipeline."""
     if not skip_validation:
         print(f"{GRE}[INFO] Running pre-flight pipeline validation...{NC}")
@@ -71,7 +72,8 @@ def run(configfile, inputdir, outdir, verbose, skip_validation, snakemake_args):
         inputdir,
         outdir,
         verbose=verbose,
-        extra_args=snakemake_args
+        extra_args=snakemake_args,
+        email=email
     )
 
     if return_code == 0 or return_code is None:

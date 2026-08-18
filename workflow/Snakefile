@@ -83,15 +83,6 @@ wildcard_constraints:
     read=pattern_read,
     sample_filename=pattern_sf
 
-############################
-####### Configuration ######
-############################
-
-# change this parameter to the path of the config file using
-# set automatically by the python wrapper script
-
-configfile: "workflow/config.yml"
-
 # Normalize reference and resource paths to absolute paths
 for k in ["reference_genome", "icc_panel", "dbsnp", "canonical_transcripts", "protein_coding"]:
     if k in config and config[k] and not os.path.isabs(config[k]):
@@ -112,6 +103,7 @@ include: "rules/007_variant_calling.smk"
 include: "rules/008_variant_filtering.smk"
 include: "rules/009_annotation.smk"
 include: "rules/010_summary.smk"
+include: "rules/011_multiqc.smk"
 
 ############################
 ######### Workflow #########
@@ -134,9 +126,10 @@ rule all:
         expand(rules.qc_report.output.qc_metrics, sample=sample_filename),
         expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename),
         expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename),
-        expand(rules.acmg_annotate_variants.output.acmg_vcf, sample=sample_filename),
-        expand(rules.acmg_annotate_variants.output.acmg_tsv, sample=sample_filename),
-        expand(rules.acmg_annotate_variants.output.acmg_html, sample=sample_filename),
+        expand(rules.vep_genebe_annotate_variants.output.vep_vcf, sample=sample_filename),
+        expand(rules.vep_genebe_annotate_variants.output.acmg_vcf, sample=sample_filename),
+        expand(rules.vep_genebe_annotate_variants.output.acmg_tsv, sample=sample_filename),
+        expand(rules.vep_genebe_annotate_variants.output.acmg_html, sample=sample_filename),
         rules.aggregate_acmg_annotations.output.cohort_report,
         rules.aggregate_acmg_annotations.output.cohort_table,
         rules.aggregate_acmg_annotations.output.cohort_json,
@@ -147,4 +140,37 @@ rule all:
         rules.aggregate_variant_summaries.output.cohort_report,
         rules.aggregate_variant_summaries.output.cohort_table,
         rules.aggregate_variant_summaries.output.cohort_json,
-        rules.aggregate_variant_summaries.output.cohort_dashboard
+        rules.aggregate_variant_summaries.output.cohort_dashboard,
+        rules.multiqc_report.output.html
+
+onsuccess:
+    import shutil
+    print("\n[INFO] Workflow complete! Cleaning up intermediate HaplotypeCaller chunks...")
+    for s in sample_filename:
+        chunk_dir = os.path.join(config["outdir"], "analysis", "005_variant_calling", s, "chunks")
+        if os.path.isdir(chunk_dir):
+            shutil.rmtree(chunk_dir, ignore_errors=True)
+    intervals_dir = os.path.join(config["outdir"], "analysis", "000_ref", "intervals")
+    if os.path.isdir(intervals_dir):
+        shutil.rmtree(intervals_dir, ignore_errors=True)
+    print("[INFO] Intermediate chunks cleaned up successfully.")
+
+    try:
+        from scripts.aggregate import create_analysis_report
+        create_analysis_report(config["outdir"])
+    except Exception as e:
+        print(f"[WARNING] Could not generate analysis report: {e}")
+
+    try:
+        from scripts.notifications import send_email_notification
+        send_email_notification(config, status="SUCCESS", samples=sample_mrn)
+    except Exception as e:
+        print(f"[WARNING] Could not trigger onsuccess notification: {e}")
+
+onerror:
+    try:
+        from scripts.notifications import send_email_notification
+        log_file = getattr(workflow, "logfile", None) or os.path.join(config["outdir"], "logs")
+        send_email_notification(config, status="FAILURE", log_file=str(log_file), samples=sample_mrn)
+    except Exception as e:
+        print(f"[WARNING] Could not trigger onerror notification: {e}")

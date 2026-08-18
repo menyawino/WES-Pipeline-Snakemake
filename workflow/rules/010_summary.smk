@@ -5,7 +5,8 @@ rule summarize_variants:
         "Generating variant summary for sample {wildcards.sample}"
     input:
         snp_vcf=rules.filter_snps.output.filtered_snp_vcf,
-        indel_vcf=rules.filter_indels.output.filtered_indel_vcf
+        indel_vcf=rules.filter_indels.output.filtered_indel_vcf,
+        annotated_vcf=rules.vep_genebe_annotate_variants.output.vep_vcf
     output:
         report_md=config["outdir"] + "/analysis/010_summary/{sample}/variant_summary.md",
         summary_tsv=config["outdir"] + "/analysis/010_summary/{sample}/variant_summary.tsv",
@@ -14,10 +15,7 @@ rule summarize_variants:
         "icc_gatk"
     params:
         top_variants=config.get("variant_summary", {}).get("top_variants", 10),
-        top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10),
-        annotated_vcf=lambda wildcards: config.get("variant_summary", {}).get(
-            "annotated_vcf_pattern", ""
-        ).format(outdir=config["outdir"], sample=wildcards.sample)
+        top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10)
     log:
         config["outdir"] + "/logs/010_summary/{sample}_variant_summary.log"
     benchmark:
@@ -28,7 +26,7 @@ rule summarize_variants:
         --sample-name "{wildcards.sample}" \
         --snp-vcf {input.snp_vcf} \
         --indel-vcf {input.indel_vcf} \
-        --annotated-vcf "{params.annotated_vcf}" \
+        --annotated-vcf {input.annotated_vcf} \
         --report-md {output.report_md} \
         --summary-tsv {output.summary_tsv} \
         --summary-json {output.summary_json} \

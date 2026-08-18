@@ -1,32 +1,43 @@
 #!/usr/bin/env python3
 """
-Split a target BED file into N balanced BED files based on genomic interval sizes.
-Ensures reference coordinate ordering and uniform load balancing for scatter-gather GATK HaplotypeCaller.
+Split a target BED file into N balanced, non-overlapping BED files based on genomic interval sizes.
+Applies interval padding and merges overlapping intervals prior to chunking, ensuring strict
+reference coordinate ordering and non-overlapping chunks for scatter-gather GATK HaplotypeCaller.
 """
 
 import sys
 import os
 
-def get_contig_order(fai_path=None):
-    """Load contig ordering map from reference FAI if available, or fallback to standard human order."""
+def get_contig_info(fai_path=None):
+    """Load contig ordering map and lengths from reference FAI if available."""
+    contig_order = {}
+    contig_lengths = {}
     if fai_path and os.path.exists(fai_path):
-        contig_order = {}
         with open(fai_path, 'r') as f:
             for i, line in enumerate(f):
                 parts = line.strip().split('\t')
                 if parts:
                     contig_order[parts[0]] = i
-        return contig_order
+                    if len(parts) > 1:
+                        try:
+                            contig_lengths[parts[0]] = int(parts[1])
+                        except ValueError:
+                            pass
+        return contig_order, contig_lengths
 
     # Standard fallback
     standard = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY", "chrM", "chrMT"]
     standard += [str(i) for i in range(1, 23)] + ["X", "Y", "MT", "M"]
-    return {c: i for i, c in enumerate(standard)}
+    contig_order = {c: i for i, c in enumerate(standard)}
+    return contig_order, contig_lengths
 
-def split_bed(bed_path, output_paths, fai_path=None):
-    """Split input BED file into balanced sub-BED files sorted by reference order."""
-    contig_order = get_contig_order(fai_path)
-    intervals = []
+def split_bed(bed_path, output_paths, fai_path=None, padding=100):
+    """
+    Split input BED file into balanced sub-BED files sorted by reference order.
+    Pads intervals and merges overlaps to prevent out-of-order coordinate collisions during GatherVcfs.
+    """
+    contig_order, contig_lengths = get_contig_info(fai_path)
+    raw_intervals = []
     
     with open(bed_path, 'r') as f:
         for line in f:
@@ -36,21 +47,44 @@ def split_bed(bed_path, output_paths, fai_path=None):
             parts = line_str.split('\t')
             if len(parts) >= 3:
                 chrom = parts[0]
-                start = int(parts[1])
-                end = int(parts[2])
-                length = max(1, end - start)
-                rest = parts[3:] if len(parts) > 3 else []
-                intervals.append((chrom, start, end, length, rest))
+                try:
+                    start = int(parts[1])
+                    end = int(parts[2])
+                except ValueError:
+                    continue
                 
-    if not intervals:
+                # Apply padding
+                padded_start = max(0, start - padding)
+                if chrom in contig_lengths:
+                    padded_end = min(contig_lengths[chrom], end + padding)
+                else:
+                    padded_end = end + padding
+                
+                raw_intervals.append((chrom, padded_start, padded_end))
+                
+    if not raw_intervals:
         for p in output_paths:
             os.makedirs(os.path.dirname(os.path.abspath(p)), exist_ok=True)
             open(p, 'w').close()
         return
 
     # Sort strictly by reference contig order, then by start position
-    intervals.sort(key=lambda item: (contig_order.get(item[0], 999999), item[1], item[2]))
+    raw_intervals.sort(key=lambda item: (contig_order.get(item[0], 999999), item[1], item[2]))
 
+    # Merge overlapping or abutting intervals
+    merged_intervals = []
+    for chrom, start, end in raw_intervals:
+        if not merged_intervals:
+            merged_intervals.append([chrom, start, end])
+        else:
+            last_chrom, last_start, last_end = merged_intervals[-1]
+            if chrom == last_chrom and start <= last_end:
+                merged_intervals[-1][2] = max(last_end, end)
+            else:
+                merged_intervals.append([chrom, start, end])
+
+    # Calculate intervals with lengths
+    intervals = [(c, s, e, max(1, e - s)) for c, s, e in merged_intervals]
     total_bases = sum(item[3] for item in intervals)
     n_chunks = len(output_paths)
     target_bases_per_chunk = max(1, total_bases // n_chunks)
@@ -69,11 +103,8 @@ def split_bed(bed_path, output_paths, fai_path=None):
     for out_path, chunk_items in zip(output_paths, chunks):
         os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
         with open(out_path, 'w') as f_out:
-            for chrom, start, end, _, rest in chunk_items:
-                if rest:
-                    f_out.write(f"{chrom}\t{start}\t{end}\t" + "\t".join(rest) + "\n")
-                else:
-                    f_out.write(f"{chrom}\t{start}\t{end}\n")
+            for chrom, start, end, _ in chunk_items:
+                f_out.write(f"{chrom}\t{start}\t{end}\n")
 
 if __name__ == '__main__':
     # Support direct execution via snakemake script or CLI

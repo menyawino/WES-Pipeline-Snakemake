@@ -77,7 +77,7 @@ def get_folder_size(folder):
 
 
 # run snakemake with the specified options and configuration
-def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
+def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[], email=None):
     """Run Snakemake with the specified options and configuration."""
 
     # Find the Snakefile relative to the package path
@@ -132,7 +132,10 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[]):
         cmd += ["--configfile", configfile]
 
     # Pass inputdir and outdir to Snakemake configuration
-    cmd += ["--config", f"inputdir={inputdir}", f"outdir={outdir}"]
+    config_params = [f"inputdir={inputdir}", f"outdir={outdir}"]
+    if email:
+        config_params.append(f"email_recipient={email}")
+    cmd += ["--config"] + config_params
 
     # Print the final command if verbose with cmd list as a string
     if verbose:

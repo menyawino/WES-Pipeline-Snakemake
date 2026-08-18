@@ -26,8 +26,8 @@ rule haplotypecaller_chunk:
         bai=rules.filter_bam_target.output.bai_target,
         interval=config["outdir"] + "/analysis/000_ref/intervals/chunk_{chunk}.bed"
     output:
-        gvcf_chunk=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}/chunks/{chunk}.g.vcf.gz"),
-        gvcf_tbi=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}/chunks/{chunk}.g.vcf.gz.tbi")
+        gvcf_chunk=config["outdir"] + "/analysis/005_variant_calling/{sample}/chunks/{chunk}.g.vcf.gz",
+        gvcf_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}/chunks/{chunk}.g.vcf.gz.tbi"
     conda:
         "icc_gatk"
     threads:
@@ -50,7 +50,6 @@ rule haplotypecaller_chunk:
         -O "{output.gvcf_chunk}" \
         -ERC GVCF \
         -L "{input.interval}" \
-        --interval-padding 100 \
         --native-pair-hmm-threads {threads} \
         --tmp-dir "{resources.tmpdir}" \
         &> "{log}"
@@ -60,10 +59,11 @@ rule gather_gvcfs:
     message:
         "Gathering interval GVCFs for sample {wildcards.sample}"
     input:
-        gvcfs=expand(config["outdir"] + "/analysis/005_variant_calling/{{sample}}/chunks/{chunk}.g.vcf.gz", chunk=scatter_chunks)
+        gvcfs=expand(config["outdir"] + "/analysis/005_variant_calling/{{sample}}/chunks/{chunk}.g.vcf.gz", chunk=scatter_chunks),
+        tbis=expand(config["outdir"] + "/analysis/005_variant_calling/{{sample}}/chunks/{chunk}.g.vcf.gz.tbi", chunk=scatter_chunks)
     output:
-        gvcf=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.gz"),
-        gvcf_tbi=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.gz.tbi")
+        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.gz",
+        gvcf_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.gz.tbi"
     conda:
         "icc_gatk"
     threads:
@@ -98,7 +98,7 @@ rule genotype_gvcfs:
         gvcf=rules.gather_gvcfs.output.gvcf,
         gvcf_tbi=rules.gather_gvcfs.output.gvcf_tbi
     output:
-        vcf=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf")
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
     conda:
         "icc_gatk"
     threads:
@@ -136,8 +136,8 @@ rule split_vcfs:
     input:
         vcf=rules.genotype_gvcfs.output.vcf
     output:
-        snp_vcf=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf"),
-        indel_vcf=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf")
+        snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf",
+        indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"
     conda:
         "icc_gatk"
     threads:

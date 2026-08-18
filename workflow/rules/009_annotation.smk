@@ -1,36 +1,33 @@
-# ACMG/AMP 2015 Variant Annotation & Clinical Classification Rules
+# Ensembl VEP & GeneBe ACMG 2015 Unified Variant Annotation Rules
 
-rule acmg_annotate_variants:
+rule vep_genebe_annotate_variants:
     message:
-        "Classifying and annotating variants with ACMG/AMP 2015 guidelines for sample {wildcards.sample}"
+        "Annotating variants and classifying ACMG guidelines via Ensembl VEP & GeneBe plugin for sample {wildcards.sample}"
     input:
         snp_vcf=rules.filter_snps.output.filtered_snp_vcf,
         indel_vcf=rules.filter_indels.output.filtered_indel_vcf
     output:
+        vep_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.vep_annotated.vcf",
         acmg_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_annotated.vcf",
         acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv",
         acmg_html=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_report.html"
     conda:
         "icc_gatk"
-    threads:
-        config.get("threads_mid", 8)
-    params:
-        bed=config.get("icc_panel", "")
     log:
-        config["outdir"] + "/logs/007_annotation/{sample}_acmg_annotation.log"
+        config["outdir"] + "/logs/007_annotation/{sample}_vep_genebe_annotation.log"
     benchmark:
-        config["outdir"] + "/benchmarks/007_annotation/{sample}_acmg_annotation.txt"
+        config["outdir"] + "/benchmarks/007_annotation/{sample}_vep_genebe_annotation.txt"
     shell:
         """
-        python3 workflow/scripts/acmg_annotator.py \
+        python3 workflow/scripts/vep_online_annotator.py \
         --snp-vcf "{input.snp_vcf}" \
         --indel-vcf "{input.indel_vcf}" \
-        --bed "{params.bed}" \
         --sample-name "{wildcards.sample}" \
-        --output-vcf "{output.acmg_vcf}" \
+        --output-vcf "{output.vep_vcf}" \
         --output-tsv "{output.acmg_tsv}" \
         --output-html "{output.acmg_html}" \
         > "{log}" 2>&1
+        cp -f "{output.vep_vcf}" "{output.acmg_vcf}"
         """
 
 rule aggregate_acmg_annotations:

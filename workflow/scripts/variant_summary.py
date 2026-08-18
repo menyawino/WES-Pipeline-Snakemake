@@ -861,7 +861,7 @@ def parse_args() -> argparse.Namespace:
     sample_parser.add_argument("--top-chromosomes", type=int, default=10)
 
     cohort_parser = subparsers.add_parser("cohort")
-    cohort_parser.add_argument("--inputs", nargs="+", required=True)
+    cohort_parser.add_argument("--inputs", nargs="*", default=[])
     cohort_parser.add_argument("--report-md", required=True)
     cohort_parser.add_argument("--summary-tsv", required=True)
     cohort_parser.add_argument("--summary-json", required=True)
