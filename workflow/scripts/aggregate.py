@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Pipeline Aggregator and Comprehensive Analysis Report Generator.
 
-Compiles runtime benchmarks, disk space and storage consumption, pipeline execution logs,
-variant burden statistics, ACMG clinical classifications, and produces a highly organized,
-clustered, and interactive pipeline topology visualizer.
+Compiles disk space and storage consumption, pipeline execution logs, variant burden statistics,
+ACMG clinical classifications, and produces a highly organized, clustered, and interactive
+pipeline topology visualizer without runtime benchmark tracking.
 """
 
 from __future__ import annotations
@@ -20,12 +20,9 @@ import shutil
 import subprocess
 import sys
 import tarfile
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-
-import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("pipeline_aggregator")
@@ -48,7 +45,7 @@ PIPELINE_STAGES = {
     "02_alignment": {
         "title": "Stage 2: BWA-MEM2 Alignment & BAM Prep",
         "icon": "🧬",
-        "desc": "Ultra-fast alignment, coordinate sorting, lane merging, Picard MarkDuplicates, GATK4 BaseRecalibrator & ApplyBQSR",
+        "desc": "BWA-MEM2 alignment, coordinate sorting, lane merging, Picard MarkDuplicates, GATK4 BaseRecalibrator & ApplyBQSR",
         "color": "#2563eb",
         "rules": ["bwa_mem", "merge_bams", "mark_duplicates", "index_markdup_bam", "base_recalibrator", "apply_bqsr"],
     },
@@ -106,20 +103,6 @@ def format_bytes(size_bytes: float | int) -> str:
         size /= 1024.0
         i += 1
     return f"{size:.2f} {units[i]}"
-
-
-def format_seconds(sec: float | int) -> str:
-    if sec is None or pd.isna(sec):
-        return "N/A"
-    sec = float(sec)
-    m, s = divmod(int(sec), 60)
-    h, m = divmod(m, 60)
-    if h > 0:
-        return f"{h}h {m}m {s}s"
-    elif m > 0:
-        return f"{m}m {s}s"
-    else:
-        return f"{sec:.2f}s"
 
 
 def stylize_dot_graph(dot_str: str, title: str = "WES Pipeline Topology") -> str:
@@ -182,7 +165,7 @@ def export_reproducible_snakefile(outdir: str) -> tuple[str, str]:
 
     header_injections = [
         "# =============================================================================\n",
-        "# ULTRA-REPRODUCIBLE CONSOLIDATED STANDALONE WES SNAKEMAKE PIPELINE\n",
+        "# CONSOLIDATED STANDALONE WES SNAKEMAKE PIPELINE\n",
         f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n",
         "# Contains all inlined rules and workflow definitions in a single file\n",
         "# =============================================================================\n\n",
@@ -252,7 +235,6 @@ def render_pipeline_graphs(outdir: str, configfile: str | None = None) -> tuple[
     if configfile and os.path.exists(configfile):
         cfg_args = ["--configfile", configfile]
 
-    # Rulegraph
     try:
         cmd = [snakemake_bin, "-s", snakefile, "--rulegraph", "--quiet"] + cfg_args
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -263,7 +245,6 @@ def render_pipeline_graphs(outdir: str, configfile: str | None = None) -> tuple[
     except Exception as e:
         logger.warning("Could not render rulegraph: %s", e)
 
-    # DAG
     try:
         cmd = [snakemake_bin, "-s", snakefile, "--dag", "--quiet"] + cfg_args
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -345,43 +326,6 @@ def get_dir_space_breakdown(outdir: str) -> dict[str, Any]:
     return breakdown
 
 
-def aggregate_benchmarks(benchmark_dir: str) -> pd.DataFrame:
-    if not os.path.isdir(benchmark_dir):
-        return pd.DataFrame()
-    benchmark_files = glob.glob(os.path.join(benchmark_dir, "**/*.txt"), recursive=True)
-    if not benchmark_files:
-        return pd.DataFrame()
-
-    data = []
-    for bf in benchmark_files:
-        try:
-            with open(bf, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-            if len(lines) >= 2:
-                header = [h.strip() for h in lines[0].strip().split("\t")]
-                values = [v.strip() for v in lines[1].strip().split("\t")]
-                row = dict(zip(header, values))
-                rel = os.path.relpath(bf, benchmark_dir)
-                parts = rel.split(os.sep)
-                rule_name = parts[0] if len(parts) > 1 else os.path.splitext(os.path.basename(bf))[0]
-                row["rule"] = rule_name
-                row["benchmark_file"] = os.path.basename(bf)
-                row["relative_path"] = rel
-                data.append(row)
-        except Exception as e:
-            logger.warning("Could not parse benchmark file %s: %s", bf, e)
-
-    if not data:
-        return pd.DataFrame()
-
-    df = pd.DataFrame(data)
-    for col in ["s", "max_rss", "max_vms", "max_uss", "max_pss", "io_in", "io_out", "mean_load", "cpu_time"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    return df
-
-
 def aggregate_logs(log_dir: str) -> dict[str, Any]:
     if not os.path.isdir(log_dir):
         return {"total_logs": 0, "logs_with_errors": 0, "logs_with_warnings": 0, "errors": [], "warnings": []}
@@ -423,7 +367,7 @@ def aggregate_logs(log_dir: str) -> dict[str, Any]:
 
 
 def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
-    """Generate comprehensive, beautifully organized analysis report HTML."""
+    """Generate comprehensive, clean analysis report HTML without runtime metrics."""
     logger.info("Compiling clean analysis report for %s...", outdir)
 
     snakefile_gz_path, tarball_path = export_reproducible_snakefile(outdir)
@@ -431,7 +375,6 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
     dag_b64 = encode_image_base64(dag_path)
     rulegraph_b64 = encode_image_base64(rulegraph_path)
 
-    benchmarks_df = aggregate_benchmarks(os.path.join(outdir, "benchmarks"))
     logs_data = aggregate_logs(os.path.join(outdir, "logs"))
     space_data = get_dir_space_breakdown(outdir)
 
@@ -453,9 +396,6 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
                 acmg_summary = json.load(f)
         except Exception:
             pass
-
-    total_runtime_sec = float(benchmarks_df["s"].sum()) if not benchmarks_df.empty and "s" in benchmarks_df else 0.0
-    peak_memory_mb = float(benchmarks_df["max_rss"].max()) if not benchmarks_df.empty and "max_rss" in benchmarks_df else 0.0
 
     # Build Interactive Stage Cards HTML
     stage_flow_cards = []
@@ -512,39 +452,6 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
             """
         )
 
-    bench_rows = []
-    if not benchmarks_df.empty:
-        grouped = (
-            benchmarks_df.groupby("rule")
-            .agg(
-                total_s=("s", "sum"),
-                mean_s=("s", "mean"),
-                max_rss=("max_rss", "max"),
-                runs=("s", "count"),
-            )
-            .reset_index()
-            .sort_values("total_s", ascending=False)
-        )
-        for _, r in grouped.iterrows():
-            pct = (r["total_s"] / max(total_runtime_sec, 0.001)) * 100
-            rss_mb = f"{r['max_rss']:.1f} MB" if pd.notna(r["max_rss"]) else "N/A"
-            bench_rows.append(
-                f"""
-                <tr>
-                    <td><strong>{html.escape(str(r['rule']))}</strong></td>
-                    <td>{int(r['runs'])}</td>
-                    <td>{format_seconds(r['total_s'])}</td>
-                    <td>
-                        <div style="background:#334155;border-radius:4px;overflow:hidden;height:8px;width:120px;display:inline-block;vertical-align:middle;margin-right:6px;">
-                            <div style="background:#a855f7;height:100%;width:{min(pct, 100):.1f}%;"></div>
-                        </div>
-                        <small>{pct:.1f}%</small>
-                    </td>
-                    <td>{rss_mb}</td>
-                </tr>
-                """
-            )
-
     total_vars = var_summary.get("total_variants", 0)
     pass_vars = var_summary.get("pass_variants", 0)
     annot_vars = var_summary.get("annotated_variants", 0)
@@ -554,6 +461,8 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
     p_cnt = acmg_summary.get("total_pathogenic", 0)
     lp_cnt = acmg_summary.get("total_likely_pathogenic", 0)
     vus_cnt = acmg_summary.get("total_vus", 0)
+    lb_cnt = acmg_summary.get("total_likely_benign", 0)
+    b_cnt = acmg_summary.get("total_benign", 0)
 
     top_gene_items = []
     for g in var_summary.get("top_genes", [])[:10]:
@@ -568,7 +477,7 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WES Pipeline Execution & Architecture Report</title>
+    <title>WES Pipeline Execution & Analysis Report</title>
     <style>
         :root {{
             --bg: #0b1120;
@@ -661,7 +570,6 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
             align-items: center;
         }}
         
-        /* Structured Architecture Flow */
         .stage-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
@@ -805,7 +713,7 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
         <!-- Header -->
         <header class="header">
             <div>
-                <h1>WES Pipeline Execution & Architecture Report</h1>
+                <h1>WES Pipeline Execution & Analysis Report</h1>
                 <p>Output Directory: <code>{html.escape(outdir)}</code> | Generated: <strong>{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</strong></p>
             </div>
             <div style="display:flex;gap:12px;align-items:center;">
@@ -817,9 +725,9 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
         <!-- KPI Metrics -->
         <div class="grid-4">
             <div class="card">
-                <div class="card-label">Total Execution Time</div>
-                <div class="card-val" style="color:var(--cyan);">{format_seconds(total_runtime_sec)}</div>
-                <div class="card-sub">Peak Memory: {peak_memory_mb:.1f} MB</div>
+                <div class="card-label">Cohort & Log Audit</div>
+                <div class="card-val" style="color:var(--cyan);">{logs_data['total_logs']} <span style="font-size:16px;color:var(--muted)">Logs</span></div>
+                <div class="card-sub">Errors: {logs_data['logs_with_errors']} | Warnings: {logs_data['logs_with_warnings']}</div>
             </div>
             <div class="card">
                 <div class="card-label">Total Storage Footprint</div>
@@ -868,7 +776,7 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
         <!-- Section: Reproducible Pipeline Artifacts -->
         <div class="section">
             <h2>
-                <span>Ultra-Reproducible Pipeline Artifacts</span>
+                <span>Reproducible Pipeline Artifacts</span>
                 <span style="font-size:12px;color:var(--muted);font-weight:400;">Single-file executable bundle</span>
             </h2>
             <div class="split-grid">
@@ -931,25 +839,6 @@ snakemake --configfile run_config.yml --use-conda -j 16</code>
             </div>
         </div>
 
-        <!-- Section: Runtime & Resource Benchmark Analysis -->
-        <div class="section">
-            <h2>Runtime & Computational Performance</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rule Name</th>
-                        <th>Runs</th>
-                        <th>Total Time</th>
-                        <th>Execution Share</th>
-                        <th>Peak Memory (RSS)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {''.join(bench_rows) or '<tr><td colspan="5">No benchmark records found.</td></tr>'}
-                </tbody>
-            </table>
-        </div>
-
         <!-- Section: Variant Health & Gene Hotspots -->
         <div class="section">
             <h2>Cohort Health & Top Variant Burden</h2>
@@ -961,11 +850,12 @@ snakemake --configfile run_config.yml --use-conda -j 16</code>
                     </ul>
                 </div>
                 <div class="list-box">
-                    <h3 style="font-size:14px;color:var(--muted);margin-top:0;">Pipeline Log & QA Status</h3>
+                    <h3 style="font-size:14px;color:var(--muted);margin-top:0;">ACMG Classification Breakdown</h3>
                     <ul>
-                        <li><span>Total Log Files</span><strong>{logs_data['total_logs']}</strong></li>
-                        <li><span>Logs With Errors</span><strong style="color:{'var(--red)' if logs_data['logs_with_errors'] else 'var(--green)'}">{logs_data['logs_with_errors']}</strong></li>
-                        <li><span>Logs With Warnings</span><strong style="color:{'var(--yellow)' if logs_data['logs_with_warnings'] else 'var(--muted)'}">{logs_data['logs_with_warnings']}</strong></li>
+                        <li><span>Pathogenic</span><strong style="color:var(--red)">{p_cnt}</strong></li>
+                        <li><span>Likely Pathogenic</span><strong style="color:var(--yellow)">{lp_cnt}</strong></li>
+                        <li><span>Variant of Uncertain Significance (VUS)</span><strong style="color:var(--purple)">{vus_cnt}</strong></li>
+                        <li><span>Likely Benign / Benign</span><strong style="color:var(--green)">{lb_cnt + b_cnt}</strong></li>
                     </ul>
                 </div>
             </div>
@@ -996,15 +886,18 @@ snakemake --configfile run_config.yml --use-conda -j 16</code>
 """
 
     report_path = os.path.join(outdir, "results", "analysis_report.html")
-    exec_path = os.path.join(outdir, "results", "execution_report.html")
-
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    with open(exec_path, "w", encoding="utf-8") as f:
-        f.write(html_content)
+    # Clean up duplicate execution_report.html if exists
+    exec_path = os.path.join(outdir, "results", "execution_report.html")
+    if os.path.exists(exec_path):
+        try:
+            os.remove(exec_path)
+        except OSError:
+            pass
 
-    logger.info("✓ Clustered Analysis Report generated at %s", report_path)
+    logger.info("✓ Master Analysis Report generated at %s", report_path)
     return report_path
 
 

@@ -44,8 +44,7 @@ rule aggregate_variant_summaries:
     output:
         cohort_report=config["outdir"] + "/analysis/010_summary/cohort_variant_report.md",
         cohort_table=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.tsv",
-        cohort_json=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.json",
-        cohort_dashboard=config["outdir"] + "/analysis/010_summary/cohort_variant_dashboard.html"
+        cohort_json=config["outdir"] + "/analysis/010_summary/cohort_variant_summary.json"
     conda:
         "icc_gatk"
     log:
@@ -59,6 +58,5 @@ rule aggregate_variant_summaries:
         --report-md {output.cohort_report} \
         --summary-tsv {output.cohort_table} \
         --summary-json {output.cohort_json} \
-        --dashboard-html {output.cohort_dashboard} \
         > {log} 2>&1
         """

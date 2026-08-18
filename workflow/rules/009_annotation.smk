@@ -8,9 +8,7 @@ rule vep_genebe_annotate_variants:
         indel_vcf=rules.filter_indels.output.filtered_indel_vcf
     output:
         vep_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.vep_annotated.vcf",
-        acmg_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_annotated.vcf",
-        acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv",
-        acmg_html=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_report.html"
+        acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv"
     conda:
         "icc_gatk"
     log:
@@ -25,9 +23,7 @@ rule vep_genebe_annotate_variants:
         --sample-name "{wildcards.sample}" \
         --output-vcf "{output.vep_vcf}" \
         --output-tsv "{output.acmg_tsv}" \
-        --output-html "{output.acmg_html}" \
         > "{log}" 2>&1
-        cp -f "{output.vep_vcf}" "{output.acmg_vcf}"
         """
 
 rule aggregate_acmg_annotations:
@@ -38,8 +34,7 @@ rule aggregate_acmg_annotations:
     output:
         cohort_report=config["outdir"] + "/analysis/007_annotation/cohort_acmg_report.md",
         cohort_table=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.tsv",
-        cohort_json=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.json",
-        cohort_dashboard=config["outdir"] + "/analysis/007_annotation/cohort_acmg_dashboard.html"
+        cohort_json=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.json"
     conda:
         "icc_gatk"
     log:
@@ -53,6 +48,5 @@ rule aggregate_acmg_annotations:
         --report-md "{output.cohort_report}" \
         --summary-tsv "{output.cohort_table}" \
         --summary-json "{output.cohort_json}" \
-        --dashboard-html "{output.cohort_dashboard}" \
         > "{log}" 2>&1
         """
