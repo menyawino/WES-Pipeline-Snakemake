@@ -1,6 +1,6 @@
 # Global variables optimized for 88-vCPU / 228GB RAM system
 threads_high: 22
-threads_mid: 8
+threads_mid: 16
 threads_low: 4
 mem_high: 65536
 mem_mid: 32768
@@ -11,7 +11,7 @@ benchmark: 1
 tmpdir: "/dev/shm/wes_pipeline_tmp"
 
 # Interval scatter count for HaplotypeCaller parallelization
-intervals_scatter_count: 20
+intervals_scatter_count: 50
 
 # Sample processing configuration
 sample_processing:
@@ -112,7 +112,7 @@ snakemake:
   print_shell_commands: true
   rerun_incomplete: true
   generate_report: true
-  cores: 8  # Default core allocation, can be overridden via CLI
+  cores: 88  # Default core allocation, can be overridden via CLI
 
 # Email notification settings (Snakemake onsuccess/onerror hooks)
 email:

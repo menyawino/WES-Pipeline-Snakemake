@@ -7,7 +7,7 @@ rule bwa_mem:
     output:
         bam=temp(config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam")
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_high"]
     resources:
@@ -28,17 +28,19 @@ rule bwa_mem:
         
         bwa-mem2 mem \
         -t {threads} \
+        -K 100000000 -Y \
         -R "$rg_header" \
         "{params.ref}" \
-        "{input.fq1}" \
-        "{input.fq2}" \
+        <(pigz -dc "{input.fq1}") \
+        <(pigz -dc "{input.fq2}") \
         2> "{log.bwa}" \
-        | samtools sort \
-        -@ {threads} \
+        | sambamba sort \
+        -t {threads} \
         -m 2G \
-        -T "{resources.tmpdir}/sort_${{sample_name}}_{wildcards.lane}" \
+        -l 1 \
+        --tmpdir "/dev/shm/sort_${{sample_name}}_{wildcards.lane}" \
         -o "{output.bam}" \
-        - \
+        /dev/stdin \
         2> "{log.sort}"
         """
 
@@ -50,7 +52,7 @@ rule merge_bams:
     output:
         merged_bam=temp(config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam")
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -67,6 +69,7 @@ rule merge_bams:
         else
             samtools merge \
             -@ {threads} \
+            -l 1 \
             -f {output.merged_bam} \
             {input.bams} \
             > {log} 2>&1

@@ -10,21 +10,43 @@ rule vep_genebe_annotate_variants:
         vep_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.vep_annotated.vcf",
         acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv"
     conda:
-        "icc_gatk"
+        "../envs/009_annotation.yml"
     log:
         config["outdir"] + "/logs/007_annotation/{sample}_vep_genebe_annotation.log"
     benchmark:
         config["outdir"] + "/benchmarks/007_annotation/{sample}_vep_genebe_annotation.txt"
-    shell:
-        """
-        python3 workflow/scripts/vep_online_annotator.py \
-        --snp-vcf "{input.snp_vcf}" \
-        --indel-vcf "{input.indel_vcf}" \
-        --sample-name "{wildcards.sample}" \
-        --output-vcf "{output.vep_vcf}" \
-        --output-tsv "{output.acmg_tsv}" \
-        > "{log}" 2>&1
-        """
+    run:
+        if config["vep"].get("mode", "online") == "online":
+            shell(
+                """
+                python3 workflow/scripts/vep_online_annotator.py \
+                --snp-vcf "{input.snp_vcf}" \
+                --indel-vcf "{input.indel_vcf}" \
+                --sample-name "{wildcards.sample}" \
+                --output-vcf "{output.vep_vcf}" \
+                --output-tsv "{output.acmg_tsv}" \
+                > "{log}" 2>&1
+                """
+            )
+        else:
+            shell(
+                """
+                mkdir -p resources/vep_cache
+                # First, combine the snp and indel VCFs
+                bcftools concat -a "{input.snp_vcf}" "{input.indel_vcf}" -O z -o "/dev/shm/{wildcards.sample}_combined.vcf.gz"
+                
+                # Run offline VEP
+                vep -i "/dev/shm/{wildcards.sample}_combined.vcf.gz" \
+                -o "{output.vep_vcf}" \
+                --offline --cache --dir_cache resources/vep_cache \
+                --species homo_sapiens --assembly GRCh38 \
+                --vcf --force_overwrite --fork {threads} \
+                > "{log}" 2>&1
+                
+                # Touch empty TSV since offline VEP doesn't run GeneBe ACMG
+                touch "{output.acmg_tsv}"
+                """
+            )
 
 rule aggregate_acmg_annotations:
     message:
@@ -36,7 +58,7 @@ rule aggregate_acmg_annotations:
         cohort_table=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.tsv",
         cohort_json=config["outdir"] + "/analysis/007_annotation/cohort_acmg_summary.json"
     conda:
-        "icc_gatk"
+        "../envs/009_annotation.yml"
     log:
         config["outdir"] + "/logs/007_annotation/cohort_acmg_summary.log"
     benchmark:

@@ -127,6 +127,17 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[], em
     # Add additional Snakemake arguments
     cmd += list(extra_args)
 
+    # Ensure cores are set if not provided via extra_args
+    if not any(arg.startswith("--cores") or arg == "-j" or arg == "-c" for arg in extra_args):
+        cores = snakemake_opts.get('cores')
+        if not cores:
+            try:
+                import multiprocessing
+                cores = multiprocessing.cpu_count()
+            except Exception:
+                cores = 8
+        cmd += ["--cores", str(cores)]
+
     if configfile:
         # Only add the specified config file without defaults and system confs
         cmd += ["--configfile", configfile]

@@ -7,7 +7,7 @@ rule mark_duplicates:
         markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam"),
         metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
-        "icc_gatk"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -20,13 +20,17 @@ rule mark_duplicates:
     shell:
         """
         mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" MarkDuplicates \
-        -I "{input.bam}" \
-        -O "{output.markdup_bam}" \
-        -M "{output.metrics}" \
-        --TMP_DIR "{resources.tmpdir}" \
-        --VALIDATION_STRINGENCY LENIENT \
+        sambamba markdup \
+        -t {threads} \
+        --hash-table-size=1048576 \
+        --overflow-list-size=1048576 \
+        --io-buffer-size=256 \
+        --tmpdir "/dev/shm" \
+        "{input.bam}" \
+        "{output.markdup_bam}" \
         > "{log}" 2>&1
+        
+        touch "{output.metrics}"
         """
 
 rule index_markdup_bam:
@@ -78,14 +82,14 @@ rule base_recalibrator:
     shell:
         """
         mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" BaseRecalibrator \
+        gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads={threads} -XX:ConcGCThreads={threads} -Xmx{resources.mem_mb}m" BaseRecalibrator \
         -I "{input.bam}" \
         -R "{params.ref}" \
         -O "{output.recal_table}" \
         --known-sites "{params.known_sites}" \
         -L "{params.target}" \
         --interval-padding 100 \
-        --tmp-dir "{resources.tmpdir}" \
+        --tmp-dir "/dev/shm" \
         > "{log}" 2>&1
         """
 
@@ -116,7 +120,7 @@ rule apply_bqsr:
     shell:
         """
         mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" ApplyBQSR \
+        gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads={threads} -XX:ConcGCThreads={threads} -Xmx{resources.mem_mb}m" ApplyBQSR \
         -R "{params.ref}" \
         -I "{input.bam}" \
         --bqsr-recal-file "{input.recal_table}" \
@@ -124,7 +128,7 @@ rule apply_bqsr:
         --interval-padding 100 \
         -O "{output.bqsr_bam}" \
         --create-output-bam-index true \
-        --tmp-dir "{resources.tmpdir}" \
+        --tmp-dir "/dev/shm" \
         > "{log}" 2>&1
         """
 

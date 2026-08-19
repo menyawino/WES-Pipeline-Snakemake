@@ -259,74 +259,64 @@ rule coverage_hist_target:
         2> "{log}"
         """
 
-rule depth_of_coverage:
+rule fast_bam_qc_prot_coding:
     message:
-        "Calculating depth of coverage for sample {wildcards.sample}"
+        "Fast BAM QC (Depth and Picard) for protein coding target for sample {wildcards.sample}"
     input:
-        bam_prot_coding=rules.filter_bam_prot_coding.output.bam_prot_coding,
-        bai_prot_coding=rules.filter_bam_prot_coding.output.bai_prot_coding
+        bam=rules.filter_bam_prot_coding.output.bam_prot_coding,
+        bai=rules.filter_bam_prot_coding.output.bai_prot_coding
     output:
-        depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage.sample_summary"
+        depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage.sample_summary",
+        alignment_summary_metrics=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.align_sum_metrics.txt"
     conda:
-        "icc_gatk"
-    resources:
-        mem_mb=config.get("mem_mid", 16384),
-        tmpdir=config.get("tmpdir", "/tmp")
+        "005_omni_bam"
+    threads:
+        config["threads_mid"]
     params:
-        ref=config["reference_genome"],
-        cds_file=config["cds_panel"],
-        out_prefix=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage"
+        cds_file=config["cds_panel"]
     log:
-        config["outdir"] + "/logs/004_bam_qc/{sample}_depth_of_coverage.log"
+        config["outdir"] + "/logs/004_bam_qc/{sample}_fast_qc_prot_coding.log"
     benchmark:
-        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_depth_of_coverage.txt"
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_fast_qc_prot_coding.txt"
     shell:
         """
-        mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" DepthOfCoverage \
-        -R "{params.ref}" \
-        -I "{input.bam_prot_coding}" \
-        -O "{params.out_prefix}" \
-        -L "{params.cds_file}" \
-        --omit-depth-output-at-each-base true \
-        --omit-locus-table true \
-        --tmp-dir "{resources.tmpdir}" \
-        &> "{log}"
+        python workflow/scripts/fast_bam_qc.py \
+        --bam "{input.bam}" \
+        --bed "{params.cds_file}" \
+        --out-depth "{output.depth_of_coverage}" \
+        --out-metrics "{output.alignment_summary_metrics}" \
+        --threads {threads} \
+        > "{log}" 2>&1
         """
 
-rule depth_of_coverage_target:
+rule fast_bam_qc_target:
     message:
-        "Calculating depth of coverage for target BAM for sample {wildcards.sample}"
+        "Fast BAM QC (Depth and Picard) for target BAM for sample {wildcards.sample}"
     input:
-        bam_target=rules.filter_bam_target.output.bam_target,
-        bai_target=rules.filter_bam_target.output.bai_target
+        bam=rules.filter_bam_target.output.bam_target,
+        bai=rules.filter_bam_target.output.bai_target
     output:
-        depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage.sample_summary"
+        depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage.sample_summary",
+        alignment_summary_metrics_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.align_sum_metrics.txt"
     conda:
-        "icc_gatk"
-    resources:
-        mem_mb=config.get("mem_mid", 16384),
-        tmpdir=config.get("tmpdir", "/tmp")
+        "005_omni_bam"
+    threads:
+        config["threads_mid"]
     params:
-        ref=config["reference_genome"],
-        cds_file=config["cds_panel"],
-        out_prefix=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage"
+        cds_file=config["cds_panel"]
     log:
-        config["outdir"] + "/logs/004_bam_qc/{sample}_depth_of_coverage_target.log"
+        config["outdir"] + "/logs/004_bam_qc/{sample}_fast_qc_target.log"
     benchmark:
-        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_depth_of_coverage_target.txt"
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_fast_qc_target.txt"
     shell:
         """
-        mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" DepthOfCoverage \
-        -R "{params.ref}" \
-        -I "{input.bam_target}" \
-        -O "{params.out_prefix}" \
-        -L "{params.cds_file}" \
-        --omit-depth-output-at-each-base true \
-        --omit-locus-table true \
-        --tmp-dir "{resources.tmpdir}" \
-        &> "{log}"
+        python workflow/scripts/fast_bam_qc.py \
+        --bam "{input.bam}" \
+        --bed "{params.cds_file}" \
+        --out-depth "{output.depth_of_coverage_target}" \
+        --out-metrics "{output.alignment_summary_metrics_target}" \
+        --threads {threads} \
+        > "{log}" 2>&1
         """
 
 rule mean_coverage_per_exon:
@@ -379,67 +369,7 @@ rule mean_coverage_per_exon_target:
         2> "{log}"
         """
 
-rule collect_alignment_summary_metrics:
-    message:
-        "Collecting alignment summary metrics for protein coding target for sample {wildcards.sample}"
-    input:
-        bam_prot_coding=rules.filter_bam_prot_coding.output.bam_prot_coding
-    output:
-        alignment_summary_metrics=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.align_sum_metrics.txt"
-    conda:
-        "icc_gatk"
-    resources:
-        mem_mb=config.get("mem_mid", 16384),
-        tmpdir=config.get("tmpdir", "/tmp")
-    params:
-        ref=config["reference_genome"]
-    log:
-        config["outdir"] + "/logs/004_bam_qc/{sample}_collect_alignment_summary_metrics.log"
-    benchmark:
-        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_collect_alignment_summary_metrics.txt"
-    shell:
-        """
-        mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" CollectAlignmentSummaryMetrics \
-        -I "{input.bam_prot_coding}" \
-        -O "{output.alignment_summary_metrics}" \
-        -R "{params.ref}" \
-        --ASSUME_SORTED true \
-        --VALIDATION_STRINGENCY SILENT \
-        --TMP_DIR "{resources.tmpdir}" \
-        &> "{log}"
-        """
 
-rule collect_alignment_summary_metrics_target:
-    message:
-        "Collecting alignment summary metrics for target BAM for sample {wildcards.sample}"
-    input:
-        bam_target=rules.filter_bam_target.output.bam_target
-    output:
-        alignment_summary_metrics_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.align_sum_metrics.txt"
-    conda:
-        "icc_gatk"
-    resources:
-        mem_mb=config.get("mem_mid", 16384),
-        tmpdir=config.get("tmpdir", "/tmp")
-    params:
-        ref=config["reference_genome"]
-    log:
-        config["outdir"] + "/logs/004_bam_qc/{sample}_collect_alignment_summary_metrics_target.log"
-    benchmark:
-        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_collect_alignment_summary_metrics_target.txt"
-    shell:
-        """
-        mkdir -p "{resources.tmpdir}"
-        gatk --java-options "-XX:+UseParallelGC -Xmx{resources.mem_mb}m" CollectAlignmentSummaryMetrics \
-        -I "{input.bam_target}" \
-        -O "{output.alignment_summary_metrics_target}" \
-        -R "{params.ref}" \
-        --ASSUME_SORTED true \
-        --VALIDATION_STRINGENCY SILENT \
-        --TMP_DIR "{resources.tmpdir}" \
-        &> "{log}"
-        """
 
 rule qc_report:
     input:
@@ -449,12 +379,12 @@ rule qc_report:
         coverage_stats_target = rules.coverage_stats_target.output.coverage_stats_target,
         coverage_hist = rules.coverage_hist.output.coverage_hist,
         coverage_hist_target = rules.coverage_hist_target.output.coverage_hist_target,
-        depth_of_coverage = rules.depth_of_coverage.output.depth_of_coverage,
-        depth_of_coverage_target = rules.depth_of_coverage_target.output.depth_of_coverage_target,
+        depth_of_coverage = rules.fast_bam_qc_prot_coding.output.depth_of_coverage,
+        depth_of_coverage_target = rules.fast_bam_qc_target.output.depth_of_coverage_target,
         mean_coverage = rules.mean_coverage_per_exon.output.mean_coverage,
         mean_coverage_target = rules.mean_coverage_per_exon_target.output.mean_coverage_target,
-        alignment_summary_metrics = rules.collect_alignment_summary_metrics.output.alignment_summary_metrics,
-        alignment_summary_metrics_target = rules.collect_alignment_summary_metrics_target.output.alignment_summary_metrics_target
+        alignment_summary_metrics = rules.fast_bam_qc_prot_coding.output.alignment_summary_metrics,
+        alignment_summary_metrics_target = rules.fast_bam_qc_target.output.alignment_summary_metrics_target
     output:
         qc_metrics = config["outdir"] + "/analysis/004_bam_qc/{sample}.qc_metrics.tsv"
     conda:
