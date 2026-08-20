@@ -179,23 +179,31 @@ rule filter_bam_prot_coding:
     threads:
         config["threads_mid"]
     params:
-        CDSFile=config["cds_panel"]
+        CDSFile=config["cds_panel"],
+        TargetFile=config["icc_panel"],
+        target_bam=rules.filter_bam_target.output.bam_target,
+        target_bai=rules.filter_bam_target.output.bai_target
     log:
         config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.log"
     benchmark:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -L "{params.CDSFile}" \
-        -F "mapping_quality >= 8" \
-        -f bam \
-        -o "{output.bam_prot_coding}" \
-        "{input.bam}" \
-        2> "{log}"
-        
-        sambamba index -t {threads} "{output.bam_prot_coding}" "{output.bai_prot_coding}" >> "{log}" 2>&1
+        if [ "{params.CDSFile}" = "{params.TargetFile}" ] && [ -f "{params.target_bam}" ]; then
+            ln -f "{params.target_bam}" "{output.bam_prot_coding}" 2>/dev/null || cp "{params.target_bam}" "{output.bam_prot_coding}"
+            ln -f "{params.target_bai}" "{output.bai_prot_coding}" 2>/dev/null || cp "{params.target_bai}" "{output.bai_prot_coding}"
+        else
+            sambamba view \
+            -t {threads} \
+            -L "{params.CDSFile}" \
+            -F "mapping_quality >= 8" \
+            -f bam \
+            -o "{output.bam_prot_coding}" \
+            "{input.bam}" \
+            2> "{log}"
+            
+            sambamba index -t {threads} "{output.bam_prot_coding}" "{output.bai_prot_coding}" >> "{log}" 2>&1
+        fi
         """
 
 rule filter_bam_canon_tran:
@@ -212,21 +220,29 @@ rule filter_bam_canon_tran:
     threads:
         config["threads_mid"]
     params:
-        CanonTranFile=config["canontran_panel"]
+        CanonTranFile=config["canontran_panel"],
+        TargetFile=config["icc_panel"],
+        target_bam=rules.filter_bam_target.output.bam_target,
+        target_bai=rules.filter_bam_target.output.bai_target
     log:
         config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.log"
     benchmark:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.txt"
     shell:
         """
-        sambamba view \
-        -t {threads} \
-        -L "{params.CanonTranFile}" \
-        -F "mapping_quality >= 8" \
-        -f bam \
-        -o "{output.bam_canon_tran}" \
-        "{input.bam}" \
-        2> "{log}"
-        
-        sambamba index -t {threads} "{output.bam_canon_tran}" "{output.bai_canon_tran}" >> "{log}" 2>&1
+        if [ "{params.CanonTranFile}" = "{params.TargetFile}" ] && [ -f "{params.target_bam}" ]; then
+            ln -f "{params.target_bam}" "{output.bam_canon_tran}" 2>/dev/null || cp "{params.target_bam}" "{output.bam_canon_tran}"
+            ln -f "{params.target_bai}" "{output.bai_canon_tran}" 2>/dev/null || cp "{params.target_bai}" "{output.bai_canon_tran}"
+        else
+            sambamba view \
+            -t {threads} \
+            -L "{params.CanonTranFile}" \
+            -F "mapping_quality >= 8" \
+            -f bam \
+            -o "{output.bam_canon_tran}" \
+            "{input.bam}" \
+            2> "{log}"
+            
+            sambamba index -t {threads} "{output.bam_canon_tran}" "{output.bai_canon_tran}" >> "{log}" 2>&1
+        fi
         """

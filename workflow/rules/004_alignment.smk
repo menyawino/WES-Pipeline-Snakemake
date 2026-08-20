@@ -65,7 +65,7 @@ rule merge_bams:
         """
         bam_count=$(echo {input.bams} | wc -w)
         if [ "$bam_count" -eq 1 ]; then
-            cp {input.bams} {output.merged_bam}
+            ln -f {input.bams} {output.merged_bam} 2>/dev/null || cp {input.bams} {output.merged_bam}
         else
             sambamba merge \
             -t {threads} \

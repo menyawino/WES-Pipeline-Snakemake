@@ -11,7 +11,7 @@ benchmark: 1
 tmpdir: "/dev/shm/wes_pipeline_tmp"
 
 # Interval scatter count for HaplotypeCaller parallelization
-intervals_scatter_count: 50
+intervals_scatter_count: 10
 
 # Sample processing configuration
 sample_processing:
@@ -94,7 +94,7 @@ gatk:
 
 # VEP parameters
 vep:
-  mode: "online" # Uses Ensembl VEP REST API for accurate, lightweight online annotation
+  mode: "offline" # Uses local Ensembl VEP 104_GRCh38 cache for high-speed offline annotation
   species: "homo_sapiens"
   assembly: "GRCh38"
 

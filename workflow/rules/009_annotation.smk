@@ -11,6 +11,8 @@ rule vep_genebe_annotate_variants:
         acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.acmg_variants.tsv"
     conda:
         "../envs/009_annotation.yml"
+    threads:
+        config.get("threads_mid", 8)
     log:
         config["outdir"] + "/logs/007_annotation/{sample}_vep_genebe_annotation.log"
     benchmark:

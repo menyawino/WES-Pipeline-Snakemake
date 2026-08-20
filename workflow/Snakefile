@@ -110,8 +110,8 @@ include: "rules/011_multiqc.smk"
 ############################
 rule all:
     input:
-        expand(rules.raw_fastqc.output.html, sample_filename=sample_filename, lane=lane, R=read),
-        expand(rules.posttrim_fastqc.output.html, sample=sample_filename, lane=lane, R=read),
+        expand(rules.trimming_fp.output.report, sample=sample_filename, lane=lane),
+        expand(rules.trimming_fp.output.json, sample=sample_filename, lane=lane),
         expand(rules.bwa_mem.output.bam, sample=sample_filename, lane=lane),
         expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
         expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),
