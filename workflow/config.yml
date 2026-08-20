@@ -13,6 +13,14 @@ tmpdir: "/dev/shm/wes_pipeline_tmp"
 # Interval scatter count for HaplotypeCaller parallelization
 intervals_scatter_count: 10
 
+# Variant Callers configuration (default: GATK only; use --deepvariant flag to enable dual callers)
+variant_callers:
+  - "gatk"
+
+deepvariant:
+  model_type: "WES"
+  version: "1.6.1"
+
 # Sample processing configuration
 sample_processing:
   lanes: [1, 2, 3, 4]  # Lane numbers to expect

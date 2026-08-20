@@ -3,7 +3,8 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - bwa-mem2
-  - sambamba
-  - python=3.8
-  - pip
+  - bwa-mem2 >=2.2.1
+  - samtools >=1.20
+  - sambamba >=1.0.1
+  - pigz >=2.8
+  - python >=3.10

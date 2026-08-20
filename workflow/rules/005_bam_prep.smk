@@ -7,7 +7,7 @@ rule mark_duplicates:
         markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam"),
         metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
-        "../envs/004_alignment.yml"
+        "icc_04_alignment"
     threads:
         config["threads_mid"]
     resources:
@@ -142,7 +142,7 @@ rule filter_bam_target:
         bam_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam",
         bai_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam.bai"
     conda:
-        "../envs/004_alignment.yml"
+        "icc_04_alignment"
     threads:
         config["threads_mid"]
     params:
@@ -175,7 +175,7 @@ rule filter_bam_prot_coding:
         bam_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam",
         bai_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam.bai"
     conda:
-        "../envs/004_alignment.yml"
+        "icc_04_alignment"
     threads:
         config["threads_mid"]
     params:
@@ -216,7 +216,7 @@ rule filter_bam_canon_tran:
         bam_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam",
         bai_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam.bai"
     conda:
-        "../envs/004_alignment.yml"
+        "icc_04_alignment"
     threads:
         config["threads_mid"]
     params:

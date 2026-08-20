@@ -1,14 +1,29 @@
 # MultiQC rule to aggregate all QC, alignment, variant calling, and annotation metrics
 
+def get_multiqc_inputs(wildcards):
+    items = [
+        expand(rules.trimming_fp.output.json, sample=sample_filename, lane=lane),
+        expand(rules.qc_report.output.qc_metrics, sample=sample_filename),
+        expand(rules.vep_genebe_annotate_variants.output.vep_vcf, sample=sample_filename, caller=CALLERS),
+        expand(rules.aggregate_variant_summaries.output.cohort_report, caller=CALLERS),
+        expand(rules.aggregate_acmg_annotations.output.cohort_report, caller=CALLERS),
+    ]
+    if enable_comparison:
+        items.append([rules.compare_callers.output.report])
+    
+    flat = []
+    for x in items:
+        if isinstance(x, list):
+            flat.extend(x)
+        else:
+            flat.append(x)
+    return flat
+
 rule multiqc_report:
     message:
         "Generating final MultiQC report across all pipeline outputs"
     input:
-        expand(rules.trimming_fp.output.json, sample=sample_filename, lane=lane),
-        expand(rules.qc_report.output.qc_metrics, sample=sample_filename),
-        expand(rules.vep_genebe_annotate_variants.output.vep_vcf, sample=sample_filename),
-        rules.aggregate_variant_summaries.output.cohort_report,
-        rules.aggregate_acmg_annotations.output.cohort_report
+        get_multiqc_inputs
     output:
         html=config["outdir"] + "/results/multiqc_report.html"
     container:

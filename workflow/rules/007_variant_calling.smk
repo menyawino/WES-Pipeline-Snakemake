@@ -62,8 +62,8 @@ rule gather_gvcfs:
         gvcfs=expand("/dev/shm/wes_pipeline_{{sample}}_{chunk}.g.vcf.gz", chunk=scatter_chunks),
         tbis=expand("/dev/shm/wes_pipeline_{{sample}}_{chunk}.g.vcf.gz.tbi", chunk=scatter_chunks)
     output:
-        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.gz",
-        gvcf_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.haplotypecaller.g.vcf.gz.tbi"
+        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.g.vcf.gz",
+        gvcf_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.g.vcf.gz.tbi"
     conda:
         "icc_gatk"
     threads:
@@ -87,17 +87,18 @@ rule gather_gvcfs:
         --TMP_DIR "/dev/shm" \
         > "{log}" 2>&1
 
-        tabix -p vcf "{output.gvcf}" >> "{log}" 2>&1
+        tabix -f -p vcf "{output.gvcf}" >> "{log}" 2>&1
         """
 
 rule genotype_gvcfs:
     message:
-        "Genotyping GVCFs for sample {wildcards.sample}"
+        "Genotyping GATK GVCFs for sample {wildcards.sample}"
     input:
         gvcf=rules.gather_gvcfs.output.gvcf,
         gvcf_tbi=rules.gather_gvcfs.output.gvcf_tbi
     output:
-        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.vcf.gz",
+        tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.vcf.gz.tbi"
     container:
         "docker://broadinstitute/gatk:4.4.0.0"
     threads:
@@ -106,7 +107,7 @@ rule genotype_gvcfs:
         mem_mb=config.get("mem_mid", 16384),
         tmpdir=config.get("tmpdir", "/tmp")
     params:
-        ref=config["reference_genome"],
+        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa",
         target=config["icc_panel"],
         dbsnp=config["dbsnp"]
     log:
@@ -115,45 +116,125 @@ rule genotype_gvcfs:
         config["outdir"] + "/benchmarks/005_variant_calling/{sample}_genotype_gvcfs.txt"
     shell:
         """
+        raw_vcf="{output.vcf}.tmp.vcf"
         gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads={threads} -XX:ConcGCThreads={threads} -Xmx{resources.mem_mb}m" GenotypeGVCFs \
         -R "{params.ref}" \
         -V "{input.gvcf}" \
-        -O "{output.vcf}" \
+        -O "$raw_vcf" \
         -G StandardAnnotation \
         --intervals "{params.target}" \
         --interval-padding 100 \
-        --create-output-variant-index true \
+        --create-output-variant-index false \
         --dbsnp "{params.dbsnp}" \
         --tmp-dir "/dev/shm" \
         &> "{log}"
+
+        bgzip -c "$raw_vcf" > "{output.vcf}" 2>> "{log}"
+        tabix -f -p vcf "{output.vcf}" >> "{log}" 2>&1
+        rm -f "$raw_vcf"
         """
 
-rule split_vcfs:
+rule deepvariant_call:
     message:
-        "Splitting VCFs into SNPs and Indels for sample {wildcards.sample}"
+        "Calling variants with Google DeepVariant (WES model) for sample {wildcards.sample}"
     input:
-        vcf=rules.genotype_gvcfs.output.vcf
+        bam=rules.filter_bam_target.output.bam_target,
+        bai=rules.filter_bam_target.output.bai_target,
+        target=config["icc_panel"],
+        ref_staged=rules.stage_ref_shm.output.staged_done
     output:
-        snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf",
-        indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"
+        vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.deepvariant.vcf.gz",
+        tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.deepvariant.vcf.gz.tbi",
+        gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.deepvariant.g.vcf.gz"
     container:
-        "docker://broadinstitute/gatk:4.4.0.0"
+        "docker://google/deepvariant:1.6.1"
     threads:
-        config["threads_mid"]
+        config.get("threads_mid", 8)
     resources:
         mem_mb=config.get("mem_mid", 16384),
         tmpdir=config.get("tmpdir", "/tmp")
+    params:
+        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa",
+        model_type=config.get("deepvariant", {}).get("model_type", "WES")
     log:
-        config["outdir"] + "/logs/005_variant_calling/{sample}_split_vcfs.log"
+        config["outdir"] + "/logs/005_variant_calling/{sample}_deepvariant.log"
     benchmark:
-        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_split_vcfs.txt"
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_deepvariant.txt"
     shell:
         """
-        gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads={threads} -XX:ConcGCThreads={threads} -Xmx{resources.mem_mb}m" SplitVcfs \
-        -I "{input.vcf}" \
-        --SNP_OUTPUT "{output.snp_vcf}" \
-        --INDEL_OUTPUT "{output.indel_vcf}" \
-        --STRICT false \
-        --TMP_DIR "/dev/shm" \
-        &> "{log}"
+        mkdir -p "{resources.tmpdir}"
+        dv_tmp="{resources.tmpdir}/dv_{wildcards.sample}"
+        mkdir -p "$dv_tmp"
+
+        if command -v /opt/deepvariant/bin/run_deepvariant >/dev/null 2>&1; then
+            /opt/deepvariant/bin/run_deepvariant \
+                --model_type="{params.model_type}" \
+                --ref="{params.ref}" \
+                --reads="{input.bam}" \
+                --regions="{input.target}" \
+                --output_vcf="{output.vcf}" \
+                --output_gvcf="{output.gvcf}" \
+                --num_shards={threads} \
+                --intermediate_results_dir="$dv_tmp" \
+                &> "{log}"
+        else
+            docker run --rm \
+                -v /dev/shm:/dev/shm \
+                -v /mnt/bucket:/mnt/bucket \
+                -v /mnt/qnap-public:/mnt/qnap-public \
+                google/deepvariant:1.6.1 \
+                /opt/deepvariant/bin/run_deepvariant \
+                --model_type="{params.model_type}" \
+                --ref="{params.ref}" \
+                --reads="{input.bam}" \
+                --regions="{input.target}" \
+                --output_vcf="{output.vcf}" \
+                --output_gvcf="{output.gvcf}" \
+                --num_shards={threads} \
+                --intermediate_results_dir="$dv_tmp" \
+                &> "{log}"
+        fi
+
+        tabix -f -p vcf "{output.vcf}" >> "{log}" 2>&1
+        rm -rf "$dv_tmp"
+        """
+
+def get_raw_caller_vcf(wildcards):
+    if wildcards.caller == "gatk":
+        return rules.genotype_gvcfs.output.vcf
+    elif wildcards.caller == "deepvariant":
+        return rules.deepvariant_call.output.vcf
+    else:
+        return config["outdir"] + f"/analysis/005_variant_calling/{wildcards.sample}.{wildcards.caller}.vcf.gz"
+
+rule split_vcfs:
+    message:
+        "Splitting {wildcards.caller} VCF into SNPs and Indels for sample {wildcards.sample}"
+    input:
+        vcf=get_raw_caller_vcf
+    output:
+        snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.{caller}.snp.vcf.gz",
+        snp_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.{caller}.snp.vcf.gz.tbi",
+        indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.{caller}.indel.vcf.gz",
+        indel_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.{caller}.indel.vcf.gz.tbi"
+    conda:
+        "icc_gatk"
+    threads:
+        config.get("threads_low", 4)
+    resources:
+        mem_mb=config.get("mem_low", 4096),
+        tmpdir=config.get("tmpdir", "/tmp")
+    log:
+        config["outdir"] + "/logs/005_variant_calling/{sample}_{caller}_split_vcfs.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/005_variant_calling/{sample}_{caller}_split_vcfs.txt"
+    shell:
+        """
+        # Split into SNPs
+        bcftools view -v snps -O z -o "{output.snp_vcf}" "{input.vcf}" > "{log}" 2>&1
+        tabix -f -p vcf "{output.snp_vcf}" >> "{log}" 2>&1
+
+        # Split into Indels
+        bcftools view -v indels,other -O z -o "{output.indel_vcf}" "{input.vcf}" >> "{log}" 2>&1
+        tabix -f -p vcf "{output.indel_vcf}" >> "{log}" 2>&1
         """

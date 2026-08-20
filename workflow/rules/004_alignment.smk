@@ -3,18 +3,19 @@ rule bwa_mem:
         "Aligning and converting to BAM for sample {wildcards.sample}_{lane}"
     input:
         fq1=rules.trimming_fp.output.fq1,
-        fq2=rules.trimming_fp.output.fq2
+        fq2=rules.trimming_fp.output.fq2,
+        ref_staged=rules.stage_ref_shm.output.staged_done
     output:
         bam=temp(config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam")
     conda:
-        "../envs/004_alignment.yml"
+        "icc_04_alignment"
     threads:
         config["threads_high"]
     resources:
         mem_mb=config.get("mem_high", 32768),
         tmpdir=config.get("tmpdir", "/tmp")
     params: 
-        ref=config["reference_genome"]
+        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa"
     log:
         bwa=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_bwa.log",
         sort=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sort.log"
@@ -25,23 +26,27 @@ rule bwa_mem:
         mkdir -p {resources.tmpdir}
         sample_name=$(basename {wildcards.sample})
         rg_header="@RG\\tID:${{sample_name}}_{wildcards.lane}\\tSM:${{sample_name}}\\tLB:lib1\\tPL:illumina\\tPU:unit1"
+        sort_tmp="/dev/shm/sort_${{sample_name}}_{wildcards.lane}"
+        mkdir -p "$sort_tmp"
         
         bwa-mem2 mem \
         -t {threads} \
         -K 100000000 -Y \
         -R "$rg_header" \
         "{params.ref}" \
-        <(pigz -p 2 -dc "{input.fq1}") \
-        <(pigz -p 2 -dc "{input.fq2}") \
+        "{input.fq1}" \
+        "{input.fq2}" \
         2> "{log.bwa}" \
-        | sambamba sort \
-        -t {threads} \
-        -m 4G \
+        | samtools sort \
+        -@ {threads} \
+        -m 2G \
         -l 1 \
-        --tmpdir "/dev/shm/sort_${{sample_name}}_{wildcards.lane}" \
+        -T "$sort_tmp/tmp" \
         -o "{output.bam}" \
-        /dev/stdin \
+        - \
         2> "{log.sort}"
+        
+        rm -rf "$sort_tmp"
         """
 
 rule merge_bams:
@@ -52,7 +57,7 @@ rule merge_bams:
     output:
         merged_bam=temp(config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam")
     conda:
-        "../envs/004_alignment.yml"
+        "icc_04_alignment"
     threads:
         config["threads_mid"]
     resources:
@@ -67,8 +72,9 @@ rule merge_bams:
         if [ "$bam_count" -eq 1 ]; then
             ln -f {input.bams} {output.merged_bam} 2>/dev/null || cp {input.bams} {output.merged_bam}
         else
-            sambamba merge \
-            -t {threads} \
+            samtools merge \
+            -@ {threads} \
+            -l 1 \
             {output.merged_bam} \
             {input.bams} \
             > {log} 2>&1

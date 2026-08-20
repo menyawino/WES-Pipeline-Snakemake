@@ -43,20 +43,56 @@ def print_banner():
 """
     print(banner)
 
-@click.group()
-def cli():
-    """WES Analysis Pipeline CLI - Whole Exome Sequencing workflow automation."""
-    pass
-
-@cli.command(context_settings={"ignore_unknown_options": True})
-@click.argument('configfile', default='workflow/config.yml')
-@click.option('-i', '--inputdir', required=True, help="Path to raw FASTQ input directory.")
-@click.option('-o', '--outdir', required=True, help="Path to pipeline output directory.")
+@click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True})
+@click.option('-i', '--inputdir', default=None, help="Path to raw FASTQ input directory.")
+@click.option('-o', '--outdir', default=None, help="Path to pipeline output directory.")
+@click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
+@click.option('-s', '--samplesfile', default='', show_default=True, help="Optional sample metadata CSV (leave empty for auto-discovery).")
+@click.option('--cores', default=None, type=int, help="Number of CPU cores to allocate (default: from config / 88).")
+@click.option('-n', '--dry-run', is_flag=True, help="Perform dry-run without executing jobs.")
+@click.option('--deepvariant', is_flag=True, default=False, help="Enable dual variant calling with Google DeepVariant alongside GATK.")
+@click.option('--singularity-args', default='-B /mnt/bucket -B /mnt/qnap-public', show_default=True, help="Bind mounts for Singularity containers.")
 @click.option('--email', default=None, help="Recipient email address(es) for completion/failure notifications.")
 @click.option('--verbose', is_flag=True, help="Enable verbose output logging.")
 @click.option('--skip-validation', is_flag=True, help="Skip pre-flight configuration and resource validation checks.")
 @click.argument('snakemake_args', nargs=-1)
-def run(configfile, inputdir, outdir, email, verbose, skip_validation, snakemake_args):
+@click.pass_context
+def cli(ctx, inputdir, outdir, configfile, samplesfile, cores, dry_run, deepvariant, singularity_args, email, verbose, skip_validation, snakemake_args):
+    """WES Analysis Pipeline CLI - Whole Exome Sequencing workflow automation."""
+    if ctx.invoked_subcommand is None:
+        if not inputdir or not outdir:
+            print(ctx.get_help())
+            return
+        ctx.invoke(
+            run,
+            inputdir=inputdir,
+            outdir=outdir,
+            configfile=configfile,
+            samplesfile=samplesfile,
+            cores=cores,
+            dry_run=dry_run,
+            deepvariant=deepvariant,
+            singularity_args=singularity_args,
+            email=email,
+            verbose=verbose,
+            skip_validation=skip_validation,
+            snakemake_args=snakemake_args
+        )
+
+@cli.command(context_settings={"ignore_unknown_options": True})
+@click.option('-i', '--inputdir', required=True, help="Path to raw FASTQ input directory.")
+@click.option('-o', '--outdir', required=True, help="Path to pipeline output directory.")
+@click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
+@click.option('-s', '--samplesfile', default='', show_default=True, help="Optional sample metadata CSV (leave empty for auto-discovery).")
+@click.option('--cores', default=None, type=int, help="Number of CPU cores to allocate (default: from config / 88).")
+@click.option('-n', '--dry-run', is_flag=True, help="Perform dry-run without executing jobs.")
+@click.option('--deepvariant', is_flag=True, default=False, help="Enable dual variant calling with Google DeepVariant alongside GATK.")
+@click.option('--singularity-args', default='-B /mnt/bucket -B /mnt/qnap-public', show_default=True, help="Bind mounts for Singularity containers.")
+@click.option('--email', default=None, help="Recipient email address(es) for completion/failure notifications.")
+@click.option('--verbose', is_flag=True, help="Enable verbose output logging.")
+@click.option('--skip-validation', is_flag=True, help="Skip pre-flight configuration and resource validation checks.")
+@click.argument('snakemake_args', nargs=-1)
+def run(inputdir, outdir, configfile, samplesfile, cores, dry_run, deepvariant, singularity_args, email, verbose, skip_validation, snakemake_args):
     """Execute the WES analysis pipeline."""
     if not skip_validation:
         print(f"{GRE}[INFO] Running pre-flight pipeline validation...{NC}")
@@ -68,9 +104,14 @@ def run(configfile, inputdir, outdir, email, verbose, skip_validation, snakemake
     build_folders(outdir)
 
     return_code = run_snakemake(
-        configfile,
-        inputdir,
-        outdir,
+        configfile=configfile,
+        inputdir=inputdir,
+        outdir=outdir,
+        samplesfile=samplesfile,
+        cores=cores,
+        dry_run=dry_run,
+        deepvariant=deepvariant,
+        singularity_args=singularity_args,
         verbose=verbose,
         extra_args=snakemake_args,
         email=email
@@ -83,7 +124,7 @@ def run(configfile, inputdir, outdir, email, verbose, skip_validation, snakemake
         sys.exit(return_code)
 
 @cli.command()
-@click.argument('configfile', default='workflow/config.yml')
+@click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
 @click.option('-i', '--inputdir', help="Optional path to input directory for sample DAG generation.")
 def plan(configfile, inputdir):
     """Preview pipeline execution DAG and render aesthetic topology diagrams."""
@@ -92,10 +133,10 @@ def plan(configfile, inputdir):
     print(f"{GRE}[INFO] Rendered graphs saved to results/dag.png and results/rulegraph.png{NC}")
 
 @cli.command()
-@click.argument('configfile', default='workflow/config.yml')
 @click.option('-i', '--inputdir', required=True, help="Path to raw FASTQ input directory.")
 @click.option('-o', '--outdir', required=True, help="Path to pipeline output directory.")
-def validate(configfile, inputdir, outdir):
+@click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
+def validate(inputdir, outdir, configfile):
     """Run standalone pre-flight configuration and resource validation checks."""
     print(f"{GRE}[INFO] Running pre-flight pipeline validation...{NC}")
     success = validate_pipeline_config(configfile, inputdir, outdir)
@@ -106,7 +147,7 @@ def validate(configfile, inputdir, outdir):
         sys.exit(1)
 
 @cli.command()
-@click.argument('configfile', default='workflow/config.yml')
+@click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
 @click.option('--force', is_flag=True, help="Force re-download even if target file exists.")
 def download_ref(configfile, force):
     """Download and index GRCh38 reference genome."""
@@ -134,7 +175,7 @@ def download_ref(configfile, force):
         sys.exit(1)
 
 @cli.command()
-@click.argument('configfile', default='workflow/config.yml')
+@click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
 def report(configfile):
     """Generate a Snakemake HTML execution report."""
     print(f"{GRE}[INFO] Generating HTML execution report...{NC}")

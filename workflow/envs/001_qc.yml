@@ -1,1 +1,7 @@
-001_QC.yml
+name: qc_env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - fastqc >=0.12.1
+  - python >=3.10

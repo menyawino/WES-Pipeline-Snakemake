@@ -269,7 +269,7 @@ rule fast_bam_qc_prot_coding:
         depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage.sample_summary",
         alignment_summary_metrics=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.align_sum_metrics.txt"
     conda:
-        "005_omni_bam"
+        "icc_gatk"
     threads:
         config["threads_mid"]
     params:
@@ -299,7 +299,7 @@ rule fast_bam_qc_target:
         depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage.sample_summary",
         alignment_summary_metrics_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.align_sum_metrics.txt"
     conda:
-        "005_omni_bam"
+        "icc_gatk"
     threads:
         config["threads_mid"]
     params:

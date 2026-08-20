@@ -1,9 +1,0 @@
-name: trimming_env
-channels:
-  - bioconda
-  - conda-forge
-dependencies:
-  - prinseq-lite=0.20.4
-  - perl
-  - python=3.8
-  - pip

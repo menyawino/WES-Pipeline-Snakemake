@@ -88,6 +88,20 @@ for k in ["reference_genome", "icc_panel", "cds_panel", "canontran_panel", "dbsn
     if k in config and config[k] and not os.path.isabs(config[k]):
         config[k] = os.path.abspath(os.path.join(workflow.basedir, "..", config[k]))
 
+raw_callers = config.get("variant_callers", ["gatk"])
+if isinstance(raw_callers, str):
+    import ast
+    try:
+        CALLERS = ast.literal_eval(raw_callers)
+    except Exception:
+        CALLERS = [c.strip() for c in raw_callers.split(",") if c.strip()]
+elif isinstance(raw_callers, list):
+    CALLERS = raw_callers
+else:
+    CALLERS = ["gatk"]
+
+enable_comparison = len(CALLERS) > 1 and "gatk" in CALLERS and "deepvariant" in CALLERS
+
 ############################
 ####### Include rules ######
 ############################
@@ -108,8 +122,8 @@ include: "rules/011_multiqc.smk"
 ############################
 ######### Workflow #########
 ############################
-rule all:
-    input:
+def get_rule_all_inputs():
+    inputs = [
         expand(rules.trimming_fp.output.report, sample=sample_filename, lane=lane),
         expand(rules.trimming_fp.output.json, sample=sample_filename, lane=lane),
         expand(rules.bwa_mem.output.bam, sample=sample_filename, lane=lane),
@@ -124,20 +138,29 @@ rule all:
         expand(rules.fast_bam_qc_prot_coding.output.alignment_summary_metrics, sample=sample_filename),
         expand(rules.fast_bam_qc_target.output.alignment_summary_metrics_target, sample=sample_filename),
         expand(rules.qc_report.output.qc_metrics, sample=sample_filename),
-        expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename),
-        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename),
-        expand(rules.vep_genebe_annotate_variants.output.vep_vcf, sample=sample_filename),
-        expand(rules.vep_genebe_annotate_variants.output.acmg_tsv, sample=sample_filename),
-        rules.aggregate_acmg_annotations.output.cohort_report,
-        rules.aggregate_acmg_annotations.output.cohort_table,
-        rules.aggregate_acmg_annotations.output.cohort_json,
-        expand(rules.summarize_variants.output.report_md, sample=sample_filename),
-        expand(rules.summarize_variants.output.summary_tsv, sample=sample_filename),
-        expand(rules.summarize_variants.output.summary_json, sample=sample_filename),
-        rules.aggregate_variant_summaries.output.cohort_report,
-        rules.aggregate_variant_summaries.output.cohort_table,
-        rules.aggregate_variant_summaries.output.cohort_json,
+        expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename, caller=CALLERS),
+        expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename, caller=CALLERS),
+        expand(rules.vep_genebe_annotate_variants.output.vep_vcf, sample=sample_filename, caller=CALLERS),
+        expand(rules.vep_genebe_annotate_variants.output.acmg_tsv, sample=sample_filename, caller=CALLERS),
+        expand(rules.aggregate_acmg_annotations.output.cohort_report, caller=CALLERS),
+        expand(rules.aggregate_acmg_annotations.output.cohort_table, caller=CALLERS),
+        expand(rules.aggregate_acmg_annotations.output.cohort_json, caller=CALLERS),
+        expand(rules.summarize_variants.output.report_md, sample=sample_filename, caller=CALLERS),
+        expand(rules.summarize_variants.output.summary_tsv, sample=sample_filename, caller=CALLERS),
+        expand(rules.summarize_variants.output.summary_json, sample=sample_filename, caller=CALLERS),
+        expand(rules.aggregate_variant_summaries.output.cohort_report, caller=CALLERS),
+        expand(rules.aggregate_variant_summaries.output.cohort_table, caller=CALLERS),
+        expand(rules.aggregate_variant_summaries.output.cohort_json, caller=CALLERS),
         rules.multiqc_report.output.html
+    ]
+    if enable_comparison:
+        inputs.append(rules.compare_callers.output.report)
+        inputs.append(rules.compare_callers.output.table)
+    return inputs
+
+rule all:
+    input:
+        get_rule_all_inputs()
 
 onsuccess:
     import shutil
