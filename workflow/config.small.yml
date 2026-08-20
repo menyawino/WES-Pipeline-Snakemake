@@ -32,9 +32,9 @@ output_dirs:
 
 # These are placeholders for later full runs; raw_fastqc does not consume them.
 reference_genome: "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
-icc_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
-cds_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
-canontran_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
+icc_panel: "resources/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.hg38.mergeBed.bed"
+cds_panel: "resources/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons.hg38.mergeBed.bed"
+canontran_panel: "resources/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.hg38.mergeBed.bed"
 dbsnp: "resources/ref/grch38/dbsnp/Homo_sapiens_assembly38.dbsnp138.vcf"
 omni: "resources/ref/grch38/1000G/1000G_omni2.5.hg38.vcf.gz"
 tenk: "resources/ref/grch38/1000G/1000G.phase3.integrated.sites_only.no_MATCHED_REV.hg38.vcf"

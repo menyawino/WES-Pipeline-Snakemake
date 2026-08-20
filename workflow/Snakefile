@@ -84,7 +84,7 @@ wildcard_constraints:
     sample_filename=pattern_sf
 
 # Normalize reference and resource paths to absolute paths
-for k in ["reference_genome", "icc_panel", "dbsnp", "canonical_transcripts", "protein_coding"]:
+for k in ["reference_genome", "icc_panel", "cds_panel", "canontran_panel", "dbsnp", "omni", "tenk", "tenk_indel", "hapmap", "mills", "canonical_transcripts", "protein_coding"]:
     if k in config and config[k] and not os.path.isabs(config[k]):
         config[k] = os.path.abspath(os.path.join(workflow.basedir, "..", config[k]))
 

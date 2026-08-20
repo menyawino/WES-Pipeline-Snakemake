@@ -31,12 +31,12 @@ rule bwa_mem:
         -K 100000000 -Y \
         -R "$rg_header" \
         "{params.ref}" \
-        <(pigz -dc "{input.fq1}") \
-        <(pigz -dc "{input.fq2}") \
+        <(pigz -p 2 -dc "{input.fq1}") \
+        <(pigz -p 2 -dc "{input.fq2}") \
         2> "{log.bwa}" \
         | sambamba sort \
         -t {threads} \
-        -m 2G \
+        -m 4G \
         -l 1 \
         --tmpdir "/dev/shm/sort_${{sample_name}}_{wildcards.lane}" \
         -o "{output.bam}" \

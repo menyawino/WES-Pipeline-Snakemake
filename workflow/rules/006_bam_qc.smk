@@ -134,7 +134,7 @@ rule coverage_stats_target:
     threads:
         config["threads_mid"]
     params:
-        cds_file=config["cds_panel"]
+        cds_file=config["icc_panel"]
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_coverage_stats_target.log"
     benchmark:
@@ -190,7 +190,7 @@ rule coverage_stats_per_base_target:
     threads:
         config["threads_mid"]
     params:
-        cds_file=config["cds_panel"]
+        cds_file=config["icc_panel"]
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_coverage_stats_per_base_target.log"
     benchmark:
@@ -244,7 +244,7 @@ rule coverage_hist_target:
     threads:
         config["threads_mid"]
     params:
-        cds_file=config["cds_panel"]
+        cds_file=config["icc_panel"]
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_coverage_hist_target.log"
     benchmark:
@@ -303,7 +303,7 @@ rule fast_bam_qc_target:
     threads:
         config["threads_mid"]
     params:
-        cds_file=config["cds_panel"]
+        cds_file=config["icc_panel"]
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_fast_qc_target.log"
     benchmark:
@@ -354,7 +354,7 @@ rule mean_coverage_per_exon_target:
     conda:
         "icc_gatk"
     params:
-        cds_file=config["cds_panel"]
+        cds_file=config["icc_panel"]
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_mean_coverage_per_exon_target.log"
     benchmark:

@@ -1,10 +1,10 @@
 # Global variables optimized for 88-vCPU / 228GB RAM system
-threads_high: 22
-threads_mid: 16
-threads_low: 4
-mem_high: 65536
-mem_mid: 32768
-mem_low: 8192
+threads_high: 8      # Allows 11 concurrent alignments on 88 cores (8 * 11 = 88)
+threads_mid: 8       # Allows 11 concurrent BQSR / Markdup / BAM prep jobs
+threads_low: 2       # Allows 44 concurrent HaplotypeCaller chunk jobs
+mem_high: 16384
+mem_mid: 16384
+mem_low: 4096
 benchmark: 1
 
 # Temporary directory in high-speed RAM disk (>50 GB/s bandwidth)
@@ -45,9 +45,9 @@ Genome: &genome "grch38"
 reference_genome: "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
 
 # GRCh38 Target files
-icc_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
-cds_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
-canontran_panel: "resources/ref/grch38/TruSight_Cardio_TargetedRegions_v1.0.hg38.bed"
+icc_panel: "resources/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.hg38.mergeBed.bed"
+cds_panel: "resources/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCodingExons.hg38.mergeBed.bed"
+canontran_panel: "resources/ref/grch38/ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.hg38.mergeBed.bed"
 
 # GRCh38 Known variants
 dbsnp: "resources/ref/grch38/dbsnp/Homo_sapiens_assembly38.dbsnp138.vcf"

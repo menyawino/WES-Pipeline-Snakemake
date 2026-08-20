@@ -57,16 +57,19 @@ def validate_reference_files(config):
                 from download_ref import index_reference
             index_reference(ref_path)
 
-        icc_panel = config.get('icc_panel')
-        if icc_panel and os.path.exists(icc_panel):
-            try:
-                from workflow.scripts.download_ref import validate_bed_compatibility
-            except ImportError:
-                from download_ref import validate_bed_compatibility
-            validate_bed_compatibility(ref_path, icc_panel)
+        for panel_key in ['icc_panel', 'cds_panel', 'canontran_panel']:
+            panel_path = config.get(panel_key)
+            if panel_path and os.path.exists(panel_path):
+                try:
+                    from workflow.scripts.download_ref import validate_bed_compatibility
+                except ImportError:
+                    from download_ref import validate_bed_compatibility
+                validate_bed_compatibility(ref_path, panel_path)
 
     other_refs = {
-        'icc_panel': 'ICC panel BED file',
+        'icc_panel': 'ICC Target panel BED file',
+        'cds_panel': 'CDS panel BED file',
+        'canontran_panel': 'Canonical Transcripts panel BED file',
         'dbsnp': 'dbSNP variants',
     }
     
@@ -149,7 +152,14 @@ def validate_sample_file(sample_file, inputdir=None):
     # Fallback to auto-discovery if inputdir is provided
     if inputdir and os.path.isdir(inputdir):
         try:
-            from workflow.scripts.sample_processing import get_sample_data
+            try:
+                from workflow.scripts.sample_processing import get_sample_data
+            except ImportError:
+                try:
+                    from sample_processing import get_sample_data
+                except ImportError:
+                    sys.path.append(os.path.dirname(__file__))
+                    from sample_processing import get_sample_data
             df_disc = get_sample_data(None, inputdir)
             if not df_disc.empty:
                 unique_samples = df_disc['sample'].unique()
