@@ -3,9 +3,9 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - vep=104.3
+  - ensembl-vep=104.3
   - bcftools
-  - python=3.8
+  - python
   - pip
   - pandas
   - requests

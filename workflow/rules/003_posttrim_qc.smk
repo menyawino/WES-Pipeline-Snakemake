@@ -3,8 +3,8 @@
 rule posttrim_fastqc:
     message:
         "Running post-trimming FastQC for sample {wildcards.sample}_{lane}"
-    conda:
-        "fastqc_env"
+    container:
+        "docker://quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0"
     input:
         fq=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_{R}.fastq.gz"
     output:

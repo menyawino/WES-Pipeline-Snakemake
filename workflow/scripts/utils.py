@@ -95,12 +95,14 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[], em
             if verbose:
                 print(f"Warning: Could not load snakemake options from config: {e}")
 
-    # Resolve Snakemake executable
+    # Resolve Snakemake executable and ensure its environment is in PATH
     import shutil
     snakemake_bin = "snakemake"
-    sm_bin = "/home/omar/Downloads/miniconda3/envs/sm/bin/snakemake"
+    sm_env_bin = "/home/omar/Downloads/miniconda3/envs/sm/bin"
+    sm_bin = os.path.join(sm_env_bin, "snakemake")
     if not shutil.which("snakemake") and os.path.exists(sm_bin):
         snakemake_bin = sm_bin
+        os.environ["PATH"] = sm_env_bin + os.pathsep + os.environ.get("PATH", "")
 
     # Initialize RAM disk tmp directory if configured
     tmp_dir = snakemake_opts.get('tmpdir', '/dev/shm/wes_pipeline_tmp')
@@ -115,6 +117,9 @@ def run_snakemake(configfile, inputdir, outdir, verbose=False, extra_args=[], em
     # Add configurable flags (with sane defaults)
     if snakemake_opts.get('use_conda', True):
         cmd.append("--use-conda")
+        cmd.extend(["--conda-frontend", "mamba"])
+    if snakemake_opts.get('use_singularity', True):
+        cmd.append("--use-singularity")
     if snakemake_opts.get('keep_going', True):
         cmd.append("-k")
     if snakemake_opts.get('benchmark_extended', True):
@@ -347,6 +352,7 @@ def get_snakemake_report(configfile):
     os.system("snakemake -s " 
               + snakefile 
               + " --use-conda"
+              + " --conda-frontend mamba"
               + " --report" 
               + " --configfile " 
               + configfile 

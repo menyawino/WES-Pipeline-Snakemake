@@ -67,10 +67,9 @@ rule merge_bams:
         if [ "$bam_count" -eq 1 ]; then
             cp {input.bams} {output.merged_bam}
         else
-            samtools merge \
-            -@ {threads} \
-            -l 1 \
-            -f {output.merged_bam} \
+            sambamba merge \
+            -t {threads} \
+            {output.merged_bam} \
             {input.bams} \
             > {log} 2>&1
         fi

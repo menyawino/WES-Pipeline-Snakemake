@@ -142,7 +142,7 @@ rule filter_bam_target:
         bam_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam",
         bai_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam.bai"
     conda:
-        "icc_gatk"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     params:
@@ -153,16 +153,16 @@ rule filter_bam_target:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_target.txt"
     shell:
         """
-        samtools view \
-        -@ {threads} \
-        -L {params.TargetFile} \
-        -q 8 \
-        -b \
-        -o {output.bam_target} \
-        {input.bam} \
-        2> {log}
+        sambamba view \
+        -t {threads} \
+        -L "{params.TargetFile}" \
+        -F "mapping_quality >= 8" \
+        -f bam \
+        -o "{output.bam_target}" \
+        "{input.bam}" \
+        2> "{log}"
         
-        samtools index -@ {threads} {output.bam_target} {output.bai_target} >> {log} 2>&1
+        sambamba index -t {threads} "{output.bam_target}" "{output.bai_target}" >> "{log}" 2>&1
         """
 
 rule filter_bam_prot_coding:
@@ -175,7 +175,7 @@ rule filter_bam_prot_coding:
         bam_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam",
         bai_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam.bai"
     conda:
-        "icc_gatk"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     params:
@@ -186,16 +186,16 @@ rule filter_bam_prot_coding:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.txt"
     shell:
         """
-        samtools view \
-        -@ {threads} \
-        -L {params.CDSFile} \
-        -q 8 \
-        -b \
-        -o {output.bam_prot_coding} \
-        {input.bam} \
-        2> {log}
+        sambamba view \
+        -t {threads} \
+        -L "{params.CDSFile}" \
+        -F "mapping_quality >= 8" \
+        -f bam \
+        -o "{output.bam_prot_coding}" \
+        "{input.bam}" \
+        2> "{log}"
         
-        samtools index -@ {threads} {output.bam_prot_coding} {output.bai_prot_coding} >> {log} 2>&1
+        sambamba index -t {threads} "{output.bam_prot_coding}" "{output.bai_prot_coding}" >> "{log}" 2>&1
         """
 
 rule filter_bam_canon_tran:
@@ -208,7 +208,7 @@ rule filter_bam_canon_tran:
         bam_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam",
         bai_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam.bai"
     conda:
-        "icc_gatk"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     params:
@@ -219,14 +219,14 @@ rule filter_bam_canon_tran:
         config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.txt"
     shell:
         """
-        samtools view \
-        -@ {threads} \
-        -L {params.CanonTranFile} \
-        -q 8 \
-        -b \
-        -o {output.bam_canon_tran} \
-        {input.bam} \
-        2> {log}
+        sambamba view \
+        -t {threads} \
+        -L "{params.CanonTranFile}" \
+        -F "mapping_quality >= 8" \
+        -f bam \
+        -o "{output.bam_canon_tran}" \
+        "{input.bam}" \
+        2> "{log}"
         
-        samtools index -@ {threads} {output.bam_canon_tran} {output.bai_canon_tran} >> {log} 2>&1
+        sambamba index -t {threads} "{output.bam_canon_tran}" "{output.bai_canon_tran}" >> "{log}" 2>&1
         """

@@ -3,8 +3,8 @@
 rule raw_fastqc:
     message: 
         "Running FastQC on sample {lane}_{wildcards.R}"
-    conda: 
-        "fastqc_env"
+    container: 
+        "docker://quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0"
     input:
         get_raw_fastqc_input
     output:

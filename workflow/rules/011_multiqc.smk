@@ -12,8 +12,8 @@ rule multiqc_report:
         rules.aggregate_acmg_annotations.output.cohort_report
     output:
         html=config["outdir"] + "/results/multiqc_report.html"
-    conda:
-        "multiqc_env"
+    container:
+        "docker://quay.io/biocontainers/multiqc:1.21--pyhdfd78af_0"
     log:
         config["outdir"] + "/logs/multiqc.log"
     benchmark:

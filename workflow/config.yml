@@ -107,6 +107,7 @@ variant_summary:
 # Snakemake execution options
 snakemake:
   use_conda: true
+  use_singularity: true
   keep_going: true
   benchmark_extended: true
   print_shell_commands: true

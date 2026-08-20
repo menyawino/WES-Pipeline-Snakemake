@@ -7,8 +7,8 @@ rule filter_snps:
         snp_vcf=rules.split_vcfs.output.snp_vcf
     output:
         filtered_snp_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.snp.vcf"
-    conda:
-        "icc_gatk"
+    container:
+        "docker://broadinstitute/gatk:4.4.0.0"
     threads:
         config["threads_mid"]
     resources:
@@ -46,8 +46,8 @@ rule filter_indels:
         indel_vcf=rules.split_vcfs.output.indel_vcf
     output:
         filtered_indel_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.filtered.indel.vcf"
-    conda:
-        "icc_gatk"
+    container:
+        "docker://broadinstitute/gatk:4.4.0.0"
     threads:
         config["threads_mid"]
     resources:

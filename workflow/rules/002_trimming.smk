@@ -3,8 +3,8 @@
 rule trimming_fp:
     message: 
         "Trimming and removing adapters from sample {wildcards.sample}_{lane}"
-    conda: 
-        "icc_02_trimming"
+    container: 
+        "docker://quay.io/biocontainers/fastp:0.23.4--h5f740d0_0"
     input:
         fq1=get_trimming_r1,
         fq2=get_trimming_r2

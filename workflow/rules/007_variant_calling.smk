@@ -28,8 +28,8 @@ rule haplotypecaller_chunk:
     output:
         gvcf_chunk=temp("/dev/shm/wes_pipeline_{sample}_{chunk}.g.vcf.gz"),
         gvcf_tbi=temp("/dev/shm/wes_pipeline_{sample}_{chunk}.g.vcf.gz.tbi")
-    conda:
-        "icc_gatk"
+    container:
+        "docker://broadinstitute/gatk:4.4.0.0"
     threads:
         config.get("threads_low", 4)
     resources:
@@ -98,8 +98,8 @@ rule genotype_gvcfs:
         gvcf_tbi=rules.gather_gvcfs.output.gvcf_tbi
     output:
         vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.vcf"
-    conda:
-        "icc_gatk"
+    container:
+        "docker://broadinstitute/gatk:4.4.0.0"
     threads:
         config["threads_mid"]
     resources:
@@ -136,8 +136,8 @@ rule split_vcfs:
     output:
         snp_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.snp.vcf",
         indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.genotyped.indel.vcf"
-    conda:
-        "icc_gatk"
+    container:
+        "docker://broadinstitute/gatk:4.4.0.0"
     threads:
         config["threads_mid"]
     resources:

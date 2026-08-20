@@ -5,6 +5,5 @@ channels:
 dependencies:
   - bwa-mem2
   - sambamba
-  - samtools=1.10
   - python=3.8
   - pip
