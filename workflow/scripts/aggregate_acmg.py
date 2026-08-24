@@ -11,7 +11,19 @@ import glob
 import pandas as pd
 import json
 
-def aggregate_acmg(input_tsvs, out_report_md, out_summary_tsv, out_summary_json, out_dashboard_html):
+def df_to_markdown(df):
+    if df.empty:
+        return "No records available.\n"
+    headers = list(df.columns)
+    lines = [
+        "| " + " | ".join(str(h) for h in headers) + " |",
+        "| " + " | ".join(["---"] * len(headers)) + " |"
+    ]
+    for _, row in df.iterrows():
+        lines.append("| " + " | ".join(str(row[h]) for h in headers) + " |")
+    return "\n".join(lines) + "\n"
+
+def aggregate_acmg(input_tsvs, out_report_md, out_summary_tsv, out_summary_json, out_dashboard_html=None):
     records = []
     pathogenic_variants = []
     
@@ -78,7 +90,7 @@ def aggregate_acmg(input_tsvs, out_report_md, out_summary_tsv, out_summary_json,
         f.write(f"- **Variants of Uncertain Significance (VUS)**: {summary_data['total_vus']}\n\n")
         f.write("## Sample-Level ACMG Breakdown\n\n")
         if not df_summary.empty:
-            f.write(df_summary.to_markdown(index=False))
+            f.write(df_to_markdown(df_summary))
         else:
             f.write("No sample records available.\n")
         f.write("\n")
@@ -87,6 +99,8 @@ def aggregate_acmg(input_tsvs, out_report_md, out_summary_tsv, out_summary_json,
     write_cohort_dashboard(df_summary, pathogenic_variants, out_dashboard_html)
 
 def write_cohort_dashboard(df_summary, pathogenic_variants, out_html):
+    if not out_html:
+        return
     os.makedirs(os.path.dirname(os.path.abspath(out_html)), exist_ok=True)
     
     total_samples = len(df_summary)
@@ -180,7 +194,7 @@ if __name__ == '__main__':
     parser.add_argument("--report-md", required=True, help="Output markdown report")
     parser.add_argument("--summary-tsv", required=True, help="Output summary TSV")
     parser.add_argument("--summary-json", required=True, help="Output summary JSON")
-    parser.add_argument("--dashboard-html", required=True, help="Output dashboard HTML")
+    parser.add_argument("--dashboard-html", default=None, help="Output dashboard HTML")
     
     args = parser.parse_args()
     aggregate_acmg(

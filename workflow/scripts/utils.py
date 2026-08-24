@@ -132,6 +132,7 @@ def run_snakemake(
     # Add conda and singularity flags
     if snakemake_opts.get('use_conda', True):
         cmd.append("--use-conda")
+        cmd.extend(["--conda-frontend", "mamba"])
     if snakemake_opts.get('use_singularity', True):
         cmd.append("--use-singularity")
         if singularity_args:

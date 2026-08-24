@@ -102,7 +102,7 @@ gatk:
 
 # VEP parameters
 vep:
-  mode: "offline" # Uses local Ensembl VEP 104_GRCh38 cache for high-speed offline annotation
+  mode: "online" # Runs Ensembl VEP & GeneBe ACMG 2015 automated clinical classification
   species: "homo_sapiens"
   assembly: "GRCh38"
 

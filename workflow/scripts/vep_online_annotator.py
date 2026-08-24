@@ -6,8 +6,6 @@ consequences, functional impacts, HGVS, SIFT, PolyPhen, ClinVar, and automated
 ACMG/AMP 2015 5-tier classification using the official GeneBe algorithm in a single unified command.
 """
 
-from __future__ import annotations
-
 import argparse
 import gzip
 import html

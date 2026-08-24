@@ -145,6 +145,7 @@ def get_rule_all_inputs():
         expand(rules.aggregate_acmg_annotations.output.cohort_report, caller=CALLERS),
         expand(rules.aggregate_acmg_annotations.output.cohort_table, caller=CALLERS),
         expand(rules.aggregate_acmg_annotations.output.cohort_json, caller=CALLERS),
+        expand(rules.aggregate_acmg_annotations.output.cohort_dashboard, caller=CALLERS),
         expand(rules.summarize_variants.output.report_md, sample=sample_filename, caller=CALLERS),
         expand(rules.summarize_variants.output.summary_tsv, sample=sample_filename, caller=CALLERS),
         expand(rules.summarize_variants.output.summary_json, sample=sample_filename, caller=CALLERS),
