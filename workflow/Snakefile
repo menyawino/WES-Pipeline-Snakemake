@@ -118,6 +118,7 @@ include: "rules/008_variant_filtering.smk"
 include: "rules/009_annotation.smk"
 include: "rules/010_summary.smk"
 include: "rules/011_multiqc.smk"
+include: "rules/012_benchmark_giab.smk"
 
 ############################
 ######### Workflow #########
@@ -152,11 +153,21 @@ def get_rule_all_inputs():
         expand(rules.aggregate_variant_summaries.output.cohort_report, caller=CALLERS),
         expand(rules.aggregate_variant_summaries.output.cohort_table, caller=CALLERS),
         expand(rules.aggregate_variant_summaries.output.cohort_json, caller=CALLERS),
+        rules.coverage_summary_report.output.target_txt,
+        rules.coverage_summary_report.output.prot_coding_txt,
+        rules.coverage_summary_report.output.canon_tran_txt,
+        rules.coverage_summary_report.output.report_md,
         rules.multiqc_report.output.html
     ]
     if enable_comparison:
         inputs.append(rules.compare_callers.output.report)
         inputs.append(rules.compare_callers.output.table)
+    
+    if config.get("giab_benchmark", {}).get("enabled", False):
+        inputs.extend(expand(rules.benchmark_sample_giab.output.dashboard_html, sample=sample_filename))
+        inputs.extend(expand(rules.benchmark_sample_giab.output.report_md, sample=sample_filename))
+        inputs.extend(expand(rules.benchmark_sample_giab.output.summary_tsv, sample=sample_filename))
+
     return inputs
 
 rule all:

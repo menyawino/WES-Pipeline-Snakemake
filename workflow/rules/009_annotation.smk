@@ -2,15 +2,16 @@
 
 rule vep_genebe_annotate_variants:
     message:
-        "Annotating {wildcards.caller} variants and classifying ACMG guidelines via Ensembl VEP & GeneBe plugin for sample {wildcards.sample}"
+        "Annotating {wildcards.caller} variants via Ensembl VEP (Local Offline Mode) for sample {wildcards.sample}"
     input:
         snp_vcf=rules.filter_snps.output.filtered_snp_vcf,
-        indel_vcf=rules.filter_indels.output.filtered_indel_vcf
+        indel_vcf=rules.filter_indels.output.filtered_indel_vcf,
+        ref=config.get("ref", {}).get("genome", "resources/ref/grch38/GRCh38.primary_assembly.genome.fa")
     output:
         vep_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.{caller}.vep_annotated.vcf",
         acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.{caller}.acmg_variants.tsv"
     conda:
-        "icc_gatk"
+        "vep"
     threads:
         config.get("threads_mid", 8)
     log:
@@ -18,7 +19,12 @@ rule vep_genebe_annotate_variants:
     benchmark:
         config["outdir"] + "/benchmarks/007_annotation/{sample}_{caller}_vep_genebe_annotation.txt"
     params:
-        mode=config.get("vep", {}).get("mode", "online")
+        mode=config.get("vep", {}).get("mode", "offline"),
+        cache_dir=config.get("vep", {}).get("cache_dir", "resources/vep_cache"),
+        cache_version=config.get("vep", {}).get("cache_version", "104"),
+        species=config.get("vep", {}).get("species", "homo_sapiens"),
+        assembly=config.get("vep", {}).get("assembly", "GRCh38"),
+        synonyms=config.get("vep", {}).get("synonyms", "resources/vep_cache/homo_sapiens/104_GRCh38/chr_synonyms.txt")
     shell:
         """
         if [ "{params.mode}" = "online" ]; then
@@ -30,30 +36,49 @@ rule vep_genebe_annotate_variants:
                 --output-tsv "{output.acmg_tsv}" \
                 > "{log}" 2>&1
         else
-            mkdir -p resources/vep_cache
             sample_safe=$(basename "{wildcards.sample}")
             tmp_vcf="/dev/shm/${{sample_safe}}_{wildcards.caller}_combined.vcf.gz"
 
-            bgzip -c "{input.snp_vcf}" > "/dev/shm/${{sample_safe}}_snp.vcf.gz"
-            tabix -f -p vcf "/dev/shm/${{sample_safe}}_snp.vcf.gz"
-            bgzip -c "{input.indel_vcf}" > "/dev/shm/${{sample_safe}}_indel.vcf.gz"
-            tabix -f -p vcf "/dev/shm/${{sample_safe}}_indel.vcf.gz"
-
-            # First, combine the snp and indel VCFs
-            bcftools concat -a "/dev/shm/${{sample_safe}}_snp.vcf.gz" "/dev/shm/${{sample_safe}}_indel.vcf.gz" -O z -o "$tmp_vcf"
+            # Combine filtered SNP and INDEL VCFs
+            bcftools concat -a -O z -o "$tmp_vcf" "{input.snp_vcf}" "{input.indel_vcf}"
             tabix -f -p vcf "$tmp_vcf"
-            
-            # Run offline VEP
-            vep -i "$tmp_vcf" \
+
+            synonyms_arg=""
+            if [ -f "{params.synonyms}" ]; then
+                synonyms_arg="--synonyms {params.synonyms}"
+            fi
+
+            # Execute Ensembl VEP offline using local cache and reference FASTA
+            vep \
+                -i "$tmp_vcf" \
                 -o "{output.vep_vcf}" \
-                --offline --cache --dir_cache resources/vep_cache \
-                --species homo_sapiens --assembly GRCh38 \
-                --vcf --force_overwrite --fork {threads} \
+                --format vcf \
+                --vcf \
+                --offline \
+                --cache \
+                --dir_cache "{params.cache_dir}" \
+                --species "{params.species}" \
+                --assembly "{params.assembly}" \
+                --cache_version "{params.cache_version}" \
+                --fasta "{input.ref}" \
+                $synonyms_arg \
+                --symbol \
+                --protein \
+                --hgvs \
+                --biotype \
+                --canonical \
+                --numbers \
+                --domains \
+                --variant_class \
+                --force_overwrite \
+                --no_stats \
+                --fork {threads} \
                 > "{log}" 2>&1
-            
-            # Touch empty TSV since offline VEP doesn't run GeneBe ACMG
-            touch "{output.acmg_tsv}"
-            rm -f "$tmp_vcf" "$tmp_vcf.tbi" "/dev/shm/${{sample_safe}}_snp.vcf.gz"* "/dev/shm/${{sample_safe}}_indel.vcf.gz"*
+
+            # Generate compatible ACMG / clinical summary TSV header
+            echo -e "sample\tCHROM\tPOS\tREF\tALT\tGENE\tCONSEQUENCE\tACMG_CLASS\tACMG_CRITERIA" > "{output.acmg_tsv}"
+
+            rm -f "$tmp_vcf" "$tmp_vcf.tbi"
         fi
         """
 

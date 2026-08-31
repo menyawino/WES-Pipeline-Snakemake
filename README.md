@@ -39,6 +39,8 @@ Run the pipeline using the `wes_pipeline.py` CLI wrapper:
 - `plan`: Preview execution plan and render high-resolution DAG/rulegraph diagrams (`results/dag.png`, `results/rulegraph.png`).
 - `validate`: Perform standalone pre-flight configuration and resource checks (automatically downloads GRCh38 if missing).
 - `download-ref`: Download and index the GRCh38 reference genome (`resources/ref/grch38/GRCh38.primary_assembly.genome.fa`).
+- `download-giab`: Download NIST Genome in a Bottle (GIAB) HG001 / HG002 benchmark truth sets for GRCh38.
+- `benchmark`: Benchmark pipeline variant calls (GATK & DeepVariant) against GIAB high-confidence truth standard (GA4GH).
 - `report`: Generate a Snakemake HTML execution report.
 
 **Options for `run`:**
@@ -163,6 +165,26 @@ When `analysis/009_annotation/<sample>.annotated.vcf` is present, the summary la
 - impact tiers such as `HIGH` and `MODERATE`
 - consequence labels from VEP/SnpEff-style annotations
 - clinical significance tags when present in the annotated VCF
+
+## GIAB Benchmarking
+
+Evaluate pipeline variant calling accuracy against the NIST Genome in a Bottle (GIAB) benchmark truth sets (HG001 / NA12878 and HG002 / NA24385 on GRCh38) using GA4GH standards.
+
+1. **Download GIAB Truth Sets:**
+   ```sh
+   ./wes_pipeline.py download-giab --sample HG001
+   ```
+
+2. **Benchmark Variant Callers (GATK vs. DeepVariant):**
+   ```sh
+   ./wes_pipeline.py benchmark -o /path/to/output --sample HG001 --download-truth
+   ```
+
+Outputs generated in `analysis/012_benchmark/giab/`:
+- `HG001_giab_benchmark_report.md`: Markdown summary of Recall, Precision, F1-scores, and Ti/Tv ratios.
+- `HG001_giab_benchmark_summary.tsv`: Machine-readable TSV matrix of SNP and Indel GA4GH metrics.
+- `HG001_giab_benchmark_summary.json`: JSON output for programmatic integration.
+- `HG001_giab_benchmark_dashboard.html`: Aesthetic interactive dashboard visualizing caller accuracy.
 
 ## Implementation Notes
 

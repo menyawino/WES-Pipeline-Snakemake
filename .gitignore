@@ -4,6 +4,7 @@
 # References and data resources
 ref/
 resources/
+data/
 *.fa
 *.fasta
 *.fa.gz

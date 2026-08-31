@@ -280,7 +280,7 @@ rule fast_bam_qc_prot_coding:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_fast_qc_prot_coding.txt"
     shell:
         """
-        python workflow/scripts/fast_bam_qc.py \
+        python3 workflow/scripts/fast_bam_qc.py \
         --bam "{input.bam}" \
         --bed "{params.cds_file}" \
         --out-depth "{output.depth_of_coverage}" \
@@ -310,7 +310,7 @@ rule fast_bam_qc_target:
         config["outdir"] + "/benchmarks/004_bam_qc/{sample}_fast_qc_target.txt"
     shell:
         """
-        python workflow/scripts/fast_bam_qc.py \
+        python3 workflow/scripts/fast_bam_qc.py \
         --bam "{input.bam}" \
         --bed "{params.cds_file}" \
         --out-depth "{output.depth_of_coverage_target}" \
@@ -370,6 +370,61 @@ rule mean_coverage_per_exon_target:
         """
 
 
+
+rule mean_coverage_per_exon_canon_tran:
+    message:
+        "Calculating mean coverage per exon for canonical transcript BAM for sample {wildcards.sample}"
+    input:
+        bam_canon_tran=rules.filter_bam_canon_tran.output.bam_canon_tran
+    output:
+        mean_coverage_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.mean_coverage.bed"
+    conda:
+        "icc_gatk"
+    params:
+        cds_file=config["canontran_panel"]
+    log:
+        config["outdir"] + "/logs/004_bam_qc/{sample}_mean_coverage_per_exon_canon_tran.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_mean_coverage_per_exon_canon_tran.txt"
+    shell:
+        """
+        bedtools coverage \
+        -a "{params.cds_file}" \
+        -b "{input.bam_canon_tran}" \
+        -mean \
+        > "{output.mean_coverage_canon_tran}" \
+        2> "{log}"
+        """
+
+rule fast_bam_qc_canon_tran:
+    message:
+        "Fast BAM QC (Depth and Picard) for canonical transcript target for sample {wildcards.sample}"
+    input:
+        bam=rules.filter_bam_canon_tran.output.bam_canon_tran,
+        bai=rules.filter_bam_canon_tran.output.bai_canon_tran
+    output:
+        depth_of_coverage_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.depth_of_coverage.sample_summary",
+        alignment_summary_metrics_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.align_sum_metrics.txt"
+    conda:
+        "icc_gatk"
+    threads:
+        config["threads_mid"]
+    params:
+        cds_file=config["canontran_panel"]
+    log:
+        config["outdir"] + "/logs/004_bam_qc/{sample}_fast_qc_canon_tran.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_fast_qc_canon_tran.txt"
+    shell:
+        """
+        python workflow/scripts/fast_bam_qc.py \
+        --bam "{input.bam}" \
+        --bed "{params.cds_file}" \
+        --out-depth "{output.depth_of_coverage_canon_tran}" \
+        --out-metrics "{output.alignment_summary_metrics_canon_tran}" \
+        --threads {threads} \
+        > "{log}" 2>&1
+        """
 
 rule qc_report:
     input:

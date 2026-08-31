@@ -102,15 +102,25 @@ gatk:
 
 # VEP parameters
 vep:
-  mode: "online" # Runs Ensembl VEP & GeneBe ACMG 2015 automated clinical classification
+  mode: "offline" # Runs local Ensembl VEP offline using high-performance local cache
   species: "homo_sapiens"
   assembly: "GRCh38"
+  cache_version: "104"
+  cache_dir: "resources/vep_cache"
+  synonyms: "resources/vep_cache/homo_sapiens/104_GRCh38/chr_synonyms.txt"
 
 # Local variant-reporting parameters
 variant_summary:
   top_variants: 10
   top_chromosomes: 10
   annotated_vcf_pattern: "{outdir}/analysis/007_annotation/{sample}.vep_annotated.vcf"
+
+# Genome in a Bottle (GIAB) Benchmarking parameters
+giab_benchmark:
+  enabled: false
+  sample: "HG001"
+  truth_vcf: "resources/giab/HG001/HG001_GRCh38_1_22_v4.2.1_benchmark.vcf.gz"
+  truth_bed: "resources/giab/HG001/HG001_GRCh38_1_22_v4.2.1_benchmark.bed"
 
 # Snakemake execution options
 snakemake:
