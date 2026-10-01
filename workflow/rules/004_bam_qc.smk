@@ -146,8 +146,8 @@ rule coverage_stats:
     shell:
         """
         bedtools coverage \
-        -abam "{input.bam_prot_coding}" \
-        -b "{params.cds_file}" \
+        -a "{params.cds_file}" \
+        -b "{input.bam_prot_coding}" \
         2> "{log}" \
         | sort -k 1,1 -k 2,2n \
         > "{output.coverage_stats}" \
@@ -176,11 +176,41 @@ rule coverage_stats_target:
     shell:
         """
         bedtools coverage \
-        -abam "{input.bam_target}" \
-        -b "{params.cds_file}" \
+        -a "{params.cds_file}" \
+        -b "{input.bam_target}" \
         2> "{log}" \
         | sort -k 1,1 -k 2,2n \
         > "{output.coverage_stats_target}" \
+        2>> "{log}"
+        """
+
+rule coverage_stats_canon_tran:
+    message:
+        "Calculating coverage stats for canonical transcript BAM for sample {wildcards.sample}"
+    input:
+        bam_canon_tran=rules.filter_bam_canon_tran.output.bam_canon_tran
+    output:
+        coverage_stats_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.coverage_stats.txt"
+    conda:
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
+    params:
+        cds_file=config["canontran_panel"]
+    log:
+        config["outdir"] + "/logs/004_bam_qc/{sample}_coverage_stats_canon_tran.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_stats_canon_tran.txt"
+    shell:
+        """
+        bedtools coverage \
+        -a "{params.cds_file}" \
+        -b "{input.bam_canon_tran}" \
+        2> "{log}" \
+        | sort -k 1,1 -k 2,2n \
+        > "{output.coverage_stats_canon_tran}" \
         2>> "{log}"
         """
 
@@ -206,8 +236,8 @@ rule coverage_stats_per_base:
     shell:
         """
         bedtools coverage \
-        -abam "{input.bam_prot_coding}" \
-        -b "{params.cds_file}" \
+        -a "{params.cds_file}" \
+        -b "{input.bam_prot_coding}" \
         -d 2> "{log}" \
         | gzip -c \
         > "{output.coverage_stats_per_base}" \
@@ -236,8 +266,8 @@ rule coverage_stats_per_base_target:
     shell:
         """
         bedtools coverage \
-        -abam "{input.bam_target}" \
-        -b "{params.cds_file}" \
+        -a "{params.cds_file}" \
+        -b "{input.bam_target}" \
         -d \
         > "{output.coverage_stats_per_base_target}" \
         2> "{log}"
@@ -265,8 +295,8 @@ rule coverage_hist:
     shell:
         """
         bedtools coverage \
-        -abam "{input.bam_prot_coding}" \
-        -b "{params.cds_file}" \
+        -a "{params.cds_file}" \
+        -b "{input.bam_prot_coding}" \
         -hist \
         > "{output.coverage_hist}" \
         2> "{log}"
@@ -294,10 +324,39 @@ rule coverage_hist_target:
     shell:
         """
         bedtools coverage \
-        -abam "{input.bam_target}" \
-        -b "{params.cds_file}" \
+        -a "{params.cds_file}" \
+        -b "{input.bam_target}" \
         -hist \
         > "{output.coverage_hist_target}" \
+        2> "{log}"
+        """
+
+rule coverage_hist_canon_tran:
+    message:
+        "Calculating coverage histogram for canonical transcript BAM for sample {wildcards.sample}"
+    input:
+        bam_canon_tran=rules.filter_bam_canon_tran.output.bam_canon_tran
+    output:
+        coverage_hist_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.coverage_hist.txt"
+    conda:
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
+    params:
+        cds_file=config["canontran_panel"]
+    log:
+        config["outdir"] + "/logs/004_bam_qc/{sample}_coverage_hist_canon_tran.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_coverage_hist_canon_tran.txt"
+    shell:
+        """
+        bedtools coverage \
+        -a "{params.cds_file}" \
+        -b "{input.bam_canon_tran}" \
+        -hist \
+        > "{output.coverage_hist_canon_tran}" \
         2> "{log}"
         """
 

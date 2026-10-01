@@ -104,12 +104,20 @@ rule coverage_summary_report:
     message:
         "Generating legacy 46-column cohort coverage summary tables (Target, ProteinCodingTarget, CanonTranCodingTarget)"
     input:
-        qc_metrics=expand(rules.qc_report.output.qc_metrics, sample=sample_filename),
         orig_flagstats=expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
         q8_counts=expand(rules.count_mapped_q8_original.output.q8_count, sample=sample_filename),
         target_flagstats=expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),
         prot_coding_flagstats=expand(rules.flagstat_prot_coding.output.flagstat_prot_coding, sample=sample_filename),
         canon_tran_flagstats=expand(rules.flagstat_canon_tran.output.flagstat_canon_tran, sample=sample_filename),
+        target_hists=expand(rules.coverage_hist_target.output.coverage_hist_target, sample=sample_filename),
+        prot_coding_hists=expand(rules.coverage_hist.output.coverage_hist, sample=sample_filename),
+        canon_tran_hists=expand(rules.coverage_hist_canon_tran.output.coverage_hist_canon_tran, sample=sample_filename),
+        target_means=expand(rules.mean_coverage_per_exon_target.output.mean_coverage_target, sample=sample_filename),
+        prot_coding_means=expand(rules.mean_coverage_per_exon.output.mean_coverage, sample=sample_filename),
+        canon_tran_means=expand(rules.mean_coverage_per_exon_canon_tran.output.mean_coverage_canon_tran, sample=sample_filename),
+        target_metrics=expand(rules.fast_bam_qc_target.output.alignment_summary_metrics_target, sample=sample_filename),
+        prot_coding_metrics=expand(rules.fast_bam_qc_prot_coding.output.alignment_summary_metrics, sample=sample_filename),
+        canon_tran_metrics=expand(rules.fast_bam_qc_canon_tran.output.alignment_summary_metrics_canon_tran, sample=sample_filename),
         snps=expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename, caller=["gatk"]),
         indels=expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename, caller=["gatk"])
     output:
