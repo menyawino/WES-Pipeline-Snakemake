@@ -338,6 +338,86 @@ def parse_fastqc_summary(summary_file):
         return "NA", "NA"
     return per_base, per_seq
 
+def parse_fastp_qc(sample, outdir):
+    """
+    Parse fastp report JSON files for sample lanes.
+    Evaluates quality metrics (Q30/Q20 rate) for Read 1 and Read 2.
+    Returns dict with quality status and rates, or None if no fastp reports are found.
+    """
+    sample_mrn = sample.split('/')[-1] if '/' in sample else sample
+    sample_clean = sample_mrn.rsplit('_S', 1)[0] if '_S' in sample_mrn else sample_mrn
+    
+    candidate_patterns = [
+        os.path.join(outdir, f"analysis/001_trimming/{sample}*_report.json"),
+        os.path.join(outdir, f"analysis/001_trimming/{sample_mrn}*_report.json"),
+        os.path.join(outdir, f"analysis/001_trimming/*/{sample_mrn}*_report.json"),
+        os.path.join(outdir, f"analysis/001_trimming/{sample_clean}*_report.json"),
+        os.path.join(outdir, f"analysis/001_trimming/*/{sample_clean}*_report.json"),
+        os.path.join(outdir, f"analysis/001_trimming/**/{sample_clean}*report.json"),
+        os.path.join(outdir, f"analysis/001_qc/{sample_clean}*report.json")
+    ]
+    
+    fastp_files = []
+    for pat in candidate_patterns:
+        matches = glob.glob(pat, recursive=True)
+        if matches:
+            fastp_files = matches
+            break
+            
+    if not fastp_files:
+        return None
+        
+    total_r1_q30_bases = 0
+    total_r1_bases = 0
+    total_r2_q30_bases = 0
+    total_r2_bases = 0
+    total_reads = 0
+    
+    try:
+        for fp in fastp_files:
+            with open(fp, 'r') as f:
+                data = json.load(f)
+                
+            summary = data.get("summary", {})
+            before = summary.get("before_filtering", {})
+            total_reads += before.get("total_reads", 0)
+            
+            r1_info = data.get("read1_before_filtering", {})
+            if r1_info and r1_info.get("total_bases", 0) > 0:
+                total_r1_q30_bases += r1_info.get("q30_bases", 0)
+                total_r1_bases += r1_info.get("total_bases", 0)
+            elif before.get("total_bases", 0) > 0:
+                total_r1_q30_bases += before.get("q30_bases", 0) // 2
+                total_r1_bases += before.get("total_bases", 0) // 2
+                
+            r2_info = data.get("read2_before_filtering", {})
+            if r2_info and r2_info.get("total_bases", 0) > 0:
+                total_r2_q30_bases += r2_info.get("q30_bases", 0)
+                total_r2_bases += r2_info.get("total_bases", 0)
+            elif before.get("total_bases", 0) > 0:
+                total_r2_q30_bases += before.get("q30_bases", 0) // 2
+                total_r2_bases += before.get("total_bases", 0) // 2
+    except Exception:
+        return None
+        
+    if total_r1_bases == 0:
+        return None
+
+    r1_q30_rate = (total_r1_q30_bases / total_r1_bases) if total_r1_bases > 0 else 0.0
+    r2_q30_rate = (total_r2_q30_bases / total_r2_bases) if total_r2_bases > 0 else 0.0
+    
+    # Assess status analogous to FastQC: >=80% Q30 is PASS, >=70% is WARN, else FAIL
+    r1_status = "PASS" if r1_q30_rate >= 0.80 else ("WARN" if r1_q30_rate >= 0.70 else "FAIL")
+    r2_status = "PASS" if r2_q30_rate >= 0.80 else ("WARN" if r2_q30_rate >= 0.70 else "FAIL")
+    
+    return {
+        "r1_status": r1_status,
+        "r2_status": r2_status,
+        "r1_q30_pct": round(r1_q30_rate * 100.0, 2),
+        "r2_q30_pct": round(r2_q30_rate * 100.0, 2),
+        "total_reads": total_reads
+    }
+
 def parse_vcf_titv_and_hets(snp_vcf):
     """
     Parse filtered SNP VCF to compute Ti/Tv ratio, Het allele balance, and total SNPs.
@@ -580,14 +660,29 @@ def generate_coverage_summary_for_target(
             max_cov_str = str(cov_stats['max_cov'])
             evenness_str = f"{cov_stats['evenness']:.2f}"
         
-        # 8. FastQC results (Does NOT default to PASS when missing)
+        # 8. Read Quality Evaluation (fastp QC or legacy FastQC)
+        # Check for legacy FastQC summaries or modern fastp JSON reports
         r1_fastqc = glob.glob(os.path.join(outdir, f"analysis/001_trimming/{sample}*R1*_fastqc/summary.txt")) or glob.glob(os.path.join(outdir, f"analysis/001_qc/{sample}*R1*_fastqc/summary.txt"))
         r2_fastqc = glob.glob(os.path.join(outdir, f"analysis/001_trimming/{sample}*R2*_fastqc/summary.txt")) or glob.glob(os.path.join(outdir, f"analysis/001_qc/{sample}*R2*_fastqc/summary.txt"))
         
-        r1_base_q, r1_seq_q = parse_fastqc_summary(r1_fastqc[0]) if r1_fastqc else ("NA", "NA")
-        r2_base_q, r2_seq_q = parse_fastqc_summary(r2_fastqc[0]) if r2_fastqc else ("NA", "NA")
-        if r1_base_q == "NA" or r2_base_q == "NA":
-            missing_inputs.append("fastqc_summaries")
+        fastp_qc = parse_fastp_qc(sample, outdir)
+        
+        if r1_fastqc and r2_fastqc:
+            r1_base_q, r1_seq_q = parse_fastqc_summary(r1_fastqc[0])
+            r2_base_q, r2_seq_q = parse_fastqc_summary(r2_fastqc[0])
+        elif fastp_qc is not None:
+            r1_base_q = fastp_qc["r1_status"]
+            r1_seq_q = fastp_qc["r1_status"]
+            r2_base_q = fastp_qc["r2_status"]
+            r2_seq_q = fastp_qc["r2_status"]
+            if fastp_qc["r1_status"] == "FAIL" or fastp_qc["r2_status"] == "FAIL":
+                sample_warnings.append(f"Low read quality in fastp (R1 Q30={fastp_qc['r1_q30_pct']}%, R2 Q30={fastp_qc['r2_q30_pct']}%)")
+            elif fastp_qc["r1_status"] == "WARN" or fastp_qc["r2_status"] == "WARN":
+                sample_warnings.append(f"Marginal read quality in fastp (R1 Q30={fastp_qc['r1_q30_pct']}%, R2 Q30={fastp_qc['r2_q30_pct']}%)")
+        else:
+            # Pre-trim FastQC was removed in favor of fastp; mark unavailable without failing sample
+            r1_base_q, r1_seq_q = "NA", "NA"
+            r2_base_q, r2_seq_q = "NA", "NA"
         
         # 9. Ti/Tv and Het SNPs Allele Balance
         snp_vcf = os.path.join(outdir, f"analysis/006_variant_filtering/{sample}.gatk.filtered.snp.vcf")
@@ -606,6 +701,12 @@ def generate_coverage_summary_for_target(
             tot_het_str = str(tot_het)
             out_het_str = str(out_het)
             out_het_pct_str = f"{out_het_pct:.2f}"
+            
+        if tot_indels is None:
+            missing_inputs.append("filtered_indel_vcf")
+            tot_indels_str = "NA"
+        else:
+            tot_indels_str = str(tot_indels)
             
         # 10. QC Diagnostics & Warnings Evaluation
         if missing_inputs:
@@ -626,7 +727,7 @@ def generate_coverage_summary_for_target(
             "Sample": sample_mrn,
             "Panel": target_name,
             "Total_SNPs": tot_snps if tot_snps is not None else "NA",
-            "Total_INDELs": tot_indels if tot_indels is not None else "NA",
+            "Total_INDELs": tot_indels_str,
             "Ti/Tv": titv_str,
             "%Callable": pct_callable_str,
             "%Het_AB_Out": out_het_pct_str,

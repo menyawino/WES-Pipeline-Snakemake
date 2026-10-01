@@ -119,7 +119,8 @@ rule coverage_summary_report:
         prot_coding_metrics=expand(rules.fast_bam_qc_prot_coding.output.alignment_summary_metrics, sample=sample_filename),
         canon_tran_metrics=expand(rules.fast_bam_qc_canon_tran.output.alignment_summary_metrics_canon_tran, sample=sample_filename),
         snps=expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename, caller=["gatk"]),
-        indels=expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename, caller=["gatk"])
+        indels=expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename, caller=["gatk"]),
+        fastp_reports=expand(rules.trimming_fp.output.json, sample=sample_filename, lane=lane)
     output:
         target_txt=config["outdir"] + "/results/Coverage_Report/SummaryOutput_Target_" + os.path.basename(config["outdir"].rstrip("/")) + ".txt",
         target_tsv=config["outdir"] + "/results/Coverage_Report/SummaryOutput_Target_" + os.path.basename(config["outdir"].rstrip("/")) + ".tsv",

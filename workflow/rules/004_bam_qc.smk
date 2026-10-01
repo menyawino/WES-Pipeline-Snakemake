@@ -547,16 +547,22 @@ rule qc_report:
     input:
         flagstat_original = rules.flagstat_original.output.flagstat_original,
         flagstat_target = rules.flagstat_target.output.flagstat_target,
+        flagstat_canon_tran = rules.flagstat_canon_tran.output.flagstat_canon_tran,
         coverage_stats = rules.coverage_stats.output.coverage_stats,
         coverage_stats_target = rules.coverage_stats_target.output.coverage_stats_target,
+        coverage_stats_canon_tran = rules.coverage_stats_canon_tran.output.coverage_stats_canon_tran,
         coverage_hist = rules.coverage_hist.output.coverage_hist,
         coverage_hist_target = rules.coverage_hist_target.output.coverage_hist_target,
+        coverage_hist_canon_tran = rules.coverage_hist_canon_tran.output.coverage_hist_canon_tran,
         depth_of_coverage = rules.fast_bam_qc_prot_coding.output.depth_of_coverage,
         depth_of_coverage_target = rules.fast_bam_qc_target.output.depth_of_coverage_target,
+        depth_of_coverage_canon_tran = rules.fast_bam_qc_canon_tran.output.depth_of_coverage_canon_tran,
         mean_coverage = rules.mean_coverage_per_exon.output.mean_coverage,
         mean_coverage_target = rules.mean_coverage_per_exon_target.output.mean_coverage_target,
+        mean_coverage_canon_tran = rules.mean_coverage_per_exon_canon_tran.output.mean_coverage_canon_tran,
         alignment_summary_metrics = rules.fast_bam_qc_prot_coding.output.alignment_summary_metrics,
-        alignment_summary_metrics_target = rules.fast_bam_qc_target.output.alignment_summary_metrics_target
+        alignment_summary_metrics_target = rules.fast_bam_qc_target.output.alignment_summary_metrics_target,
+        alignment_summary_metrics_canon_tran = rules.fast_bam_qc_canon_tran.output.alignment_summary_metrics_canon_tran
     output:
         qc_metrics = config["outdir"] + "/analysis/004_bam_qc/{sample}.qc_metrics.tsv"
     conda:

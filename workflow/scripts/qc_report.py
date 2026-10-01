@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-from snakemake.shell import shell
+import os
 
 def parse_flagstat(file_path):
     try:
@@ -36,15 +36,28 @@ def parse_coverage_stats(file_path):
 
 def parse_coverage_hist(file_path):
     try:
-        df = pd.read_csv(file_path, sep='\t')
-        if df.empty or 'depth' not in df.columns or 'bases' not in df.columns:
+        depth_counts = {}
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                for line in f:
+                    parts = line.strip().split('\t')
+                    if len(parts) >= 5 and parts[0] == 'all':
+                        depth_counts[int(parts[1])] = int(parts[2])
+        if not depth_counts and os.path.exists(file_path):
+            df = pd.read_csv(file_path, sep='\t')
+            if 'depth' in df.columns and 'bases' in df.columns:
+                depths = df['depth'].values
+                bases = df['bases'].values
+                return {('Bases=0x' if d == 0 else f'Bases>={d}x'): int(bases[depths >= d].sum()) for d in [0, 1, 5, 10, 20, 30, 50]}
             return {('Bases=0x' if d == 0 else f'Bases>={d}x'): 0 for d in [0, 1, 5, 10, 20, 30, 50]}
-        depths = df['depth'].values
-        bases = df['bases'].values
+        
         coverage_metrics = {}
         for depth in [0, 1, 5, 10, 20, 30, 50]:
             key = 'Bases=0x' if depth == 0 else f'Bases>={depth}x'
-            coverage_metrics[key] = int(bases[depths >= depth].sum())
+            if depth == 0:
+                coverage_metrics[key] = depth_counts.get(0, 0)
+            else:
+                coverage_metrics[key] = sum(cnt for d, cnt in depth_counts.items() if d >= depth)
         return coverage_metrics
     except Exception:
         return {('Bases=0x' if d == 0 else f'Bases>={d}x'): 0 for d in [0, 1, 5, 10, 20, 30, 50]}
@@ -89,10 +102,12 @@ def parse_alignment_summary_metrics(file_path):
         return {'MeanFwdReadLength': 0, 'MeanRevReadLength': 0, 'ReadsAlignedInPairs': 0, '%ReadsAlignedInPairs': 0.0, 'StrandBalance': 0, 'PCT_PF_READS_ALIGNED (updated)': 0.0, 'PCT_CHIMERAS (updated)': 0.0, 'PCT_ADAPTER (updated)': 0.0}
 
 def parse_mean_coverage(file_path):
-    df = pd.read_csv(file_path, sep='\t', header=None, names=['chrom', 'start', 'end', 'coverage'])
-    return {
-        'MEAN_COVERAGE (updated)': df['coverage'].mean()
-    }
+    try:
+        df = pd.read_csv(file_path, sep='\t', header=None, comment='#')
+        mean_val = float(df.iloc[:, -1].mean()) if not df.empty else 0.0
+        return {'MEAN_COVERAGE (updated)': mean_val}
+    except Exception:
+        return {'MEAN_COVERAGE (updated)': 0.0}
 
 def main(snakemake):
     metrics = {}
@@ -100,26 +115,38 @@ def main(snakemake):
     # Parse flagstat files
     metrics.update(parse_flagstat(snakemake.input.flagstat_original))
     metrics.update({'Target_' + k: v for k, v in parse_flagstat(snakemake.input.flagstat_target).items()})
+    if hasattr(snakemake.input, 'flagstat_canon_tran'):
+        metrics.update({'CanonTran_' + k: v for k, v in parse_flagstat(snakemake.input.flagstat_canon_tran).items()})
     
     # Parse coverage stats files
     metrics.update(parse_coverage_stats(snakemake.input.coverage_stats))
     metrics.update({'Target_' + k: v for k, v in parse_coverage_stats(snakemake.input.coverage_stats_target).items()})
+    if hasattr(snakemake.input, 'coverage_stats_canon_tran'):
+        metrics.update({'CanonTran_' + k: v for k, v in parse_coverage_stats(snakemake.input.coverage_stats_canon_tran).items()})
     
     # Parse coverage hist files
     metrics.update(parse_coverage_hist(snakemake.input.coverage_hist))
     metrics.update({'Target_' + k: v for k, v in parse_coverage_hist(snakemake.input.coverage_hist_target).items()})
+    if hasattr(snakemake.input, 'coverage_hist_canon_tran'):
+        metrics.update({'CanonTran_' + k: v for k, v in parse_coverage_hist(snakemake.input.coverage_hist_canon_tran).items()})
     
     # Parse depth of coverage files
     metrics.update(parse_depth_of_coverage(snakemake.input.depth_of_coverage))
     metrics.update({'Target_' + k: v for k, v in parse_depth_of_coverage(snakemake.input.depth_of_coverage_target).items()})
+    if hasattr(snakemake.input, 'depth_of_coverage_canon_tran'):
+        metrics.update({'CanonTran_' + k: v for k, v in parse_depth_of_coverage(snakemake.input.depth_of_coverage_canon_tran).items()})
     
     # Parse alignment summary metrics files
     metrics.update(parse_alignment_summary_metrics(snakemake.input.alignment_summary_metrics))
     metrics.update({'Target_' + k: v for k, v in parse_alignment_summary_metrics(snakemake.input.alignment_summary_metrics_target).items()})
+    if hasattr(snakemake.input, 'alignment_summary_metrics_canon_tran'):
+        metrics.update({'CanonTran_' + k: v for k, v in parse_alignment_summary_metrics(snakemake.input.alignment_summary_metrics_canon_tran).items()})
     
     # Parse mean coverage files
     metrics.update(parse_mean_coverage(snakemake.input.mean_coverage))
     metrics.update({'Target_' + k: v for k, v in parse_mean_coverage(snakemake.input.mean_coverage_target).items()})
+    if hasattr(snakemake.input, 'mean_coverage_canon_tran'):
+        metrics.update({'CanonTran_' + k: v for k, v in parse_mean_coverage(snakemake.input.mean_coverage_canon_tran).items()})
     
     # Create DataFrame and save to TSV
     df = pd.DataFrame([metrics])
