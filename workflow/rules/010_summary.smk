@@ -12,7 +12,11 @@ rule summarize_variants:
         summary_tsv=config["outdir"] + "/analysis/010_summary/{sample}/{caller}_variant_summary.tsv",
         summary_json=config["outdir"] + "/analysis/010_summary/{sample}/{caller}_variant_summary.json"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        2
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     params:
         top_variants=config.get("variant_summary", {}).get("top_variants", 10),
         top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10)
@@ -45,7 +49,11 @@ rule aggregate_variant_summaries:
         cohort_table=config["outdir"] + "/analysis/010_summary/cohort_{caller}_variant_summary.tsv",
         cohort_json=config["outdir"] + "/analysis/010_summary/cohort_{caller}_variant_summary.json"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        1
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/010_summary/cohort_{caller}_variant_summary.log"
     benchmark:
@@ -70,7 +78,11 @@ rule compare_callers:
         report=config["outdir"] + "/analysis/010_summary/caller_concordance_report.md",
         table=config["outdir"] + "/analysis/010_summary/caller_concordance_matrix.tsv"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        2
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     params:
         outdir=config["outdir"],
         samples=sample_filename
@@ -107,7 +119,11 @@ rule coverage_summary_report:
         canon_tran_tsv=config["outdir"] + "/results/Coverage_Report/SummaryOutput_CanonTranCodingTarget_" + os.path.basename(config["outdir"].rstrip("/")) + ".tsv",
         report_md=config["outdir"] + "/results/Coverage_Report/Coverage_Summary_Report.md"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        2
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     params:
         outdir=config["outdir"],
         samples=sample_filename,

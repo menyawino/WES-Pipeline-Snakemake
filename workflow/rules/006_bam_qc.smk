@@ -6,9 +6,11 @@ rule flagstat_original:
     output:
         flagstat_original=config["outdir"] + "/analysis/004_bam_qc/{sample}.flagstat"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_flagstat_original.log"
     benchmark:
@@ -30,9 +32,11 @@ rule flagstat_target:
     output:
         flagstat_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.flagstat"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_flagstat_target.log"
     benchmark:
@@ -54,9 +58,11 @@ rule flagstat_prot_coding:
     output:
         flagstat_prot_coding=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.flagstat"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_flagstat_prot_coding.log"
     benchmark:
@@ -78,9 +84,11 @@ rule flagstat_canon_tran:
     output:
         flagstat_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.flagstat"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/004_bam_qc/{sample}_flagstat_canon_tran.log"
     benchmark:
@@ -102,9 +110,11 @@ rule coverage_stats:
     output:
         coverage_stats=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.coverage_stats.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
     params:
         cds_file=config["cds_panel"]
     log:
@@ -130,9 +140,11 @@ rule coverage_stats_target:
     output:
         coverage_stats_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.coverage_stats.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
     params:
         cds_file=config["icc_panel"]
     log:
@@ -158,9 +170,11 @@ rule coverage_stats_per_base:
     output:
         coverage_stats_per_base=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.per-base.bed.gz"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
     params:
         cds_file=config["cds_panel"]
     log:
@@ -186,9 +200,11 @@ rule coverage_stats_per_base_target:
     output:
         coverage_stats_per_base_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.coverage_per_base.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
     params:
         cds_file=config["icc_panel"]
     log:
@@ -213,9 +229,11 @@ rule coverage_hist:
     output:
         coverage_hist=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.coverage_hist.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
     params:
         cds_file=config["cds_panel"]
     log:
@@ -240,9 +258,11 @@ rule coverage_hist_target:
     output:
         coverage_hist_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.coverage_hist.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 8192)
     params:
         cds_file=config["icc_panel"]
     log:
@@ -269,9 +289,11 @@ rule fast_bam_qc_prot_coding:
         depth_of_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.depth_of_coverage.sample_summary",
         alignment_summary_metrics=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.align_sum_metrics.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384)
     params:
         cds_file=config["cds_panel"]
     log:
@@ -299,9 +321,11 @@ rule fast_bam_qc_target:
         depth_of_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.depth_of_coverage.sample_summary",
         alignment_summary_metrics_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.align_sum_metrics.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384)
     params:
         cds_file=config["icc_panel"]
     log:
@@ -327,7 +351,11 @@ rule mean_coverage_per_exon:
     output:
         mean_coverage=config["outdir"] + "/analysis/004_bam_qc/{sample}.prot_coding.mean_coverage.bed"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        config.get("threads_low", 2)
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     params:
         cds_file=config["cds_panel"]
     log:
@@ -352,7 +380,11 @@ rule mean_coverage_per_exon_target:
     output:
         mean_coverage_target=config["outdir"] + "/analysis/004_bam_qc/{sample}.target.mean_coverage.bed"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        config.get("threads_low", 2)
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     params:
         cds_file=config["icc_panel"]
     log:
@@ -379,7 +411,11 @@ rule mean_coverage_per_exon_canon_tran:
     output:
         mean_coverage_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.mean_coverage.bed"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        config.get("threads_low", 2)
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     params:
         cds_file=config["canontran_panel"]
     log:
@@ -406,9 +442,11 @@ rule fast_bam_qc_canon_tran:
         depth_of_coverage_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.depth_of_coverage.sample_summary",
         alignment_summary_metrics_canon_tran=config["outdir"] + "/analysis/004_bam_qc/{sample}.canon_tran.align_sum_metrics.txt"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384)
     params:
         cds_file=config["canontran_panel"]
     log:
@@ -443,6 +481,10 @@ rule qc_report:
     output:
         qc_metrics = config["outdir"] + "/analysis/004_bam_qc/{sample}.qc_metrics.tsv"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        1
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     script:
         "../scripts/qc_report.py"

@@ -31,7 +31,7 @@ rule benchmark_sample_giab:
         summary_json=config["outdir"] + "/analysis/012_benchmark/giab/{sample}_giab_benchmark_summary.json",
         dashboard_html=config["outdir"] + "/analysis/012_benchmark/giab/{sample}_giab_benchmark_dashboard.html"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config.get("threads_low", 2)
     resources:

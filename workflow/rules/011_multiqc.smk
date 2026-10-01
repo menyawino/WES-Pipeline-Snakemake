@@ -26,8 +26,14 @@ rule multiqc_report:
         get_multiqc_inputs
     output:
         html=config["outdir"] + "/results/multiqc_report.html"
+    conda:
+        "../envs/001_qc.yml"
     container:
-        "docker://quay.io/biocontainers/multiqc:1.21--pyhdfd78af_0"
+        "docker://quay.io/biocontainers/multiqc:1.25.1--pyhdfd78af_0"
+    threads:
+        2
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/multiqc.log"
     benchmark:

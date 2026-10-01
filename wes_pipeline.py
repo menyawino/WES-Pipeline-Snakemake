@@ -1,4 +1,4 @@
-#!/home/omar/Downloads/miniconda3/envs/sm/bin/python3
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -53,15 +53,18 @@ def cli():
 @click.option('-o', '--outdir', required=True, help="Path to pipeline output directory.")
 @click.option('-c', '--configfile', default='workflow/config.yml', show_default=True, help="Path to Snakemake config YAML.")
 @click.option('-s', '--samplesfile', default='', show_default=True, help="Optional sample metadata CSV (leave empty for auto-discovery).")
-@click.option('--cores', default=None, type=int, help="Number of CPU cores to allocate (default: from config / 88).")
+@click.option('--slurm', is_flag=True, default=False, help="Execute workflow across the cluster via Slurm (4 nodes x 80 = 320 cores).")
+@click.option('--jobs', default=320, type=int, show_default=True, help="Maximum concurrent Slurm jobs.")
+@click.option('--default-mem', default=4000, type=int, show_default=True, help="Default memory in MB for Slurm jobs.")
+@click.option('--cores', default=None, type=int, help="Number of CPU cores for local mode (default: from config / 88).")
 @click.option('-n', '--dry-run', is_flag=True, help="Perform dry-run without executing jobs.")
 @click.option('--deepvariant', is_flag=True, default=False, help="Enable dual variant calling with Google DeepVariant alongside GATK.")
-@click.option('--singularity-args', default='-B /mnt/bucket -B /mnt/qnap-public', show_default=True, help="Bind mounts for Singularity containers.")
+@click.option('--singularity-args', default='', show_default=True, help="Bind mounts for Singularity containers.")
 @click.option('--email', default=None, help="Recipient email address(es) for completion/failure notifications.")
 @click.option('--verbose', is_flag=True, help="Enable verbose output logging.")
 @click.option('--skip-validation', is_flag=True, help="Skip pre-flight configuration and resource validation checks.")
 @click.argument('snakemake_args', nargs=-1)
-def run(inputdir, outdir, configfile, samplesfile, cores, dry_run, deepvariant, singularity_args, email, verbose, skip_validation, snakemake_args):
+def run(inputdir, outdir, configfile, samplesfile, slurm, jobs, default_mem, cores, dry_run, deepvariant, singularity_args, email, verbose, skip_validation, snakemake_args):
     """Execute the WES analysis pipeline."""
     if not skip_validation:
         print(f"{GRE}[INFO] Running pre-flight pipeline validation...{NC}")
@@ -78,6 +81,9 @@ def run(inputdir, outdir, configfile, samplesfile, cores, dry_run, deepvariant, 
         outdir=outdir,
         samplesfile=samplesfile,
         cores=cores,
+        slurm=slurm,
+        jobs=jobs,
+        default_mem=default_mem,
         dry_run=dry_run,
         deepvariant=deepvariant,
         singularity_args=singularity_args,
@@ -231,6 +237,42 @@ def benchmark(outdir, sample, configfile, giab_reference, callers, truth_vcf, tr
     else:
         print(f"\n\033[91m[FAILURE] Benchmark evaluation failed with exit code: {res.returncode}{NC}")
         sys.exit(res.returncode)
+
+@cli.command("cluster-status")
+def cluster_status():
+    """Display current Slurm cluster nodes, core allocations, and queued jobs."""
+    import subprocess
+    print(f"\n{GRE}=== Cluster Node & Core Allocation (sinfo) ==={NC}")
+    try:
+        subprocess.run(["sinfo", "-o", "%10P %10N %10c %20C %15m %10e %10T"], check=False)
+        print(f"\n{GRE}=== Core Counts (Allocated/Idle/Other/Total) ==={NC}")
+        subprocess.run(["sinfo", "-o", "%C"], check=False)
+    except FileNotFoundError:
+        print("[WARNING] 'sinfo' command not found. Ensure Slurm client utilities are in PATH.")
+
+    print(f"\n{GRE}=== Running / Queued Jobs (squeue) ==={NC}")
+    try:
+        user = os.environ.get("USER", "omar")
+        subprocess.run(["squeue", "-u", user], check=False)
+    except FileNotFoundError:
+        print("[WARNING] 'squeue' command not found.")
+    print()
+
+@cli.command("sync-data")
+@click.option('--direction', type=click.Choice(['in', 'out'], case_sensitive=False), required=True, help="'in' (from QNAP to ~/project) or 'out' (from ~/project to QNAP).")
+@click.option('--qnap-path', required=True, help="Source/Destination path on QNAP storage.")
+@click.option('--local-path', required=True, help="Source/Destination path on local shared /home.")
+def sync_data(direction, qnap_path, local_path):
+    """High-performance rsync helper to stage data between QNAP and local /home."""
+    import subprocess
+    if direction.lower() == 'in':
+        print(f"{GRE}[INFO] Staging input data from QNAP to shared /home...{NC}")
+        cmd = ["rsync", "-ah", "--info=progress2", qnap_path.rstrip('/') + '/', local_path.rstrip('/') + '/']
+    else:
+        print(f"{GRE}[INFO] Archiving results from shared /home to QNAP...{NC}")
+        cmd = ["rsync", "-ah", "--info=progress2", local_path.rstrip('/') + '/', qnap_path.rstrip('/') + '/']
+    print(f"Executing: {' '.join(cmd)}")
+    subprocess.run(cmd, check=True)
 
 def main():
     """CLI Main Entry Point."""

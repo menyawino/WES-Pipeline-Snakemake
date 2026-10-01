@@ -7,7 +7,7 @@ rule mark_duplicates:
         markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam"),
         metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -25,7 +25,7 @@ rule mark_duplicates:
         --hash-table-size=1048576 \
         --overflow-list-size=1048576 \
         --io-buffer-size=256 \
-        --tmpdir "/dev/shm" \
+        --tmpdir "{resources.tmpdir}" \
         "{input.bam}" \
         "{output.markdup_bam}" \
         > "{log}" 2>&1
@@ -41,9 +41,12 @@ rule index_markdup_bam:
     output:
         indexed_markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai")
     conda:
-        "icc_gatk"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_low", 4096),
+        tmpdir=config.get("tmpdir", "/tmp")
     log:
         config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_index_markdup.log"
     benchmark:
@@ -65,7 +68,7 @@ rule base_recalibrator:
     output:
         recal_table=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.recal_data.table"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -89,7 +92,7 @@ rule base_recalibrator:
         --known-sites "{params.known_sites}" \
         -L "{params.target}" \
         --interval-padding 100 \
-        --tmp-dir "/dev/shm" \
+        --tmp-dir "{resources.tmpdir}" \
         > "{log}" 2>&1
         """
 
@@ -104,7 +107,7 @@ rule apply_bqsr:
         bqsr_bam=temp(config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bam"),
         bqsr_bai=temp(config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bai")
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -128,7 +131,7 @@ rule apply_bqsr:
         --interval-padding 100 \
         -O "{output.bqsr_bam}" \
         --create-output-bam-index true \
-        --tmp-dir "/dev/shm" \
+        --tmp-dir "{resources.tmpdir}" \
         > "{log}" 2>&1
         """
 
@@ -142,9 +145,12 @@ rule filter_bam_target:
         bam_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam",
         bai_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam.bai"
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         TargetFile=config["icc_panel"]
     log:
@@ -175,9 +181,12 @@ rule filter_bam_prot_coding:
         bam_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam",
         bai_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam.bai"
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         CDSFile=config["cds_panel"],
         TargetFile=config["icc_panel"],
@@ -216,9 +225,12 @@ rule filter_bam_canon_tran:
         bam_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam",
         bai_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam.bai"
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     params:
         CanonTranFile=config["canontran_panel"],
         TargetFile=config["icc_panel"],

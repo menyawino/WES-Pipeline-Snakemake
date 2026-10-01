@@ -9,14 +9,14 @@ rule filter_snps:
     output:
         filtered_snp_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.{caller}.filtered.snp.vcf"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config.get("threads_mid", 8)
     resources:
         mem_mb=config.get("mem_mid", 16384),
         tmpdir=config.get("tmpdir", "/tmp")
     params:
-        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa",
+        ref=config["reference_genome"],
         target=config["icc_panel"]
     log:
         config["outdir"] + "/logs/006_variant_filtering/{sample}_{caller}_filter_snps.log"
@@ -54,14 +54,14 @@ rule filter_indels:
     output:
         filtered_indel_vcf=config["outdir"] + "/analysis/006_variant_filtering/{sample}.{caller}.filtered.indel.vcf"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config.get("threads_mid", 8)
     resources:
         mem_mb=config.get("mem_mid", 16384),
         tmpdir=config.get("tmpdir", "/tmp")
     params:
-        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa",
+        ref=config["reference_genome"],
         target=config["icc_panel"]
     log:
         config["outdir"] + "/logs/006_variant_filtering/{sample}_{caller}_filter_indels.log"

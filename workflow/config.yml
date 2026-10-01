@@ -1,17 +1,18 @@
-# Global variables optimized for 88-vCPU / 228GB RAM system
-threads_high: 8      # Allows 11 concurrent alignments on 88 cores (8 * 11 = 88)
-threads_mid: 8       # Allows 11 concurrent BQSR / Markdup / BAM prep jobs
-threads_low: 2       # Allows 44 concurrent HaplotypeCaller chunk jobs
-mem_high: 16384
-mem_mid: 16384
-mem_low: 4096
+# Cluster resource defaults (4 nodes x 80 cores = 320 cores total)
+threads_high: 16     # High-throughput parallel alignments / DeepVariant (20 concurrent on 320 cores)
+threads_mid: 8       # BQSR, MarkDuplicates, VCF Genotyping / Filtering (40 concurrent)
+threads_low: 4       # HaplotypeCaller interval chunks, FastQC, Indexing (80 concurrent)
+mem_high: 32768      # 32GB for alignment, DeepVariant, large merges
+mem_mid: 16384       # 16GB for GATK BQSR, Gather, Genotyping, VEP
+mem_low: 8192        # 8GB for QC, filtering, HaplotypeCaller chunks
+mem_min: 4096        # 4GB default fallback
 benchmark: 1
 
-# Temporary directory in high-speed RAM disk (>50 GB/s bandwidth)
-tmpdir: "/dev/shm/wes_pipeline_tmp"
+# Node-local scratch directory
+tmpdir: "/tmp"
 
-# Interval scatter count for HaplotypeCaller parallelization
-intervals_scatter_count: 10
+# Interval scatter count for parallel HaplotypeCaller across 320 cores
+intervals_scatter_count: 40
 
 # Variant Callers configuration (default: GATK only; use --deepvariant flag to enable dual callers)
 variant_callers:
@@ -33,9 +34,7 @@ outdir: "../output_38"
 
 # Output path templates for consistency across rules
 output_dirs:
-  qc_pretrim: "{outdir}/analysis/001_qc/pretrim"
   trimming: "{outdir}/analysis/002_trimming"
-  qc_posttrim: "{outdir}/analysis/003_qc/posttrim"
   alignment: "{outdir}/analysis/004_alignment"
   bam_prep: "{outdir}/analysis/005_bam_prep"
   qc_bam: "{outdir}/analysis/006_qc/bam"

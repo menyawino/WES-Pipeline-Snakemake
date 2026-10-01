@@ -1,17 +1,14 @@
 name: wes-pipeline
 channels:
-  - bioconda
   - conda-forge
-  - defaults
+  - bioconda
 dependencies:
-  - python>=3.10
-  - snakemake>=7.0
-  - samtools>=1.17
-  - bwa>=0.7.17
-  - bowtie2>=2.5
-  - bedtools>=2.30
-  - gatk4>=4.4
-  - picard>=2.27
-  - vcftools>=0.1.16
-  - bcftools>=1.17
-  - fastp>=0.23
+  - python >=3.11
+  - snakemake >=8.20.0
+  - snakemake-executor-plugin-slurm >=0.8.0
+  - pandas >=2.2.2
+  - pyyaml >=6.0.1
+  - click >=8.1.7
+  - psutil >=6.0.0
+  - tqdm >=4.66.5
+  - requests >=2.32.3

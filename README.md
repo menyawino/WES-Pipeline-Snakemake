@@ -31,11 +31,20 @@ DNAseq Analysis Toolkit for Cardiovascular Disease Research. This pipeline is de
 Run the pipeline using the `wes_pipeline.py` CLI wrapper:
 
 ```sh
-./wes_pipeline.py run workflow/config.yml -i /path/to/input -o /path/to/output -- --cores 8
+# Local multi-core execution (single node)
+./wes_pipeline.py run -i /path/to/input -o /path/to/output --cores 16
+
+# Distributed HPC Slurm execution across all 4 nodes (320 cores)
+./wes_pipeline.py run -i ~/project/input -o ~/project/results --slurm --jobs 320
+
+# Or use the cluster runner script (recommended inside tmux):
+./run_cluster.sh -i ~/project/input -o ~/project/results
 ```
 
 **Available CLI subcommands:**
-- `run`: Execute the full WES pipeline (includes pre-flight validation by default).
+- `run`: Execute the full WES pipeline (supports `--slurm` for cluster-wide scheduling).
+- `cluster-status`: Check current Slurm node status, allocated/idle core counts, and running jobs.
+- `sync-data`: Fast rsync helper between QNAP and shared `/home` storage.
 - `plan`: Preview execution plan and render high-resolution DAG/rulegraph diagrams (`results/dag.png`, `results/rulegraph.png`).
 - `validate`: Perform standalone pre-flight configuration and resource checks (automatically downloads GRCh38 if missing).
 - `download-ref`: Download and index the GRCh38 reference genome (`resources/ref/grch38/GRCh38.primary_assembly.genome.fa`).
@@ -44,40 +53,40 @@ Run the pipeline using the `wes_pipeline.py` CLI wrapper:
 - `report`: Generate a Snakemake HTML execution report.
 
 **Options for `run`:**
-- `-i, --inputdir`: Input directory containing sample FASTQ files (required)
-- `-o, --outdir`: Target output directory for pipeline results (required)
+- `-i, --inputdir`: Input directory containing sample FASTQ files (required, must reside in `/home`)
+- `-o, --outdir`: Target output directory for pipeline results (required, must reside in `/home`)
+- `--slurm`: Enable Slurm cluster execution across 4 nodes (320 cores total)
+- `--jobs`: Maximum concurrent jobs submitted to Slurm (default: 320)
+- `--default-mem`: Default memory fallback in MB (default: 4000)
+- `--deepvariant`: Enable dual variant calling (GATK + DeepVariant)
 - `--skip-validation`: Bypass pre-flight configuration and resource checks
 - `--verbose`: Enable detailed verbose logging
-- Additional Snakemake arguments after `--`
 
 ## Pipeline Architecture
 
 The pipeline follows a modular sequential design:
-1. **Raw Data QC** → Extract sequencing metrics
-2. **Adapter Trimming** → Remove low-quality bases
-3. **Trimmed QC** → Verify trimming quality
-4. **Read Alignment** → Map to reference genome
-5. **BAM Processing** → Coordinate sorting, deduplication
-6. **BAM QC** → Coverage metrics and flagstat
-7. **Variant Calling** → Identify variants with HaplotypeCaller
-8. **Variant Filtering** → Apply quality filters
-9. **Annotation** → VEP/SnpEff annotation (optional)
-10. **Summary** → Generate per-sample and cohort variant reports
+1. **Trimming & QC (fastp)** → Adapter removal, poly-G clipping, and comprehensive pre/post-filter QC reports
+2. **Read Alignment** → Map to reference genome with BWA-MEM2
+3. **BAM Processing** → Coordinate sorting, Sambamba deduplication, GATK4 BQSR
+4. **BAM QC** → Exon-level coverage metrics and flagstat
+5. **Variant Calling** → Distributed parallel HaplotypeCaller (and optional DeepVariant)
+6. **Variant Filtering** → Apply quality filters (GATK VariantFiltration / bcftools)
+7. **Annotation** → Ensembl-VEP annotation & ACMG clinical classification
+8. **Summary** → Cohort variant reports and MultiQC dashboard
 
 ## Workflow Steps
 
 | Step | Rule File | Tool | Input | Output |
 |------|-----------|------|-------|--------|
-| 01 | `001_qc.smk` | FastQC | FASTQ files | HTML/ZIP reports |
-| 02 | `002_trimming.smk` | fastp | Raw FASTQ | Trimmed FASTQ |
-| 03 | `003_posttrim_qc.smk` | FastQC | Trimmed FASTQ | HTML/ZIP reports |
-| 04 | `004_alignment.smk` | BWA-MEM2 + Sambamba | Trimmed FASTQ | Sorted BAM |
-| 05 | `005_bam_prep.smk` | Sambamba + GATK | BAM | Processed BAM |
-| 06 | `006_bam_qc.smk` | Samtools/GATK | BAM | Coverage/Flagstat |
-| 07 | `007_variant_calling.smk` | GATK HaplotypeCaller | BAM | gVCF / VCF |
-| 08 | `008_variant_filtering.smk` | GATK VariantFiltration | VCF | Filtered VCF |
-| 09 | `009_annotation.smk` | VEP | VCF | Annotated VCF |
-| 10 | `010_summary.smk` | Custom scripts | Filtered VCFs | Sample/cohort variant reports |
+| 01 | `002_trimming.smk` | fastp | Raw FASTQ | Trimmed FASTQ + HTML/JSON QC Reports |
+| 02 | `004_alignment.smk` | BWA-MEM2 + Samtools | Trimmed FASTQ | Coordinate-sorted BAM |
+| 03 | `005_bam_prep.smk` | Sambamba + GATK4 | BAM | Deduplicated & BQSR-recalibrated BAM |
+| 04 | `006_bam_qc.smk` | Samtools + Bedtools | BAM | Exon-level Coverage & Flagstat Reports |
+| 05 | `007_variant_calling.smk` | GATK4 HaplotypeCaller | BAM | Distributed gVCF / VCF |
+| 06 | `008_variant_filtering.smk` | GATK4 / bcftools | VCF | High-confidence Filtered SNPs & Indels |
+| 07 | `009_annotation.smk` | Ensembl-VEP | Filtered VCF | VEP Annotated VCF & ACMG TSV |
+| 08 | `010_summary.smk` | Custom Python | VCF / TSV | Markdown, TSV, and JSON Cohort Summaries |
+| 09 | `011_multiqc.smk` | MultiQC | fastp JSON / QC Metrics | Aggregated Interactive MultiQC HTML Report |
 
 ## Configuration
 

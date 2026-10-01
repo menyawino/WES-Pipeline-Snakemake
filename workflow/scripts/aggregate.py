@@ -38,9 +38,9 @@ PIPELINE_STAGES = {
     "01_qc_trim": {
         "title": "Stage 1: Read QC & Adapter Trimming",
         "icon": "🔍",
-        "desc": "Pre-trim FastQC, poly-G clipping & quality filtering with fastp, post-trim FastQC",
+        "desc": "Poly-G clipping, quality filtering, and comprehensive QC metrics with fastp",
         "color": "#0284c7",
-        "rules": ["raw_fastqc", "trimming_fp", "posttrim_fastqc"],
+        "rules": ["trimming_fp"],
     },
     "02_alignment": {
         "title": "Stage 2: BWA-MEM2 Alignment & BAM Prep",

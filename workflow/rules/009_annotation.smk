@@ -6,14 +6,17 @@ rule vep_genebe_annotate_variants:
     input:
         snp_vcf=rules.filter_snps.output.filtered_snp_vcf,
         indel_vcf=rules.filter_indels.output.filtered_indel_vcf,
-        ref=config.get("ref", {}).get("genome", "resources/ref/grch38/GRCh38.primary_assembly.genome.fa")
+        ref=config.get("reference_genome", "resources/ref/grch38/GRCh38.primary_assembly.genome.fa")
     output:
         vep_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.{caller}.vep_annotated.vcf",
         acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.{caller}.acmg_variants.tsv"
     conda:
-        "vep"
+        "../envs/009_annotation.yml"
     threads:
         config.get("threads_mid", 8)
+    resources:
+        mem_mb=config.get("mem_mid", 16384),
+        tmpdir=config.get("tmpdir", "/tmp")
     log:
         config["outdir"] + "/logs/007_annotation/{sample}_{caller}_vep_genebe_annotation.log"
     benchmark:
@@ -37,7 +40,7 @@ rule vep_genebe_annotate_variants:
                 > "{log}" 2>&1
         else
             sample_safe=$(basename "{wildcards.sample}")
-            tmp_vcf="/dev/shm/${{sample_safe}}_{wildcards.caller}_combined.vcf.gz"
+            tmp_vcf="{resources.tmpdir}/${{sample_safe}}_{wildcards.caller}_combined.vcf.gz"
 
             # Combine filtered SNP and INDEL VCFs
             bcftools concat -a -O z -o "$tmp_vcf" "{input.snp_vcf}" "{input.indel_vcf}"
@@ -93,7 +96,11 @@ rule aggregate_acmg_annotations:
         cohort_json=config["outdir"] + "/analysis/007_annotation/cohort_{caller}_acmg_summary.json",
         cohort_dashboard=config["outdir"] + "/analysis/007_annotation/cohort_{caller}_acmg_dashboard.html"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        1
+    resources:
+        mem_mb=config.get("mem_low", 4096)
     log:
         config["outdir"] + "/logs/007_annotation/cohort_{caller}_acmg_summary.log"
     benchmark:

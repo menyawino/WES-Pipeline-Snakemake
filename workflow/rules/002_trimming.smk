@@ -13,6 +13,8 @@ rule trimming_fp:
         fq2=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz"),
         report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html",
         json=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.json"
+    conda:
+        "../envs/001_qc.yml"
     threads:
         config["threads_mid"]
     resources:

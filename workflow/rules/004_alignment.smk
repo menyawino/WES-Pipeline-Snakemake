@@ -8,14 +8,14 @@ rule bwa_mem:
     output:
         bam=temp(config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam")
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_high"]
     resources:
         mem_mb=config.get("mem_high", 32768),
         tmpdir=config.get("tmpdir", "/tmp")
     params: 
-        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa"
+        ref=config["reference_genome"]
     log:
         bwa=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_bwa.log",
         sort=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sort.log"
@@ -26,14 +26,19 @@ rule bwa_mem:
         mkdir -p {resources.tmpdir}
         sample_name=$(basename {wildcards.sample})
         rg_header="@RG\\tID:${{sample_name}}_{wildcards.lane}\\tSM:${{sample_name}}\\tLB:lib1\\tPL:illumina\\tPU:unit1"
-        sort_tmp="/dev/shm/sort_${{sample_name}}_{wildcards.lane}"
+        sort_tmp="{resources.tmpdir}/sort_${{sample_name}}_{wildcards.lane}"
         mkdir -p "$sort_tmp"
+        
+        ref_file="{params.ref}"
+        if [ -f "/dev/shm/wes_ref_grch38/$(basename "{params.ref}")" ]; then
+            ref_file="/dev/shm/wes_ref_grch38/$(basename "{params.ref}")"
+        fi
         
         bwa-mem2 mem \
         -t {threads} \
         -K 100000000 -Y \
         -R "$rg_header" \
-        "{params.ref}" \
+        "$ref_file" \
         "{input.fq1}" \
         "{input.fq2}" \
         2> "{log.bwa}" \
@@ -57,7 +62,7 @@ rule merge_bams:
     output:
         merged_bam=temp(config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam")
     conda:
-        "icc_04_alignment"
+        "../envs/004_alignment.yml"
     threads:
         config["threads_mid"]
     resources:

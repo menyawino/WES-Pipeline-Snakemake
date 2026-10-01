@@ -48,12 +48,6 @@ if not samples_data.empty:
         fastq_lookup[(s_raw, s_lane, s_read)] = f_path
         fastq_lookup[(f"{s_mrn}/{s_raw}", s_lane, s_read)] = f_path
 
-def get_raw_fastqc_input(wildcards):
-    key = (wildcards.sample_filename, wildcards.lane, wildcards.R)
-    if key in fastq_lookup:
-        return fastq_lookup[key]
-    return f"{config['inputdir']}/{wildcards.sample_filename}_{wildcards.lane}_{wildcards.R}_001.fastq.gz"
-
 def get_trimming_r1(wildcards):
     key = (wildcards.sample, wildcards.lane, "R1")
     if key in fastq_lookup:
@@ -107,9 +101,7 @@ enable_comparison = len(CALLERS) > 1 and "gatk" in CALLERS and "deepvariant" in 
 ############################
 
 include: "rules/000_ref.smk"
-include: "rules/001_qc.smk"
 include: "rules/002_trimming.smk"
-include: "rules/003_posttrim_qc.smk"
 include: "rules/004_alignment.smk"
 include: "rules/005_bam_prep.smk"
 include: "rules/006_bam_qc.smk"
@@ -123,6 +115,8 @@ include: "rules/012_benchmark_giab.smk"
 ############################
 ######### Workflow #########
 ############################
+localrules: all, download_grch38_reference, stage_ref_shm, prepare_giab_truth
+
 def get_rule_all_inputs():
     inputs = [
         expand(rules.trimming_fp.output.report, sample=sample_filename, lane=lane),

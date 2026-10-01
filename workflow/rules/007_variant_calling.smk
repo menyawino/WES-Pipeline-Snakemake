@@ -10,7 +10,12 @@ rule split_target_intervals:
     output:
         chunks=expand(config["outdir"] + "/analysis/000_ref/intervals/chunk_{chunk}.bed", chunk=scatter_chunks)
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        1
+    resources:
+        mem_mb=config.get("mem_low", 4096),
+        tmpdir=config.get("tmpdir", "/tmp")
     log:
         config["outdir"] + "/logs/000_ref/split_target_intervals.log"
     shell:
@@ -26,10 +31,12 @@ rule haplotypecaller_chunk:
         bai=rules.filter_bam_target.output.bai_target,
         interval=config["outdir"] + "/analysis/000_ref/intervals/chunk_{chunk}.bed"
     output:
-        gvcf_chunk=temp("/dev/shm/wes_pipeline_{sample}_{chunk}.g.vcf.gz"),
-        gvcf_tbi=temp("/dev/shm/wes_pipeline_{sample}_{chunk}.g.vcf.gz.tbi")
+        gvcf_chunk=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}/chunks/wes_pipeline_{sample}_{chunk}.g.vcf.gz"),
+        gvcf_tbi=temp(config["outdir"] + "/analysis/005_variant_calling/{sample}/chunks/wes_pipeline_{sample}_{chunk}.g.vcf.gz.tbi")
+    conda:
+        "../envs/005_gatk_genomics.yml"
     container:
-        "docker://broadinstitute/gatk:4.4.0.0"
+        "docker://broadinstitute/gatk:4.7.0.0"
     threads:
         config.get("threads_low", 4)
     resources:
@@ -51,7 +58,7 @@ rule haplotypecaller_chunk:
         -L "{input.interval}" \
         --native-pair-hmm-threads {threads} \
         --smith-waterman FASTEST_AVAILABLE \
-        --tmp-dir "/dev/shm" \
+        --tmp-dir "{resources.tmpdir}" \
         &> "{log}"
         """
 
@@ -59,13 +66,13 @@ rule gather_gvcfs:
     message:
         "Gathering interval GVCFs for sample {wildcards.sample}"
     input:
-        gvcfs=expand("/dev/shm/wes_pipeline_{{sample}}_{chunk}.g.vcf.gz", chunk=scatter_chunks),
-        tbis=expand("/dev/shm/wes_pipeline_{{sample}}_{chunk}.g.vcf.gz.tbi", chunk=scatter_chunks)
+        gvcfs=expand(config["outdir"] + "/analysis/005_variant_calling/{{sample}}/chunks/wes_pipeline_{{sample}}_{chunk}.g.vcf.gz", chunk=scatter_chunks),
+        tbis=expand(config["outdir"] + "/analysis/005_variant_calling/{{sample}}/chunks/wes_pipeline_{{sample}}_{chunk}.g.vcf.gz.tbi", chunk=scatter_chunks)
     output:
         gvcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.g.vcf.gz",
         gvcf_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.g.vcf.gz.tbi"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config.get("threads_mid", 8)
     resources:
@@ -84,7 +91,7 @@ rule gather_gvcfs:
         gatk --java-options "-XX:+UseParallelGC -XX:ParallelGCThreads={threads} -XX:ConcGCThreads={threads} -Xmx{resources.mem_mb}m" GatherVcfs \
         $inputs_args \
         -O "{output.gvcf}" \
-        --TMP_DIR "/dev/shm" \
+        --TMP_DIR "{resources.tmpdir}" \
         > "{log}" 2>&1
 
         tabix -f -p vcf "{output.gvcf}" >> "{log}" 2>&1
@@ -99,15 +106,17 @@ rule genotype_gvcfs:
     output:
         vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.vcf.gz",
         tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.gatk.vcf.gz.tbi"
+    conda:
+        "../envs/005_gatk_genomics.yml"
     container:
-        "docker://broadinstitute/gatk:4.4.0.0"
+        "docker://broadinstitute/gatk:4.7.0.0"
     threads:
         config["threads_mid"]
     resources:
         mem_mb=config.get("mem_mid", 16384),
         tmpdir=config.get("tmpdir", "/tmp")
     params:
-        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa",
+        ref=config["reference_genome"],
         target=config["icc_panel"],
         dbsnp=config["dbsnp"]
     log:
@@ -126,7 +135,7 @@ rule genotype_gvcfs:
         --interval-padding 100 \
         --create-output-variant-index false \
         --dbsnp "{params.dbsnp}" \
-        --tmp-dir "/dev/shm" \
+        --tmp-dir "{resources.tmpdir}" \
         &> "{log}"
 
         bgzip -c "$raw_vcf" > "{output.vcf}" 2>> "{log}"
@@ -149,12 +158,12 @@ rule deepvariant_call:
     container:
         "docker://google/deepvariant:1.6.1"
     threads:
-        config.get("threads_mid", 8)
+        config.get("threads_high", 16)
     resources:
-        mem_mb=config.get("mem_mid", 16384),
+        mem_mb=config.get("mem_high", 32768),
         tmpdir=config.get("tmpdir", "/tmp")
     params:
-        ref="/dev/shm/wes_ref_grch38/GRCh38.primary_assembly.genome.fa",
+        ref=config["reference_genome"],
         model_type=config.get("deepvariant", {}).get("model_type", "WES")
     log:
         config["outdir"] + "/logs/005_variant_calling/{sample}_deepvariant.log"
@@ -218,7 +227,7 @@ rule split_vcfs:
         indel_vcf=config["outdir"] + "/analysis/005_variant_calling/{sample}.{caller}.indel.vcf.gz",
         indel_tbi=config["outdir"] + "/analysis/005_variant_calling/{sample}.{caller}.indel.vcf.gz.tbi"
     conda:
-        "icc_gatk"
+        "../envs/005_gatk_genomics.yml"
     threads:
         config.get("threads_low", 4)
     resources:

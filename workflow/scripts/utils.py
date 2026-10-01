@@ -85,7 +85,10 @@ def run_snakemake(
     outdir=None,
     samplesfile="",
     cores=None,
-    singularity_args="-B /mnt/bucket -B /mnt/qnap-public",
+    slurm=False,
+    jobs=320,
+    default_mem=4000,
+    singularity_args="",
     rerun_triggers="mtime",
     dry_run=False,
     deepvariant=False,
@@ -112,15 +115,23 @@ def run_snakemake(
 
     # Resolve Snakemake executable and ensure its environment is in PATH
     import shutil
-    snakemake_bin = "snakemake"
-    sm_env_bin = "/home/omar/Downloads/miniconda3/envs/sm/bin"
-    sm_bin = os.path.join(sm_env_bin, "snakemake")
-    if not shutil.which("snakemake") and os.path.exists(sm_bin):
-        snakemake_bin = sm_bin
-        os.environ["PATH"] = sm_env_bin + os.pathsep + os.environ.get("PATH", "")
+    snakemake_bin = shutil.which("snakemake")
+    if not snakemake_bin:
+        for candidate in [
+            os.path.expanduser("~/miniforge3/envs/snakemake/bin/snakemake"),
+            os.path.expanduser("~/miniforge3/bin/snakemake"),
+            "/home/omar/Downloads/miniconda3/envs/sm/bin/snakemake"
+        ]:
+            if os.path.exists(candidate):
+                snakemake_bin = candidate
+                cand_dir = os.path.dirname(candidate)
+                os.environ["PATH"] = cand_dir + os.pathsep + os.environ.get("PATH", "")
+                break
+    if not snakemake_bin:
+        snakemake_bin = "snakemake"
 
-    # Initialize RAM disk tmp directory if configured
-    tmp_dir = snakemake_opts.get('tmpdir', '/dev/shm/wes_pipeline_tmp')
+    # Initialize scratch tmp directory if configured
+    tmp_dir = snakemake_opts.get('tmpdir', '/tmp/wes_pipeline_tmp')
     try:
         os.makedirs(tmp_dir, exist_ok=True)
     except Exception:
@@ -129,34 +140,35 @@ def run_snakemake(
     # Build Snakemake command with standard flags
     cmd = [snakemake_bin, "-s", snakefile]
     
-    # Add conda and singularity flags
-    if snakemake_opts.get('use_conda', True):
-        cmd.append("--use-conda")
-        cmd.extend(["--conda-frontend", "mamba"])
-    if snakemake_opts.get('use_singularity', True):
-        cmd.append("--use-singularity")
-        if singularity_args:
-            cmd.extend(["--singularity-args", singularity_args])
+    # Determine execution mode (Slurm vs Local)
+    is_slurm = slurm or any(
+        a == "--executor" or a.startswith("--executor=") or "slurm" in a
+        for a in extra_args
+    )
 
-    if rerun_triggers:
-        cmd.extend(["--rerun-triggers", rerun_triggers])
+    if is_slurm:
+        if not any(a == "--executor" or a.startswith("--executor=") for a in extra_args):
+            cmd.extend(["--executor", "slurm"])
+        if not any(a == "--jobs" or a == "-j" or a.startswith("--jobs=") for a in extra_args):
+            cmd.extend(["--jobs", str(jobs or 320)])
+        if not any(a == "--sdm" or a.startswith("--sdm=") for a in extra_args):
+            cmd.extend(["--sdm", "conda"])
+        if not any("--default-resources" in a for a in extra_args):
+            cmd.extend(["--default-resources", f"mem_mb={default_mem or 4000}"])
+    else:
+        # Local execution: add conda and singularity flags
+        if snakemake_opts.get('use_conda', True):
+            cmd.append("--use-conda")
+            cmd.extend(["--conda-frontend", "mamba"])
+        if snakemake_opts.get('use_singularity', False):
+            cmd.append("--use-singularity")
+            if singularity_args:
+                cmd.extend(["--singularity-args", singularity_args])
 
-    if snakemake_opts.get('keep_going', True):
-        cmd.append("-k")
-    if snakemake_opts.get('print_shell_commands', True):
-        cmd.append("--printshellcmds")
-    if snakemake_opts.get('benchmark_extended', True):
-        cmd.append("--benchmark-extended")
-    if snakemake_opts.get('rerun_incomplete', True):
-        cmd.append("--rerun-incomplete")
-
-    if dry_run:
-        cmd.append("-n")
-
-    # Determine CPU cores
-    if not any(arg.startswith("--cores") or arg == "-j" or arg == "-c" for arg in extra_args):
-        allocated_cores = cores or snakemake_opts.get('cores', 88)
-        cmd.extend(["--cores", str(allocated_cores)])
+        # Determine CPU cores for local run
+        if not any(arg.startswith("--cores") or arg == "-j" or arg == "-c" for arg in extra_args):
+            allocated_cores = cores or snakemake_opts.get('cores', 88)
+            cmd.extend(["--cores", str(allocated_cores)])
 
     # Add config file
     if configfile:
@@ -232,8 +244,8 @@ class PipelineDashboard:
 
         self.stages = collections.OrderedDict([
             ("01_qc_trim", {
-                "name": "01. Quality Control & Trimming",
-                "rules": ["trimming_fp", "fastqc", "fastqc_pretrim", "fastqc_posttrim"],
+                "name": "01. Quality Control & Trimming (fastp)",
+                "rules": ["trimming_fp"],
                 "total": 0, "done": 0, "status": "pending"
             }),
             ("02_alignment", {
