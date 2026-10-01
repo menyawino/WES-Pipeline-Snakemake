@@ -47,7 +47,7 @@ Run the pipeline using the `wes_pipeline.py` CLI wrapper:
 - `sync-data`: Fast rsync helper between QNAP and shared `/home` storage.
 - `plan`: Preview execution plan and render high-resolution DAG/rulegraph diagrams (`results/dag.png`, `results/rulegraph.png`).
 - `validate`: Perform standalone pre-flight configuration and resource checks (automatically downloads GRCh38 if missing).
-- `download-ref`: Download and index the GRCh38 reference genome (`resources/ref/grch38/GRCh38.primary_assembly.genome.fa`).
+- `download-ref`: Download and index the official GATK GRCh38 reference genome (`resources/ref/grch38/Homo_sapiens_assembly38.fasta`) and BQSR known sites.
 - `download-giab`: Download NIST Genome in a Bottle (GIAB) HG001 / HG002 benchmark truth sets for GRCh38.
 - `benchmark`: Benchmark pipeline variant calls (GATK & DeepVariant) against GIAB high-confidence truth standard (GA4GH).
 - `report`: Generate a Snakemake HTML execution report.

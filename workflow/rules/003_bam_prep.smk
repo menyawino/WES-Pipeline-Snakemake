@@ -76,8 +76,12 @@ rule base_recalibrator:
         tmpdir=config.get("tmpdir", "/tmp")
     params:
         ref=config["reference_genome"],
-        known_sites=config["dbsnp"],
-        target=config["icc_panel"]
+        target=config["icc_panel"],
+        known_sites_args=lambda wildcards: " ".join([
+            f'--known-sites "{config[k]}"'
+            for k in ["dbsnp", "mills", "tenk_indel"]
+            if config.get(k) and os.path.exists(config[k])
+        ]) or f'--known-sites "{config.get("dbsnp", "")}"'
     log:
         config["outdir"] + "/logs/003_bam_prep/02_bqsr/{sample}_base_recalibrator.log"
     benchmark:
@@ -89,7 +93,7 @@ rule base_recalibrator:
         -I "{input.bam}" \
         -R "{params.ref}" \
         -O "{output.recal_table}" \
-        --known-sites "{params.known_sites}" \
+        {params.known_sites_args} \
         -L "{params.target}" \
         --interval-padding 100 \
         --tmp-dir "{resources.tmpdir}" \

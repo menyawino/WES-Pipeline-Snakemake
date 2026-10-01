@@ -106,10 +106,12 @@ rule coverage_summary_report:
     input:
         qc_metrics=expand(rules.qc_report.output.qc_metrics, sample=sample_filename),
         orig_flagstats=expand(rules.flagstat_original.output.flagstat_original, sample=sample_filename),
+        q8_counts=expand(rules.count_mapped_q8_original.output.q8_count, sample=sample_filename),
         target_flagstats=expand(rules.flagstat_target.output.flagstat_target, sample=sample_filename),
         prot_coding_flagstats=expand(rules.flagstat_prot_coding.output.flagstat_prot_coding, sample=sample_filename),
         canon_tran_flagstats=expand(rules.flagstat_canon_tran.output.flagstat_canon_tran, sample=sample_filename),
-        snps=expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename, caller=["gatk"])
+        snps=expand(rules.filter_snps.output.filtered_snp_vcf, sample=sample_filename, caller=["gatk"]),
+        indels=expand(rules.filter_indels.output.filtered_indel_vcf, sample=sample_filename, caller=["gatk"])
     output:
         target_txt=config["outdir"] + "/results/Coverage_Report/SummaryOutput_Target_" + os.path.basename(config["outdir"].rstrip("/")) + ".txt",
         target_tsv=config["outdir"] + "/results/Coverage_Report/SummaryOutput_Target_" + os.path.basename(config["outdir"].rstrip("/")) + ".tsv",
@@ -130,7 +132,11 @@ rule coverage_summary_report:
         target_bed=config["icc_panel"],
         prot_coding_bed=config["cds_panel"],
         canon_tran_bed=config["canontran_panel"],
-        run_id=os.path.basename(config["outdir"].rstrip("/"))
+        run_id=os.path.basename(config["outdir"].rstrip("/")),
+        genome_size=config.get("coverage_summary", {}).get("genome_size", 3095693981),
+        min_snps=config.get("coverage_summary", {}).get("min_snps", 200),
+        min_indels=config.get("coverage_summary", {}).get("min_indels", 20),
+        min_titv=config.get("coverage_summary", {}).get("min_titv", 2.0)
     log:
         config["outdir"] + "/logs/008_summary/coverage_summary_report.log"
     benchmark:
@@ -144,5 +150,9 @@ rule coverage_summary_report:
         --prot-coding-bed "{params.prot_coding_bed}" \
         --canon-tran-bed "{params.canon_tran_bed}" \
         --run-id "{params.run_id}" \
+        --genome-size {params.genome_size} \
+        --min-snps {params.min_snps} \
+        --min-indels {params.min_indels} \
+        --min-titv {params.min_titv} \
         > "{log}" 2>&1
         """

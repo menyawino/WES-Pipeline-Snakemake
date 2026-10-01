@@ -24,6 +24,28 @@ rule flagstat_original:
         2> "{log}"
         """
 
+rule count_mapped_q8_original:
+    message:
+        "Count MAPQ >= 8 mapped reads across full BAM for sample {wildcards.sample}"
+    input:
+        bam=rules.apply_bqsr.output.bqsr_bam
+    output:
+        q8_count=config["outdir"] + "/analysis/004_bam_qc/{sample}.q8.txt"
+    conda:
+        "../envs/005_gatk_genomics.yml"
+    threads:
+        config.get("threads_mid", 4)
+    resources:
+        mem_mb=config.get("mem_low", 4096)
+    log:
+        config["outdir"] + "/logs/004_bam_qc/{sample}_q8_count.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/004_bam_qc/{sample}_q8_count.txt"
+    shell:
+        """
+        samtools view -c -@ {threads} -q 8 -F 4 "{input.bam}" > "{output.q8_count}" 2> "{log}"
+        """
+
 rule flagstat_target:
     message:
         "Flagstat for target BAM for sample {wildcards.sample}"

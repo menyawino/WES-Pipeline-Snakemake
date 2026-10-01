@@ -1,15 +1,16 @@
 # Rule to download and index GRCh38 reference genome sequence if missing
 
-ref_fasta = config.get("reference_genome", "resources/ref/grch38/GRCh38.primary_assembly.genome.fa")
+ref_fasta = config.get("reference_genome", "resources/ref/grch38/Homo_sapiens_assembly38.fasta")
 ref_fai = ref_fasta + ".fai"
 ref_dict = os.path.splitext(ref_fasta)[0] + ".dict"
 
 rule download_grch38_reference:
     message:
-        "Downloading and indexing GRCh38 reference genome FASTA"
+        "Downloading and indexing GRCh38 reference genome FASTA, dictionary, and indexes"
     output:
         fasta=ref_fasta,
-        fai=ref_fai
+        fai=ref_fai,
+        dict=ref_dict
     params:
         genome=config.get("Genome", "grch38")
     log:

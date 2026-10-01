@@ -130,7 +130,7 @@ def download_ref(configfile, force):
     from workflow.scripts.download_ref import download_reference_genome
     
     print(f"{GRE}[INFO] Downloading GRCh38 reference genome data...{NC}")
-    target_path = "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
+    target_path = "resources/ref/grch38/Homo_sapiens_assembly38.fasta"
     genome = "grch38"
     
     if os.path.exists(configfile):

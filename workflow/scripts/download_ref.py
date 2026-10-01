@@ -23,6 +23,10 @@ REF_URLS = {
     "dict": f"{GCS_BROAD_HG38_BASE}/Homo_sapiens_assembly38.dict",
     "dbsnp": f"{GCS_BROAD_HG38_BASE}/Homo_sapiens_assembly38.dbsnp138.vcf",
     "dbsnp_idx": f"{GCS_BROAD_HG38_BASE}/Homo_sapiens_assembly38.dbsnp138.vcf.idx",
+    "mills": f"{GCS_BROAD_HG38_BASE}/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz",
+    "mills_tbi": f"{GCS_BROAD_HG38_BASE}/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi",
+    "known_indels": f"{GCS_BROAD_HG38_BASE}/Homo_sapiens_assembly38.known_indels.vcf.gz",
+    "known_indels_tbi": f"{GCS_BROAD_HG38_BASE}/Homo_sapiens_assembly38.known_indels.vcf.gz.tbi",
 }
 
 def fast_download(url, target_file):
@@ -111,8 +115,8 @@ def index_reference(fasta_path):
 
     return os.path.exists(fai_path)
 
-def download_reference_genome(target_path="resources/ref/grch38/GRCh38.primary_assembly.genome.fa", genome="grch38", force=False):
-    """Download GRCh38 reference genome from fast Broad GCS mirror."""
+def download_reference_genome(target_path="resources/ref/grch38/Homo_sapiens_assembly38.fasta", genome="grch38", force=False):
+    """Download GRCh38 reference genome and BQSR known sites from fast Broad GCS mirror."""
     target_path = os.path.abspath(target_path)
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
@@ -124,15 +128,23 @@ def download_reference_genome(target_path="resources/ref/grch38/GRCh38.primary_a
             logger.error("Failed to download reference genome")
             return False
             
-    # Also download dbSNP if configured in resources
+    # Download BQSR known sites (matching dbSNP + Mills gold standard indels + known indels)
     dbsnp_target = "resources/ref/grch38/dbsnp/Homo_sapiens_assembly38.dbsnp138.vcf"
     fast_download(REF_URLS["dbsnp"], dbsnp_target)
     fast_download(REF_URLS["dbsnp_idx"], f"{dbsnp_target}.idx")
 
+    mills_target = "resources/ref/grch38/indels/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
+    fast_download(REF_URLS["mills"], mills_target)
+    fast_download(REF_URLS["mills_tbi"], f"{mills_target}.tbi")
+
+    indels_target = "resources/ref/grch38/indels/Homo_sapiens_assembly38.known_indels.vcf.gz"
+    fast_download(REF_URLS["known_indels"], indels_target)
+    fast_download(REF_URLS["known_indels_tbi"], f"{indels_target}.tbi")
+
     return index_reference(target_path)
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) > 1 else "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
+    target = sys.argv[1] if len(sys.argv) > 1 else "resources/ref/grch38/Homo_sapiens_assembly38.fasta"
     force = "--force" in sys.argv
     success = download_reference_genome(target, force=force)
     sys.exit(0 if success else 1)
