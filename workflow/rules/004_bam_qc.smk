@@ -401,8 +401,6 @@ rule mean_coverage_per_exon_target:
         2> "{log}"
         """
 
-
-
 rule mean_coverage_per_exon_canon_tran:
     message:
         "Calculating mean coverage per exon for canonical transcript BAM for sample {wildcards.sample}"

@@ -4,19 +4,19 @@ rule mark_duplicates:
     input:
         bam=rules.merge_bams.output.merged_bam
     output:
-        markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam"),
-        metrics=config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.metrics.txt"
+        markdup_bam=temp(config["outdir"] + "/analysis/003_bam_prep/01_markduped/{sample}.markdup.bam"),
+        metrics=config["outdir"] + "/analysis/003_bam_prep/01_markduped/{sample}.markdup.metrics.txt"
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
         mem_mb=config.get("mem_mid", 16384),
         tmpdir=config.get("tmpdir", "/tmp")
     log:
-        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_markdup.log"
+        config["outdir"] + "/logs/003_bam_prep/01_markduped/{sample}_markdup.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_markdup.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/01_markduped/{sample}_markdup.txt"
     shell:
         """
         mkdir -p "{resources.tmpdir}"
@@ -39,18 +39,18 @@ rule index_markdup_bam:
     input:
         markdup_bam=rules.mark_duplicates.output.markdup_bam
     output:
-        indexed_markdup_bam=temp(config["outdir"] + "/analysis/003_alignment/04_markduped/{sample}.markdup.bam.bai")
+        indexed_markdup_bam=temp(config["outdir"] + "/analysis/003_bam_prep/01_markduped/{sample}.markdup.bam.bai")
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
         mem_mb=config.get("mem_low", 4096),
         tmpdir=config.get("tmpdir", "/tmp")
     log:
-        config["outdir"] + "/logs/003_alignment/04_markduped/{sample}_index_markdup.log"
+        config["outdir"] + "/logs/003_bam_prep/01_markduped/{sample}_index_markdup.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/04_markduped/{sample}_index_markdup.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/01_markduped/{sample}_index_markdup.txt"
     shell:
         """
         samtools index -@ {threads} \
@@ -66,7 +66,7 @@ rule base_recalibrator:
         bam=rules.mark_duplicates.output.markdup_bam,
         bai=rules.index_markdup_bam.output.indexed_markdup_bam
     output:
-        recal_table=config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.recal_data.table"
+        recal_table=config["outdir"] + "/analysis/003_bam_prep/02_bqsr/{sample}.recal_data.table"
     conda:
         "../envs/005_gatk_genomics.yml"
     threads:
@@ -79,9 +79,9 @@ rule base_recalibrator:
         known_sites=config["dbsnp"],
         target=config["icc_panel"]
     log:
-        config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_base_recalibrator.log"
+        config["outdir"] + "/logs/003_bam_prep/02_bqsr/{sample}_base_recalibrator.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_base_recalibrator.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/02_bqsr/{sample}_base_recalibrator.txt"
     shell:
         """
         mkdir -p "{resources.tmpdir}"
@@ -104,8 +104,8 @@ rule apply_bqsr:
         bai=rules.index_markdup_bam.output.indexed_markdup_bam,
         recal_table=rules.base_recalibrator.output.recal_table
     output:
-        bqsr_bam=temp(config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bam"),
-        bqsr_bai=temp(config["outdir"] + "/analysis/003_alignment/05_bqsr/{sample}.bqsr.bai")
+        bqsr_bam=temp(config["outdir"] + "/analysis/003_bam_prep/02_bqsr/{sample}.bqsr.bam"),
+        bqsr_bai=temp(config["outdir"] + "/analysis/003_bam_prep/02_bqsr/{sample}.bqsr.bai")
     conda:
         "../envs/005_gatk_genomics.yml"
     threads:
@@ -117,9 +117,9 @@ rule apply_bqsr:
         ref=config["reference_genome"],
         target=config["icc_panel"]
     log:
-        config["outdir"] + "/logs/003_alignment/05_bqsr/{sample}_apply_bqsr.log"
+        config["outdir"] + "/logs/003_bam_prep/02_bqsr/{sample}_apply_bqsr.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/05_bqsr/{sample}_apply_bqsr.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/02_bqsr/{sample}_apply_bqsr.txt"
     shell:
         """
         mkdir -p "{resources.tmpdir}"
@@ -142,10 +142,10 @@ rule filter_bam_target:
         bam=rules.apply_bqsr.output.bqsr_bam,
         bai=rules.apply_bqsr.output.bqsr_bai
     output:
-        bam_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam",
-        bai_target=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.target.bam.bai"
+        bam_target=config["outdir"] + "/analysis/003_bam_prep/03_filtering/{sample}.target.bam",
+        bai_target=config["outdir"] + "/analysis/003_bam_prep/03_filtering/{sample}.target.bam.bai"
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -154,9 +154,9 @@ rule filter_bam_target:
     params:
         TargetFile=config["icc_panel"]
     log:
-        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_target.log"
+        config["outdir"] + "/logs/003_bam_prep/03_filtering/{sample}_filter_bam_target.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_target.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/03_filtering/{sample}_filter_bam_target.txt"
     shell:
         """
         sambamba view \
@@ -178,10 +178,10 @@ rule filter_bam_prot_coding:
         bam=rules.apply_bqsr.output.bqsr_bam,
         bai=rules.apply_bqsr.output.bqsr_bai
     output:
-        bam_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam",
-        bai_prot_coding=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.prot_coding.bam.bai"
+        bam_prot_coding=config["outdir"] + "/analysis/003_bam_prep/03_filtering/{sample}.prot_coding.bam",
+        bai_prot_coding=config["outdir"] + "/analysis/003_bam_prep/03_filtering/{sample}.prot_coding.bam.bai"
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -193,9 +193,9 @@ rule filter_bam_prot_coding:
         target_bam=rules.filter_bam_target.output.bam_target,
         target_bai=rules.filter_bam_target.output.bai_target
     log:
-        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.log"
+        config["outdir"] + "/logs/003_bam_prep/03_filtering/{sample}_filter_bam_prot_coding.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_prot_coding.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/03_filtering/{sample}_filter_bam_prot_coding.txt"
     shell:
         """
         if [ "{params.CDSFile}" = "{params.TargetFile}" ] && [ -f "{params.target_bam}" ]; then
@@ -222,10 +222,10 @@ rule filter_bam_canon_tran:
         bam=rules.apply_bqsr.output.bqsr_bam,
         bai=rules.apply_bqsr.output.bqsr_bai
     output:
-        bam_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam",
-        bai_canon_tran=config["outdir"] + "/analysis/003_alignment/06_filtering/{sample}.canon_tran.bam.bai"
+        bam_canon_tran=config["outdir"] + "/analysis/003_bam_prep/03_filtering/{sample}.canon_tran.bam",
+        bai_canon_tran=config["outdir"] + "/analysis/003_bam_prep/03_filtering/{sample}.canon_tran.bam.bai"
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
@@ -237,9 +237,9 @@ rule filter_bam_canon_tran:
         target_bam=rules.filter_bam_target.output.bam_target,
         target_bai=rules.filter_bam_target.output.bai_target
     log:
-        config["outdir"] + "/logs/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.log"
+        config["outdir"] + "/logs/003_bam_prep/03_filtering/{sample}_filter_bam_canon_tran.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/06_filtering/{sample}_filter_bam_canon_tran.txt"
+        config["outdir"] + "/benchmarks/003_bam_prep/03_filtering/{sample}_filter_bam_canon_tran.txt"
     shell:
         """
         if [ "{params.CanonTranFile}" = "{params.TargetFile}" ] && [ -f "{params.target_bam}" ]; then

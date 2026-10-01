@@ -378,8 +378,13 @@ def create_analysis_report(outdir: str, configfile: str | None = None) -> str:
     logs_data = aggregate_logs(os.path.join(outdir, "logs"))
     space_data = get_dir_space_breakdown(outdir)
 
-    var_summary_json = os.path.join(outdir, "analysis/010_summary/cohort_variant_summary.json")
+    var_summary_json = os.path.join(outdir, "analysis/008_summary/cohort_variant_summary.json")
+    if not os.path.exists(var_summary_json):
+        var_summary_json = os.path.join(outdir, "analysis/010_summary/cohort_variant_summary.json")
     acmg_summary_json = os.path.join(outdir, "analysis/007_annotation/cohort_acmg_summary.json")
+    if not os.path.exists(acmg_summary_json):
+        acmg_summary_json = os.path.join(outdir, "analysis/009_annotation/cohort_acmg_summary.json")
+
 
     var_summary = {}
     if os.path.exists(var_summary_json):

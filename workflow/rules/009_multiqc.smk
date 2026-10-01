@@ -35,9 +35,9 @@ rule multiqc_report:
     resources:
         mem_mb=config.get("mem_low", 4096)
     log:
-        config["outdir"] + "/logs/multiqc.log"
+        config["outdir"] + "/logs/009_multiqc/multiqc.log"
     benchmark:
-        config["outdir"] + "/benchmarks/multiqc.txt"
+        config["outdir"] + "/benchmarks/009_multiqc/multiqc.txt"
     shell:
         """
         multiqc "{config[outdir]}" \

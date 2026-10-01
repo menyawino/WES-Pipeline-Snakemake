@@ -587,7 +587,7 @@ def main():
     eval_bed = args.truth_bed
     sample_clean = args.sample.replace("/", "_")
     if args.target_bed and os.path.exists(args.target_bed):
-        inter_bed = os.path.join(args.outdir, "analysis", "012_benchmark", "giab", f"{sample_clean}_target_giab_intersect.bed")
+        inter_bed = os.path.join(args.outdir, "analysis", "010_benchmark", "giab", f"{sample_clean}_target_giab_intersect.bed")
         eval_bed = intersect_beds(args.target_bed, args.truth_bed, inter_bed)
 
     print(f"[INFO] Loading evaluation intervals from: {eval_bed}")
@@ -662,7 +662,7 @@ def main():
         print(f"  [{caller.upper()}] Overall: F1={res['all']['f1']}%, Ti/Tv={res['titv_ratio']}, GT Concordance={res['genotype_concordance']}%")
 
     # Output paths
-    base_out = os.path.join(args.outdir, "analysis", "012_benchmark", "giab")
+    base_out = os.path.join(args.outdir, "analysis", "010_benchmark", "giab")
     sample_safe = args.sample.replace("/", "_")
     report_md = args.report_md or os.path.join(base_out, f"{sample_safe}_giab_benchmark_report.md")
     summary_tsv = args.summary_tsv or os.path.join(base_out, f"{sample_safe}_giab_benchmark_summary.tsv")

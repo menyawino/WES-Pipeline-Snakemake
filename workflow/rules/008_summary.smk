@@ -8,9 +8,9 @@ rule summarize_variants:
         indel_vcf=rules.filter_indels.output.filtered_indel_vcf,
         annotated_vcf=rules.vep_genebe_annotate_variants.output.vep_vcf
     output:
-        report_md=config["outdir"] + "/analysis/010_summary/{sample}/{caller}_variant_summary.md",
-        summary_tsv=config["outdir"] + "/analysis/010_summary/{sample}/{caller}_variant_summary.tsv",
-        summary_json=config["outdir"] + "/analysis/010_summary/{sample}/{caller}_variant_summary.json"
+        report_md=config["outdir"] + "/analysis/008_summary/{sample}/{caller}_variant_summary.md",
+        summary_tsv=config["outdir"] + "/analysis/008_summary/{sample}/{caller}_variant_summary.tsv",
+        summary_json=config["outdir"] + "/analysis/008_summary/{sample}/{caller}_variant_summary.json"
     conda:
         "../envs/005_gatk_genomics.yml"
     threads:
@@ -21,9 +21,9 @@ rule summarize_variants:
         top_variants=config.get("variant_summary", {}).get("top_variants", 10),
         top_chromosomes=config.get("variant_summary", {}).get("top_chromosomes", 10)
     log:
-        config["outdir"] + "/logs/010_summary/{sample}_{caller}_variant_summary.log"
+        config["outdir"] + "/logs/008_summary/{sample}_{caller}_variant_summary.log"
     benchmark:
-        config["outdir"] + "/benchmarks/010_summary/{sample}_{caller}_variant_summary.txt"
+        config["outdir"] + "/benchmarks/008_summary/{sample}_{caller}_variant_summary.txt"
     shell:
         """
         python workflow/scripts/variant_summary.py sample \
@@ -43,11 +43,11 @@ rule aggregate_variant_summaries:
     message:
         "Aggregating cohort variant summaries for {wildcards.caller}"
     input:
-        reports=lambda wildcards: expand(config["outdir"] + "/analysis/010_summary/{sample}/" + wildcards.caller + "_variant_summary.json", sample=sample_filename)
+        reports=lambda wildcards: expand(config["outdir"] + "/analysis/008_summary/{sample}/" + wildcards.caller + "_variant_summary.json", sample=sample_filename)
     output:
-        cohort_report=config["outdir"] + "/analysis/010_summary/cohort_{caller}_variant_report.md",
-        cohort_table=config["outdir"] + "/analysis/010_summary/cohort_{caller}_variant_summary.tsv",
-        cohort_json=config["outdir"] + "/analysis/010_summary/cohort_{caller}_variant_summary.json"
+        cohort_report=config["outdir"] + "/analysis/008_summary/cohort_{caller}_variant_report.md",
+        cohort_table=config["outdir"] + "/analysis/008_summary/cohort_{caller}_variant_summary.tsv",
+        cohort_json=config["outdir"] + "/analysis/008_summary/cohort_{caller}_variant_summary.json"
     conda:
         "../envs/005_gatk_genomics.yml"
     threads:
@@ -55,9 +55,9 @@ rule aggregate_variant_summaries:
     resources:
         mem_mb=config.get("mem_low", 4096)
     log:
-        config["outdir"] + "/logs/010_summary/cohort_{caller}_variant_summary.log"
+        config["outdir"] + "/logs/008_summary/cohort_{caller}_variant_summary.log"
     benchmark:
-        config["outdir"] + "/benchmarks/010_summary/cohort_{caller}_variant_summary.txt"
+        config["outdir"] + "/benchmarks/008_summary/cohort_{caller}_variant_summary.txt"
     shell:
         """
         python workflow/scripts/variant_summary.py cohort \
@@ -75,8 +75,8 @@ rule compare_callers:
         gatk_snps=expand(config["outdir"] + "/analysis/006_variant_filtering/{sample}.gatk.filtered.snp.vcf", sample=sample_filename),
         dv_snps=expand(config["outdir"] + "/analysis/006_variant_filtering/{sample}.deepvariant.filtered.snp.vcf", sample=sample_filename)
     output:
-        report=config["outdir"] + "/analysis/010_summary/caller_concordance_report.md",
-        table=config["outdir"] + "/analysis/010_summary/caller_concordance_matrix.tsv"
+        report=config["outdir"] + "/analysis/008_summary/caller_concordance_report.md",
+        table=config["outdir"] + "/analysis/008_summary/caller_concordance_matrix.tsv"
     conda:
         "../envs/005_gatk_genomics.yml"
     threads:
@@ -87,9 +87,9 @@ rule compare_callers:
         outdir=config["outdir"],
         samples=sample_filename
     log:
-        config["outdir"] + "/logs/010_summary/caller_concordance.log"
+        config["outdir"] + "/logs/008_summary/caller_concordance.log"
     benchmark:
-        config["outdir"] + "/benchmarks/010_summary/caller_concordance.txt"
+        config["outdir"] + "/benchmarks/008_summary/caller_concordance.txt"
     shell:
         """
         python3 workflow/scripts/compare_callers.py \
@@ -132,9 +132,9 @@ rule coverage_summary_report:
         canon_tran_bed=config["canontran_panel"],
         run_id=os.path.basename(config["outdir"].rstrip("/"))
     log:
-        config["outdir"] + "/logs/004_bam_qc/coverage_summary_report.log"
+        config["outdir"] + "/logs/008_summary/coverage_summary_report.log"
     benchmark:
-        config["outdir"] + "/benchmarks/004_bam_qc/coverage_summary_report.txt"
+        config["outdir"] + "/benchmarks/008_summary/coverage_summary_report.txt"
     shell:
         """
         python3 workflow/scripts/coverage_summary.py \

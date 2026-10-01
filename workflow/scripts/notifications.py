@@ -26,7 +26,12 @@ def build_html_report(status, pipeline_name, outdir, samples, log_file=None, err
     sample_list_html = "".join(f"<li><code>{s}</code></li>" for s in samples) if samples else "<li>None specified</li>"
     
     acmg_dashboard = os.path.join(outdir, "analysis", "007_annotation", "cohort_acmg_dashboard.html")
-    variant_dashboard = os.path.join(outdir, "analysis", "010_summary", "cohort_variant_dashboard.html")
+    variant_dashboard = os.path.join(outdir, "analysis", "008_summary", "cohort_variant_dashboard.html")
+    if not os.path.exists(variant_dashboard):
+        alt_vd = os.path.join(outdir, "analysis", "010_summary", "cohort_variant_dashboard.html")
+        if os.path.exists(alt_vd):
+            variant_dashboard = alt_vd
+
     
     links_html = ""
     if is_success:

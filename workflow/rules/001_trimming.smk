@@ -9,10 +9,10 @@ rule trimming_fp:
         fq1=get_trimming_r1,
         fq2=get_trimming_r2
     output:
-        fq1=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R1.fastq.gz"),
-        fq2=temp(config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_R2.fastq.gz"),
-        report=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.html",
-        json=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}_report.json"
+        fq1=temp(config["outdir"] + "/analysis/001_trimming/{sample}_{lane}_R1.fastq.gz"),
+        fq2=temp(config["outdir"] + "/analysis/001_trimming/{sample}_{lane}_R2.fastq.gz"),
+        report=config["outdir"] + "/analysis/001_trimming/{sample}_{lane}_report.html",
+        json=config["outdir"] + "/analysis/001_trimming/{sample}_{lane}_report.json"
     conda:
         "../envs/001_qc.yml"
     threads:
@@ -20,13 +20,13 @@ rule trimming_fp:
     resources:
         mem_mb=config.get("mem_mid", 16384)
     params:
-        path=config["outdir"] + "/analysis/002_trimming/{sample}_{lane}",
+        path=config["outdir"] + "/analysis/001_trimming/{sample}_{lane}",
         min_length=config["fastp"]["min_read_length"],
         window_size=config["fastp"]["window_size"]
     log:
-        config["outdir"] + "/logs/002_trimming/{sample}/{sample}_{lane}.log"
+        config["outdir"] + "/logs/001_trimming/{sample}/{sample}_{lane}.log"
     benchmark:
-        config["outdir"] + "/benchmarks/002_trimming/{sample}/{sample}_{lane}.txt"
+        config["outdir"] + "/benchmarks/001_trimming/{sample}/{sample}_{lane}.txt"
     shell:
         """
         fastp \
@@ -43,6 +43,3 @@ rule trimming_fp:
         --cut_window_size {params.window_size} \
         &> "{log}"
         """
-
-
-        

@@ -434,8 +434,9 @@ def generate_coverage_summary_for_target(
         cov_stats = parse_coverage_hist(hist_file, target_size_bp)
         
         # 7. FastQC results
-        r1_fastqc = glob.glob(os.path.join(outdir, f"analysis/001_qc/{sample}*R1*_fastqc/summary.txt"))
-        r2_fastqc = glob.glob(os.path.join(outdir, f"analysis/001_qc/{sample}*R2*_fastqc/summary.txt"))
+        r1_fastqc = glob.glob(os.path.join(outdir, f"analysis/001_trimming/{sample}*R1*_fastqc/summary.txt")) or glob.glob(os.path.join(outdir, f"analysis/001_qc/{sample}*R1*_fastqc/summary.txt"))
+        r2_fastqc = glob.glob(os.path.join(outdir, f"analysis/001_trimming/{sample}*R2*_fastqc/summary.txt")) or glob.glob(os.path.join(outdir, f"analysis/001_qc/{sample}*R2*_fastqc/summary.txt"))
+
         
         r1_base_q, r1_seq_q = parse_fastqc_summary(r1_fastqc[0]) if r1_fastqc else ("PASS", "PASS")
         r2_base_q, r2_seq_q = parse_fastqc_summary(r2_fastqc[0]) if r2_fastqc else ("PASS", "PASS")

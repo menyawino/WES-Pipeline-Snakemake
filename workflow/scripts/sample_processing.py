@@ -33,7 +33,7 @@ def discover_samples_from_analysis(outdir):
     discovered = {}
     if not outdir or not os.path.exists(outdir):
         return discovered
-    for check_dir in ["analysis/001_QC/pretrim", "analysis/002_trimming", "analysis/003_alignment"]:
+    for check_dir in ["analysis/001_trimming", "analysis/002_alignment", "analysis/001_QC/pretrim", "analysis/002_trimming", "analysis/003_alignment"]:
         full_dir = os.path.join(outdir, check_dir)
         if os.path.exists(full_dir):
             for root, _, files in os.walk(full_dir):

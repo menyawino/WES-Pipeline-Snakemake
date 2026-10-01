@@ -35,8 +35,9 @@ def aggregate_acmg(input_tsvs, out_report_md, out_summary_tsv, out_summary_json,
             if df.empty:
                 continue
             sample = os.path.basename(os.path.dirname(tsv_path))
-            if not sample or sample == '009_annotation':
+            if not sample or sample in ['007_annotation', '009_annotation']:
                 sample = os.path.basename(tsv_path).replace('.acmg_variants.tsv', '')
+
                 
             counts = df['ACMG_CLASS'].value_counts().to_dict()
             rec = {

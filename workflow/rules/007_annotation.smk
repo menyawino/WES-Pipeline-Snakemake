@@ -11,7 +11,7 @@ rule vep_genebe_annotate_variants:
         vep_vcf=config["outdir"] + "/analysis/007_annotation/{sample}.{caller}.vep_annotated.vcf",
         acmg_tsv=config["outdir"] + "/analysis/007_annotation/{sample}.{caller}.acmg_variants.tsv"
     conda:
-        "../envs/009_annotation.yml"
+        "../envs/007_annotation.yml"
     threads:
         config.get("threads_mid", 8)
     resources:

@@ -26,10 +26,10 @@ rule benchmark_sample_giab:
         snp_vcfs=expand(config["outdir"] + "/analysis/006_variant_filtering/{{sample}}.{caller}.filtered.snp.vcf", caller=CALLERS),
         indel_vcfs=expand(config["outdir"] + "/analysis/006_variant_filtering/{{sample}}.{caller}.filtered.indel.vcf", caller=CALLERS)
     output:
-        report_md=config["outdir"] + "/analysis/012_benchmark/giab/{sample}_giab_benchmark_report.md",
-        summary_tsv=config["outdir"] + "/analysis/012_benchmark/giab/{sample}_giab_benchmark_summary.tsv",
-        summary_json=config["outdir"] + "/analysis/012_benchmark/giab/{sample}_giab_benchmark_summary.json",
-        dashboard_html=config["outdir"] + "/analysis/012_benchmark/giab/{sample}_giab_benchmark_dashboard.html"
+        report_md=config["outdir"] + "/analysis/010_benchmark/giab/{sample}_giab_benchmark_report.md",
+        summary_tsv=config["outdir"] + "/analysis/010_benchmark/giab/{sample}_giab_benchmark_summary.tsv",
+        summary_json=config["outdir"] + "/analysis/010_benchmark/giab/{sample}_giab_benchmark_summary.json",
+        dashboard_html=config["outdir"] + "/analysis/010_benchmark/giab/{sample}_giab_benchmark_dashboard.html"
     conda:
         "../envs/005_gatk_genomics.yml"
     threads:
@@ -38,9 +38,9 @@ rule benchmark_sample_giab:
         mem_mb=config.get("mem_low", 4096),
         tmpdir=config.get("tmpdir", "/tmp")
     log:
-        config["outdir"] + "/logs/012_benchmark/giab/{sample}_benchmark.log"
+        config["outdir"] + "/logs/010_benchmark/giab/{sample}_benchmark.log"
     benchmark:
-        config["outdir"] + "/benchmarks/012_benchmark/giab/{sample}_benchmark.txt"
+        config["outdir"] + "/benchmarks/010_benchmark/giab/{sample}_benchmark.txt"
     shell:
         """
         python3 workflow/scripts/benchmark_giab.py \

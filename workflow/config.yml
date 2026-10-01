@@ -34,17 +34,18 @@ outdir: "../output_38"
 
 # Output path templates for consistency across rules
 output_dirs:
-  trimming: "{outdir}/analysis/002_trimming"
-  alignment: "{outdir}/analysis/004_alignment"
-  bam_prep: "{outdir}/analysis/005_bam_prep"
-  qc_bam: "{outdir}/analysis/006_qc/bam"
-  variant_calling: "{outdir}/analysis/007_variant_calling"
-  variant_filtering: "{outdir}/analysis/008_variant_filtering"
-  annotation: "{outdir}/analysis/009_annotation"
-  summary: "{outdir}/analysis/010_summary"
+  trimming: "{outdir}/analysis/001_trimming"
+  alignment: "{outdir}/analysis/002_alignment"
+  bam_prep: "{outdir}/analysis/003_bam_prep"
+  bam_qc: "{outdir}/analysis/004_bam_qc"
+  variant_calling: "{outdir}/analysis/005_variant_calling"
+  variant_filtering: "{outdir}/analysis/006_variant_filtering"
+  annotation: "{outdir}/analysis/007_annotation"
+  summary: "{outdir}/analysis/008_summary"
   logs: "{outdir}/logs"
   benchmarks: "{outdir}/benchmarks"
   results: "{outdir}/results"
+
 
 Genome: &genome "grch38"
 

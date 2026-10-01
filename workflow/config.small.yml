@@ -16,19 +16,18 @@ inputdir: "tests/input_small"
 outdir: "tests/output_small"
 
 output_dirs:
-  qc_pretrim: "{outdir}/analysis/001_qc/pretrim"
-  trimming: "{outdir}/analysis/002_trimming"
-  qc_posttrim: "{outdir}/analysis/003_qc/posttrim"
-  alignment: "{outdir}/analysis/004_alignment"
-  bam_prep: "{outdir}/analysis/005_bam_prep"
-  qc_bam: "{outdir}/analysis/006_qc/bam"
-  variant_calling: "{outdir}/analysis/007_variant_calling"
-  variant_filtering: "{outdir}/analysis/008_variant_filtering"
-  annotation: "{outdir}/analysis/009_annotation"
-  summary: "{outdir}/analysis/010_summary"
+  trimming: "{outdir}/analysis/001_trimming"
+  alignment: "{outdir}/analysis/002_alignment"
+  bam_prep: "{outdir}/analysis/003_bam_prep"
+  bam_qc: "{outdir}/analysis/004_bam_qc"
+  variant_calling: "{outdir}/analysis/005_variant_calling"
+  variant_filtering: "{outdir}/analysis/006_variant_filtering"
+  annotation: "{outdir}/analysis/007_annotation"
+  summary: "{outdir}/analysis/008_summary"
   logs: "{outdir}/logs"
   benchmarks: "{outdir}/benchmarks"
   results: "{outdir}/results"
+
 
 # These are placeholders for later full runs; raw_fastqc does not consume them.
 reference_genome: "resources/ref/grch38/GRCh38.primary_assembly.genome.fa"
@@ -68,7 +67,7 @@ vep:
 variant_summary:
   top_variants: 10
   top_chromosomes: 10
-  annotated_vcf_pattern: "{outdir}/analysis/009_annotation/{sample}.annotated.vcf"
+  annotated_vcf_pattern: "{outdir}/analysis/007_annotation/{sample}.annotated.vcf"
 
 snakemake:
   use_conda: true

@@ -78,15 +78,18 @@ The pipeline follows a modular sequential design:
 
 | Step | Rule File | Tool | Input | Output |
 |------|-----------|------|-------|--------|
-| 01 | `002_trimming.smk` | fastp | Raw FASTQ | Trimmed FASTQ + HTML/JSON QC Reports |
-| 02 | `004_alignment.smk` | BWA-MEM2 + Samtools | Trimmed FASTQ | Coordinate-sorted BAM |
-| 03 | `005_bam_prep.smk` | Sambamba + GATK4 | BAM | Deduplicated & BQSR-recalibrated BAM |
-| 04 | `006_bam_qc.smk` | Samtools + Bedtools | BAM | Exon-level Coverage & Flagstat Reports |
-| 05 | `007_variant_calling.smk` | GATK4 HaplotypeCaller | BAM | Distributed gVCF / VCF |
-| 06 | `008_variant_filtering.smk` | GATK4 / bcftools | VCF | High-confidence Filtered SNPs & Indels |
-| 07 | `009_annotation.smk` | Ensembl-VEP | Filtered VCF | VEP Annotated VCF & ACMG TSV |
-| 08 | `010_summary.smk` | Custom Python | VCF / TSV | Markdown, TSV, and JSON Cohort Summaries |
-| 09 | `011_multiqc.smk` | MultiQC | fastp JSON / QC Metrics | Aggregated Interactive MultiQC HTML Report |
+| 00 | `000_ref.smk` | Python | - | Downloaded & Staged GRCh38 Genome |
+| 01 | `001_trimming.smk` | fastp | Raw FASTQ | Trimmed FASTQ + HTML/JSON QC Reports |
+| 02 | `002_alignment.smk` | BWA-MEM2 + Samtools | Trimmed FASTQ | Coordinate-sorted BAM |
+| 03 | `003_bam_prep.smk` | Sambamba + GATK4 | BAM | Deduplicated & BQSR-recalibrated BAM |
+| 04 | `004_bam_qc.smk` | Samtools + Bedtools | BAM | Exon-level Coverage & Flagstat Reports |
+| 05 | `005_variant_calling.smk` | GATK4 HaplotypeCaller + DeepVariant | BAM | Distributed gVCF / VCF |
+| 06 | `006_variant_filtering.smk` | GATK4 / bcftools | VCF | High-confidence Filtered SNPs & Indels |
+| 07 | `007_annotation.smk` | Ensembl-VEP + GeneBe | Filtered VCF | VEP Annotated VCF & ACMG TSV |
+| 08 | `008_summary.smk` | Custom Python | VCF / TSV | Markdown, TSV, and JSON Cohort Summaries |
+| 09 | `009_multiqc.smk` | MultiQC | fastp JSON / QC Metrics | Aggregated Interactive MultiQC HTML Report |
+| 10 | `010_benchmark_giab.smk` | GA4GH Benchmark | Filtered VCF | GIAB NIST Accuracy Metrics & Dashboard |
+
 
 ## Configuration
 
@@ -120,19 +123,19 @@ gatk:
 ```
 output_dir/
 ├── analysis/
-│   ├── 001_qc/pretrim/          # Pre-trimming FastQC reports
-│   ├── 002_trimming/            # Trimmed FASTQ files
-│   ├── 003_qc/posttrim/         # Post-trimming FastQC reports
-│   ├── 004_alignment/           # Aligned BAM files
-│   ├── 005_bam_prep/            # Processed BAM files
-│   ├── 006_qc/bam/              # BAM QC metrics
-│   ├── 007_variant_calling/     # gVCF/VCF files
-│   ├── 008_variant_filtering/   # Filtered VCF files
-│   ├── 009_annotation/          # Annotated variants
-│   └── 010_summary/             # Sample and cohort variant reports
-├── logs/                        # Execution logs per rule
-├── benchmarks/                  # Resource usage per rule
-└── results/                     # Final outputs
+│   ├── 000_ref/                 # Staged reference indices and interval chunks
+│   ├── 001_trimming/            # Trimmed FASTQ files and fastp QC reports
+│   ├── 002_alignment/           # BWA aligned & merged BAM files
+│   ├── 003_bam_prep/            # Deduplicated, BQSR, and filtered BAM files
+│   ├── 004_bam_qc/              # Exon coverage & flagstat QC reports
+│   ├── 005_variant_calling/     # gVCF/VCF files (GATK & DeepVariant)
+│   ├── 006_variant_filtering/   # High-confidence filtered SNPs & Indels
+│   ├── 007_annotation/          # VEP annotations & ACMG classification
+│   ├── 008_summary/             # Sample & cohort variant reports and dashboards
+│   └── 010_benchmark/giab/      # GIAB NIST benchmark verification
+├── logs/                        # Execution logs per rule (000..010)
+├── benchmarks/                  # Resource usage per rule (000..010)
+└── results/                     # Final MultiQC & coverage reports
 ```
 
 ## Resource Tracking
@@ -149,11 +152,11 @@ Reports are saved to `benchmarks/resource_usage.txt`
 
 The workflow now includes a local, ClawBio-inspired reporting layer after variant filtering.
 
-- Per-sample outputs in `analysis/010_summary/<sample>/`:
+- Per-sample outputs in `analysis/008_summary/<sample>/`:
   - `variant_summary.md`
   - `variant_summary.tsv`
   - `variant_summary.json`
-- Cohort outputs in `analysis/010_summary/`:
+- Cohort outputs in `analysis/008_summary/`:
   - `cohort_variant_report.md`
   - `cohort_variant_summary.tsv`
   - `cohort_variant_summary.json`
@@ -168,7 +171,7 @@ These summaries are generated from the filtered SNP and indel VCFs and include:
 - chromosome-level burden table
 - top PASS variants ranked by QUAL
 
-When `analysis/009_annotation/<sample>.annotated.vcf` is present, the summary layer also picks up annotation-aware fields without making VEP a hard dependency. The dashboard and markdown reports then include:
+When `analysis/007_annotation/<sample>.annotated.vcf` is present, the summary layer also picks up annotation-aware fields without making VEP a hard dependency. The dashboard and markdown reports then include:
 
 - gene-level burden summaries
 - impact tiers such as `HIGH` and `MODERATE`
@@ -189,7 +192,8 @@ Evaluate pipeline variant calling accuracy against the NIST Genome in a Bottle (
    ./wes_pipeline.py benchmark -o /path/to/output --sample HG001 --download-truth
    ```
 
-Outputs generated in `analysis/012_benchmark/giab/`:
+Outputs generated in `analysis/010_benchmark/giab/`:
+
 - `HG001_giab_benchmark_report.md`: Markdown summary of Recall, Precision, F1-scores, and Ti/Tv ratios.
 - `HG001_giab_benchmark_summary.tsv`: Machine-readable TSV matrix of SNP and Indel GA4GH metrics.
 - `HG001_giab_benchmark_summary.json`: JSON output for programmatic integration.

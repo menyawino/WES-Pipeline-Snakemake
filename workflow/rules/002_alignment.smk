@@ -6,9 +6,9 @@ rule bwa_mem:
         fq2=rules.trimming_fp.output.fq2,
         ref_staged=rules.stage_ref_shm.output.staged_done
     output:
-        bam=temp(config["outdir"] + "/analysis/003_alignment/01_bwa/{sample}_{lane}.bam")
+        bam=temp(config["outdir"] + "/analysis/002_alignment/01_bwa/{sample}_{lane}.bam")
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_high"]
     resources:
@@ -17,10 +17,10 @@ rule bwa_mem:
     params: 
         ref=config["reference_genome"]
     log:
-        bwa=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_bwa.log",
-        sort=config["outdir"] + "/logs/003_alignment/01_bwa/{sample}_{lane}_sort.log"
+        bwa=config["outdir"] + "/logs/002_alignment/01_bwa/{sample}_{lane}_bwa.log",
+        sort=config["outdir"] + "/logs/002_alignment/01_bwa/{sample}_{lane}_sort.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/01_bwa/{sample}_{lane}_alignment.txt"
+        config["outdir"] + "/benchmarks/002_alignment/01_bwa/{sample}_{lane}_alignment.txt"
     shell:
         """
         mkdir -p {resources.tmpdir}
@@ -60,17 +60,17 @@ rule merge_bams:
     input:
         bams=lambda wildcards: expand(rules.bwa_mem.output.bam, sample=wildcards.sample, lane=lane)
     output:
-        merged_bam=temp(config["outdir"] + "/analysis/003_alignment/02_merged/{sample}.merged.bam")
+        merged_bam=temp(config["outdir"] + "/analysis/002_alignment/02_merged/{sample}.merged.bam")
     conda:
-        "../envs/004_alignment.yml"
+        "../envs/002_alignment.yml"
     threads:
         config["threads_mid"]
     resources:
         mem_mb=config.get("mem_mid", 16384)
     log:
-        config["outdir"] + "/logs/003_alignment/02_merged/{sample}_merge.log"
+        config["outdir"] + "/logs/002_alignment/02_merged/{sample}_merge.log"
     benchmark:
-        config["outdir"] + "/benchmarks/003_alignment/02_merged/{sample}_merge.txt"
+        config["outdir"] + "/benchmarks/002_alignment/02_merged/{sample}_merge.txt"
     shell:
         """
         bam_count=$(echo {input.bams} | wc -w)
