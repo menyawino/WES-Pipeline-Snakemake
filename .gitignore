@@ -17,13 +17,23 @@ logs/
 benchmarks/
 analysis/
 output*/
-results/*.html
+results/
+stdout_summary.html
+slurm-*.out
 
 # Python cache & virtual environments
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 workflow/scripts/__pycache__/
 .venv*/
+.pytest_cache/
+
+# Runtime and application caches
+.cache/
+.java/
+.keras/
+.parallel/
 
 # Miscellaneous / Scratch metrics & figures
 workflow/scripts/make_performance_figure.py
@@ -33,3 +43,4 @@ sample_data.csv
 pipeline_performance_comparison.png
 pipeline_resource_comparison.png
 .DS_Store
+*.DS_Store
