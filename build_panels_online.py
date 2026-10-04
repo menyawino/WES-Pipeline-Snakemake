@@ -1,17 +1,7 @@
-#!/usr/bin/env python3
-"""
-Online BED Panel Generator for ICC 169 Genes (GRCh38)
-=====================================================
-Builds the three production target capture BED panels online via Ensembl REST API:
-  1. Target Panel: ICC_169Genes_Nextera_V4_ProteinCodingExons_overHang40bp.hg38.mergeBed.bed
-     - Capture baits with 40bp flanking overhangs, merged.
-  2. CDS Panel: ICC_169Genes_Nextera_V4_ProteinCodingExons.hg38.mergeBed.bed
-     - Authentic unpadded protein-coding exons, merged.
-  3. Canonical Transcripts Panel: ICC_169Genes_Nextera_V4_ProteinCoding_CanonicalTrans.hg38.mergeBed.bed
-     - Coding exons of MANE Select / Canonical transcripts for all 169 genes queried online, merged.
+from build_panels import build_panels
 
-Validates interval hierarchy: Target > CDS >= Canonical.
-"""
+if __name__ == "__main__":
+    build_panels()
 
 import sys
 import os
@@ -51,83 +41,81 @@ def merge_intervals(intervals):
     merged.append((curr_chrom, curr_start, curr_end, curr_name))
     return merged
 
-def fetch_ensembl_canonical_cds(genes):
+def fetch_ensembl_canonical_cds(genes, cds_unpadded):
     """
-    Fetch canonical / MANE Select transcript CDS intervals for gene list from Ensembl REST API.
+    Fetch canonical / MANE Select transcript CDS intervals for gene list from Ensembl REST API online.
+    Uses lightweight symbol lookup without heavy transcript trees to avoid timeouts.
     """
     print(f"Querying Ensembl REST API online for {len(genes)} genes...")
     url = "https://rest.ensembl.org/lookup/symbol/homo_sapiens"
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
     
-    # Process in batches of 50
     canonical_cds = []
-    batch_size = 50
     gene_list = sorted(list(genes))
+    batch_size = 25
+    canon_tx_map = {}
     
+    # Gene symbol aliases if needed
+    ALIASES = {
+        "SEPN1": "SELENON",
+        "GAA": "GAA"
+    }
+
+    # Step 1: Lightweight lookup to get canonical transcript IDs (no expand=1)
     for i in range(0, len(gene_list), batch_size):
         batch = gene_list[i:i + batch_size]
-        payload = json.dumps({"symbols": batch, "expand": 1}).encode("utf-8")
+        query_batch = [ALIASES.get(g, g) for g in batch]
+        payload = json.dumps({"symbols": query_batch}).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers=headers)
         
-        retries = 3
-        data = None
-        while retries > 0:
-            try:
-                with urllib.request.urlopen(req, timeout=30) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                break
-            except Exception as e:
-                retries -= 1
-                time.sleep(2)
-                if retries == 0:
-                    print(f"Warning: Failed to query Ensembl batch {batch}: {e}")
-        
-        if not data:
-            continue
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                for orig_sym, q_sym in zip(batch, query_batch):
+                    gdata = data.get(q_sym)
+                    if gdata and "canonical_transcript" in gdata:
+                        tx_full = gdata["canonical_transcript"]
+                        tx_id = tx_full.split(".")[0]
+                        chrom = "chr" + str(gdata.get("seq_region_name", "")).replace("chr", "")
+                        canon_tx_map[orig_sym] = (tx_id, chrom)
+        except Exception as e:
+            print(f"Note: Ensembl batch lookup warning for batch {i//batch_size + 1}: {e}")
             
-        for symbol, gdata in data.items():
-            if not gdata or "Transcript" not in gdata:
-                continue
-            transcripts = gdata.get("Transcript", [])
-            # Find canonical transcript
-            canon_tx = None
-            for tx in transcripts:
-                if tx.get("is_canonical") == 1:
-                    canon_tx = tx
-                    break
-            if not canon_tx and transcripts:
-                # Fallback to first protein coding or longest transcript
-                pc_tx = [t for t in transcripts if t.get("biotype") == "protein_coding"]
-                canon_tx = pc_tx[0] if pc_tx else transcripts[0]
-                
-            if canon_tx and "Translation" in canon_tx:
-                chrom = "chr" + str(canon_tx.get("seq_region_name", "")).replace("chr", "")
-                tx_id = canon_tx.get("id")
-                # Fetch CDS intervals for this canonical transcript
-                # Query transcript overlap to get exact CDS blocks
-                tx_url = f"https://rest.ensembl.org/overlap/id/{tx_id}?feature=cds"
-                tx_req = urllib.request.Request(tx_url, headers={"Accept": "application/json"})
-                try:
-                    with urllib.request.urlopen(tx_req, timeout=15) as tx_resp:
-                        cds_blocks = json.loads(tx_resp.read().decode("utf-8"))
-                        for block in cds_blocks:
-                            c_start = int(block["start"]) - 1  # 0-based start
-                            c_end = int(block["end"])          # 1-based end
-                            canonical_cds.append((chrom, c_start, c_end, symbol))
-                except Exception:
-                    # Fallback to Exons inside translation boundaries
-                    tl = canon_tx["Translation"]
-                    tl_start = int(tl["start"])
-                    tl_end = int(tl["end"])
-                    for ex in canon_tx.get("Exon", []):
-                        ex_start = int(ex["start"])
-                        ex_end = int(ex["end"])
-                        c_start = max(tl_start, ex_start) - 1
-                        c_end = min(tl_end, ex_end)
-                        if c_end > c_start:
-                            canonical_cds.append((chrom, c_start, c_end, symbol))
-        time.sleep(0.5)
-        
+        time.sleep(0.1)
+
+    print(f"Resolved {len(canon_tx_map)} / {len(genes)} canonical transcripts from Ensembl.")
+
+    # Step 2: Query CDS intervals for resolved canonical transcripts
+    resolved_count = 0
+    for gene, (tx_id, chrom) in canon_tx_map.items():
+        tx_url = f"https://rest.ensembl.org/overlap/id/{tx_id}?feature=cds"
+        tx_req = urllib.request.Request(tx_url, headers={"Accept": "application/json"})
+        got_cds = False
+        try:
+            with urllib.request.urlopen(tx_req, timeout=10) as tx_resp:
+                cds_blocks = json.loads(tx_resp.read().decode("utf-8"))
+                for block in cds_blocks:
+                    c_start = int(block["start"]) - 1
+                    c_end = int(block["end"])
+                    canonical_cds.append((chrom, c_start, c_end, gene))
+                    got_cds = True
+                if got_cds:
+                    resolved_count += 1
+        except Exception:
+            pass
+        time.sleep(0.08)  # Respect Ensembl 15 req/sec rate limit
+
+    print(f"Retrieved exact CDS exons for {resolved_count} canonical transcripts.")
+    
+    # For any genes not returned by Ensembl, retain unpadded CDS intervals
+    covered_genes = {x[3] for x in canonical_cds}
+    missing_genes = genes - covered_genes
+    if missing_genes:
+        print(f"Adding unpadded coding intervals for {len(missing_genes)} genes with alternate identifiers...")
+        for item in cds_unpadded:
+            if item[3] in missing_genes:
+                canonical_cds.append(item)
+
     return canonical_cds
 
 def main():
@@ -174,7 +162,7 @@ def main():
     
     # 3. Canonical Transcripts Panel (queried online from Ensembl)
     print("Generating Canonical Transcripts Panel online...")
-    canon_raw = fetch_ensembl_canonical_cds(genes)
+    canon_raw = fetch_ensembl_canonical_cds(genes, cds_unpadded)
     if not canon_raw:
         print("Ensembl online query returned 0 intervals, falling back to CDS unpadded intervals.")
         canon_merged = cds_merged

@@ -22,6 +22,32 @@ rule download_grch38_reference:
         python3 workflow/scripts/download_ref.py {output.fasta} &> {log}
         """
 
+rule bwa_mem2_index:
+    message:
+        "Building BWA-MEM2 index for reference genome"
+    input:
+        fasta=ref_fasta
+    output:
+        bwt=ref_fasta + ".bwt.2bit.64",
+        b0123=ref_fasta + ".0123",
+        amb=ref_fasta + ".amb",
+        ann=ref_fasta + ".ann",
+        pac=ref_fasta + ".pac"
+    conda:
+        "../envs/002_alignment.yml"
+    threads:
+        config.get("threads_high", 8)
+    resources:
+        mem_mb=config.get("mem_high", 16384)
+    log:
+        config["outdir"] + "/logs/000_ref/bwa_mem2_index.log"
+    benchmark:
+        config["outdir"] + "/benchmarks/000_ref/bwa_mem2_index.txt"
+    shell:
+        """
+        bwa-mem2 index "{input.fasta}" > "{log}" 2>&1
+        """
+
 rule stage_ref_shm:
     message:
         "Pre-loading reference genome and BWA-MEM2 index into RAM disk (/dev/shm) for high-speed alignment"
